@@ -1,0 +1,58 @@
+export const achievementData = [
+  {
+    id: 1,
+    title: "First Lesson",
+    description: "Complete your first lesson",
+    icon: "🎓",
+    unlocked: true,
+  },
+  {
+    id: 2,
+    title: "First Test",
+    description: "Complete your first test",
+    icon: "📝",
+    unlocked: true,
+  },
+  {
+    id: 3,
+    title: "7 Day Streak",
+    description: "Study for 7 days in a row",
+    icon: "🔥",
+    unlocked: true,
+  },
+  {
+    id: 4,
+    title: "100 XP Earned",
+    description: "Earn 100 XP",
+    icon: "⭐",
+    unlocked: true,
+  },
+  {
+    id: 5,
+    title: "500 XP Earned",
+    description: "Earn 500 XP",
+    icon: "🏆",
+    unlocked: false,
+  },
+  {
+    id: 6,
+    title: "1000 XP Earned",
+    description: "Earn 1000 XP",
+    icon: "👑",
+    unlocked: false,
+  },
+  {
+    id: 7,
+    title: "Math Master",
+    description: "Complete all Mathematics lessons",
+    icon: "📐",
+    unlocked: false,
+  },
+  {
+    id: 8,
+    title: "Science Champion",
+    description: "Complete all Science lessons",
+    icon: "🔬",
+    unlocked: false,
+  },
+];
