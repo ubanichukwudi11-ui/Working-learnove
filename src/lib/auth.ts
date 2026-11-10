@@ -112,7 +112,13 @@ export async function login(email: string, password?: string): Promise<User> {
     }
 
     if (typeof window !== "undefined") {
-      localStorage.setItem("learnova_user", JSON.stringify(data.user));
+      try {
+        const serialized = JSON.stringify(data.user);
+        localStorage.setItem("learnova_user", serialized);
+        localStorage.setItem("learnova-user", serialized);
+        sessionStorage.setItem("learnova_user", serialized);
+        document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax`;
+      } catch {}
     }
 
     return data.user;

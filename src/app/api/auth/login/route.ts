@@ -105,11 +105,21 @@ export async function POST(req: Request) {
       relationship: parentData?.relationship,
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       session: data.session,
       user,
     });
+
+    try {
+      response.cookies.set("learnova_user", JSON.stringify(user), {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+      });
+    } catch {}
+
+    return response;
   } catch (err: any) {
     console.error("Login API error:", err);
     return NextResponse.json(

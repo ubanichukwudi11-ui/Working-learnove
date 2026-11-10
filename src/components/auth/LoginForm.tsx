@@ -85,24 +85,34 @@ export default function LoginForm() {
       throw new Error("Unable to load user profile.");
     }
 
-    saveUser(user);
+      saveUser(user);
 
-    switch (user.role) {
-      case "ADMIN":
-        router.push("/admin");
-        break;
+      let targetPath = "/dashboard";
+      switch (user.role) {
+        case "ADMIN":
+          targetPath = "/admin";
+          break;
 
-      case "TEACHER":
-        router.push("/teacher");
-        break;
+        case "TEACHER":
+          targetPath = "/teacher";
+          break;
 
-      case "PARENT":
-        router.push("/parent");
-        break;
+        case "PARENT":
+          targetPath = "/parent";
+          break;
 
-      default:
-        router.push("/dashboard");
-    }
+        default:
+          targetPath = "/dashboard";
+      }
+
+      router.push(targetPath);
+      router.refresh();
+
+      setTimeout(() => {
+        if (typeof window !== "undefined" && window.location.pathname === "/login") {
+          window.location.assign(targetPath);
+        }
+      }, 400);
     } catch (err: any) {
       setErrors({
         general:

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 type User = {
   fullName: string;
@@ -8,18 +9,24 @@ type User = {
 };
 
 export default function WelcomeHeader() {
-  const [user, setUser] = useState<User | null>(
-    null
-  );
+  const { user: authUser } = useAuth();
+  const [user, setUser] = useState<User | null>(authUser);
 
   useEffect(() => {
-    const saved =
-      localStorage.getItem("learnova-user");
-
-    if (saved) {
-      setUser(JSON.parse(saved));
+    if (authUser) {
+      setUser(authUser);
+      return;
     }
-  }, []);
+    try {
+      const saved =
+        localStorage.getItem("learnova_user") ||
+        localStorage.getItem("learnova-user");
+
+      if (saved) {
+        setUser(JSON.parse(saved));
+      }
+    } catch {}
+  }, [authUser]);
 
   const firstName =
     user?.fullName?.split(" ")[0] ||

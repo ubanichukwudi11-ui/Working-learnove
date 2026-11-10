@@ -38,6 +38,39 @@ type AuthContextType = {
   isAuthenticated: boolean;
 };
 
+function getStoredUser(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw =
+      localStorage.getItem("learnova_user") ||
+      localStorage.getItem("learnova-user") ||
+      sessionStorage.getItem("learnova_user");
+    if (raw) return JSON.parse(raw);
+
+    const match = document.cookie.match(/(?:^|;\s*)learnova_user=([^;]+)/);
+    if (match) return JSON.parse(decodeURIComponent(match[1]));
+  } catch {}
+  return null;
+}
+
+function persistUser(user: User | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (user) {
+      const serialized = JSON.stringify(user);
+      localStorage.setItem("learnova_user", serialized);
+      localStorage.setItem("learnova-user", serialized);
+      sessionStorage.setItem("learnova_user", serialized);
+      document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax`;
+    } else {
+      localStorage.removeItem("learnova_user");
+      localStorage.removeItem("learnova-user");
+      sessionStorage.removeItem("learnova_user");
+      document.cookie = "learnova_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+  } catch {}
+}
+
 const AuthContext =
   createContext<AuthContextType | null>(
     null
@@ -48,32 +81,19 @@ export function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] =
-    useState<User | null>(null);
-
-  const [loading, setLoading] =
-    useState(true);
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
+  const [loading, setLoading] = useState<boolean>(() => !getStoredUser());
 
   async function loadUser() {
     try {
-      // 1. Check local session storage for active user
-      const stored =
-        typeof window !== "undefined"
-          ? localStorage.getItem("learnova_user")
-          : null;
-      if (stored) {
-        try {
-          setUser(JSON.parse(stored));
-          setLoading(false);
-          return;
-        } catch {
-          localStorage.removeItem("learnova_user");
-        }
+      const cached = getStoredUser();
+      if (cached) {
+        setUser(cached);
+        setLoading(false);
       }
 
-      // 2. Check Supabase session
+      // Try fetching current authenticated profile
       const currentUser = await getCurrentUser();
-
       if (currentUser) {
         const mappedUser: User = {
           id: currentUser.id,
@@ -83,25 +103,14 @@ export function AuthProvider({
           status: currentUser.status,
         };
         setUser(mappedUser);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("learnova_user", JSON.stringify(mappedUser));
-        }
-      } else {
+        persistUser(mappedUser);
+      } else if (!cached) {
         setUser(null);
       }
     } catch {
-      const stored =
-        typeof window !== "undefined"
-          ? localStorage.getItem("learnova_user")
-          : null;
-      if (stored) {
-        try {
-          setUser(JSON.parse(stored));
-        } catch {
-          setUser(null);
-        }
-      } else {
-        setUser(null);
+      const cached = getStoredUser();
+      if (cached) {
+        setUser(cached);
       }
     } finally {
       setLoading(false);
@@ -116,12 +125,10 @@ export function AuthProvider({
     } =
       supabase.auth.onAuthStateChange(
         async (event, session) => {
-          if (event === "SIGNED_OUT" || !session) {
-            const stored = typeof window !== "undefined" ? localStorage.getItem("learnova_user") : null;
-            if (!stored) {
-              setUser(null);
-            }
-          } else {
+          if (event === "SIGNED_OUT") {
+            persistUser(null);
+            setUser(null);
+          } else if (event === "SIGNED_IN" || session) {
             await loadUser();
           }
         }
@@ -132,9 +139,7 @@ export function AuthProvider({
   }, []);
 
   async function logout() {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("learnova_user");
-    }
+    persistUser(null);
     setUser(null);
 
     try {
@@ -142,11 +147,10 @@ export function AuthProvider({
     } catch {}
   }
 
-  function login(user: User) {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("learnova_user", JSON.stringify(user));
-    }
-    setUser(user);
+  function login(newUser: User) {
+    persistUser(newUser);
+    setUser(newUser);
+    setLoading(false);
   }
 
   async function refreshUser() {
@@ -157,15 +161,10 @@ export function AuthProvider({
     <AuthContext.Provider
       value={{
         user,
-
         loading,
-
         login,
-
         logout,
-
         refreshUser,
-
         isAuthenticated: !!user,
       }}
     >
