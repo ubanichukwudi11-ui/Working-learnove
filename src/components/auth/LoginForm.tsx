@@ -115,18 +115,28 @@ export default function LoginForm() {
   }
 
   async function loginWithGoogle() {
-    // Clear any existing Supabase session
-    await supabase.auth.signOut();
+    try {
+      setErrors({});
+      await supabase.auth.signOut();
 
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          prompt: "select_account",
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            prompt: "select_account",
+          },
         },
-      },
-    });
+      });
+
+      if (error) throw error;
+    } catch (err: any) {
+      setErrors({
+        general:
+          err.message ??
+          "Failed to initiate Google sign in. Please check your Supabase configuration.",
+      });
+    }
   }
 
   return (

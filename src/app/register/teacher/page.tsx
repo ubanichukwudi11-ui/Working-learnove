@@ -13,6 +13,9 @@ export default function TeacherRegisterPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -60,6 +63,7 @@ export default function TeacherRegisterPage() {
 
     try {
       setUploading(true);
+      setError("");
 
       const url = await uploadFile(
         file,
@@ -70,11 +74,9 @@ export default function TeacherRegisterPage() {
         ...prev,
         [field]: url,
       }));
-
-      alert(`${field} uploaded successfully.`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Upload failed.");
+      setError(err?.message || `Failed to upload ${field}.`);
     } finally {
       setUploading(false);
     }
@@ -84,19 +86,22 @@ export default function TeacherRegisterPage() {
     e: React.FormEvent
   ) {
     e.preventDefault();
+    setError("");
 
     try {
       setLoading(true);
 
       await registerTeacher(form);
 
-      alert(
-        "Application submitted successfully.\n\nPlease wait for admin verification."
+      setSuccessMsg(
+        "Application submitted successfully! Please wait for admin verification. Redirecting..."
       );
 
-      router.push("/login");
-    } catch (error: any) {
-      alert(error.message);
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
+    } catch (err: any) {
+      setError(err?.message || "Failed to submit teacher registration.");
     } finally {
       setLoading(false);
     }
@@ -112,10 +117,22 @@ export default function TeacherRegisterPage() {
             Teacher Registration
           </h1>
 
-          <p className="text-slate-400 mb-10">
+          <p className="text-slate-400 mb-6">
             Complete your profile and upload
             all required documents.
           </p>
+
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-400">
+              {successMsg}
+            </div>
+          )}
 
           <form
             onSubmit={handleSubmit}

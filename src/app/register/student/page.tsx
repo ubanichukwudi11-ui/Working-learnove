@@ -13,8 +13,9 @@ import {
   Loader2,
 } from "lucide-react";
 
-import { registerStudent } from "@/lib/auth";
+import { registerStudent, login as authLogin } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 
 const AI_PURPOSES = [
   "Homework",
@@ -54,9 +55,10 @@ const LEARNING_STYLES = [
 
 export default function StudentRegistrationPage() {
   const router = useRouter();
+  const { login: saveUser } = useAuth();
 
   const [loading, setLoading] = useState(false);
-
+  const [error, setError] = useState("");
   const [preview, setPreview] = useState("");
 
   const [form, setForm] = useState({
@@ -132,7 +134,7 @@ export default function StudentRegistrationPage() {
       .upload(fileName, file);
 
     if (error) {
-      alert(error.message);
+      setError(error.message);
       return;
     }
 
@@ -151,48 +153,34 @@ export default function StudentRegistrationPage() {
     e.preventDefault();
 
     setLoading(true);
+    setError("");
 
     try {
       await registerStudent({
         fullName: form.fullName,
-
         email: form.email,
-
         password: form.password,
-
         classLevel: form.classLevel,
-
         age: Number(form.age),
-
         profilePhoto: form.profilePhoto,
-
         aiPurpose: form.aiPurpose,
-
-        examPreparation:
-          form.examPreparation,
-
-        favouriteSubjects:
-          form.favouriteSubjects,
-
-        learningStyle:
-          form.learningStyle,
-
-        studyHours:
-          form.studyHours,
-
-        studyTime:
-          form.studyTime,
-
-        learningGoal:
-          form.learningGoal,
-
-        reminders:
-          form.reminders,
+        examPreparation: form.examPreparation,
+        favouriteSubjects: form.favouriteSubjects,
+        learningStyle: form.learningStyle,
+        studyHours: form.studyHours,
+        studyTime: form.studyTime,
+        learningGoal: form.learningGoal,
+        reminders: form.reminders,
       });
+
+      const loggedInUser = await authLogin(form.email, form.password);
+      if (loggedInUser) {
+        saveUser(loggedInUser);
+      }
 
       router.push("/dashboard");
     } catch (err: any) {
-      alert(err.message);
+      setError(err?.message || "Registration failed. Please check your information.");
     } finally {
       setLoading(false);
     }
@@ -207,10 +195,16 @@ export default function StudentRegistrationPage() {
           Student Registration
         </h1>
 
-        <p className="text-slate-400 mb-10">
+        <p className="text-slate-400 mb-6">
           Tell Nova about yourself so your AI
           experience can be personalized.
         </p>
+
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-sm text-red-400">
+            {error}
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
