@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-
+import { Sparkles } from "lucide-react";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import SuggestedPrompts from "./SuggestedPrompts";
@@ -13,55 +13,40 @@ type Message = {
 
 export default function NovaChat() {
   const [loading, setLoading] = useState(false);
-
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "👋 Hello! I'm Nova. Ask me any question and I'll help you learn.",
+        "Hello! I'm Nova, your Learnova study companion. Ask me any JSS, SSS, WAEC, NECO, or JAMB question and I'll walk through it step-by-step.",
     },
   ]);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
   async function sendMessage(text: string) {
     if (!text.trim()) return;
 
-    const userMessage: Message = {
-      role: "user",
-      content: text,
-    };
-
+    const userMessage: Message = { role: "user", content: text };
     setMessages((prev) => [...prev, userMessage]);
-
     setLoading(true);
 
     try {
       const res = await fetch("/api/nova", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: text,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
       });
 
       const data = await res.json();
-
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            data.response ||
-            "Sorry, I couldn't generate a response.",
+          content: data.response || "Sorry, I couldn't generate a response.",
         },
       ]);
     } catch {
@@ -69,8 +54,7 @@ export default function NovaChat() {
         ...prev,
         {
           role: "assistant",
-          content:
-            "Something went wrong. Please try again.",
+          content: "Something went wrong. Please try again.",
         },
       ]);
     }
@@ -79,23 +63,21 @@ export default function NovaChat() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto h-[85vh] flex flex-col">
-      {/* Header */}
-
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white">
-          Nova AI
-        </h1>
-
-        <p className="text-slate-400 mt-2">
-          Your personal AI tutor.
-        </p>
+    <div className="max-w-4xl mx-auto flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+            Guided Study Companion
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-0.5 flex items-center gap-2">
+            <Sparkles size={22} className="text-[#D97706]" />
+            Nova AI Tutor
+          </h1>
+        </div>
       </div>
 
-      {/* Chat Area */}
-
-      <div className="flex-1 overflow-y-auto px-2">
-        <div className="space-y-5 pb-8">
+      <div className="rounded-2xl border border-slate-200 bg-white shadow-xs flex flex-col h-[calc(100vh-220px)] min-h-[460px]">
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {messages.map((message, index) => (
             <ChatMessage
               key={index}
@@ -105,39 +87,27 @@ export default function NovaChat() {
           ))}
 
           {loading && (
-            <div className="flex items-center gap-2 text-slate-400">
-              <div className="h-2 w-2 rounded-full bg-violet-500 animate-bounce" />
-              <div
-                className="h-2 w-2 rounded-full bg-violet-500 animate-bounce"
+            <div className="flex items-center gap-2 text-slate-500 text-xs px-2">
+              <span className="w-2 h-2 rounded-full bg-[#0D9488] animate-bounce" />
+              <span
+                className="w-2 h-2 rounded-full bg-[#0D9488] animate-bounce"
                 style={{ animationDelay: "0.15s" }}
               />
-              <div
-                className="h-2 w-2 rounded-full bg-violet-500 animate-bounce"
+              <span
+                className="w-2 h-2 rounded-full bg-[#0D9488] animate-bounce"
                 style={{ animationDelay: "0.3s" }}
               />
-
-              <span className="ml-2 text-sm">
-                Nova is thinking...
-              </span>
+              <span className="ml-1 font-medium">Nova is preparing explanation...</span>
             </div>
           )}
 
           <div ref={bottomRef} />
         </div>
-      </div>
 
-      {/* Suggestions */}
-
-      <div className="mt-4">
-        <SuggestedPrompts
-          onSelect={sendMessage}
-        />
-      </div>
-
-      {/* Sticky Input */}
-
-      <div className="sticky bottom-0 bg-[#020817] pt-4">
-        <ChatInput onSend={sendMessage} />
+        <div className="border-t border-slate-200 p-4 space-y-3 bg-white rounded-b-2xl">
+          <SuggestedPrompts onSelect={sendMessage} />
+          <ChatInput onSend={sendMessage} />
+        </div>
       </div>
     </div>
   );

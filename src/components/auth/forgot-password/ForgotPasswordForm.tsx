@@ -2,65 +2,41 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { resetPassword } from "@/lib/auth";
 
 type Props = {
   onSuccess: () => void;
 };
 
-export default function ForgotPasswordForm({
-  onSuccess,
-}: Props) {
-  const [email, setEmail] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
+export default function ForgotPasswordForm({ onSuccess }: Props) {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const validateEmail = () => {
     if (!email.trim()) {
-      setError(
-        "Email address is required"
-      );
+      setError("Email address is required");
       return false;
     }
-
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError(
-        "Enter a valid email address"
-      );
+      setError("Enter a valid email address");
       return false;
     }
-
     return true;
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setError("");
-
     if (!validateEmail()) return;
 
     setLoading(true);
-
     try {
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1500)
-      );
-
+      await resetPassword(email.trim());
       onSuccess();
-    } catch {
-      setError(
-        "Something went wrong. Please try again."
-      );
+    } catch (err: any) {
+      setError(err?.message || "Could not send reset email. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -68,27 +44,18 @@ export default function ForgotPasswordForm({
 
   return (
     <>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white">
-          Forgot Password
-        </h1>
-
-        <p className="mt-2 text-slate-400">
-          Enter your email address and
-          we'll send you a password reset
-          link.
+      <div className="mb-6">
+        <h1 className="text-2xl font-extrabold text-[#0B1F3A]">Forgot Password</h1>
+        <p className="mt-1.5 text-sm text-slate-600">
+          Enter your email address and we&apos;ll send you a password reset link.
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5"
-      >
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm text-slate-300 mb-2">
+          <label className="block text-xs font-bold text-[#0B1F3A] mb-1.5">
             Email Address
           </label>
-
           <input
             type="email"
             value={email}
@@ -96,64 +63,25 @@ export default function ForgotPasswordForm({
               setEmail(e.target.value);
               setError("");
             }}
-            placeholder="Enter your email"
-            className={`
-              w-full
-              p-3
-              rounded-2xl
-              bg-[#0F172A]
-              border
-              text-white
-              focus:outline-none
-              transition
-              ${
-                error
-                  ? "border-red-500"
-                  : "border-slate-700 focus:border-[#6D28D9]"
-              }
-            `}
+            placeholder="student@school.ng"
+            className={`w-full h-11 px-3.5 rounded-xl bg-[#F7F8FA] border text-sm text-[#0B1F3A] focus:outline-none transition ${
+              error ? "border-rose-500" : "border-slate-200 focus:border-[#0D9488]"
+            }`}
           />
-
-          {error && (
-            <p className="text-red-400 text-sm mt-2">
-              {error}
-            </p>
-          )}
+          {error && <p className="text-rose-600 text-xs mt-1.5 font-medium">{error}</p>}
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="
-            w-full
-            py-3
-            rounded-2xl
-            font-semibold
-            text-white
-            bg-gradient-to-r
-            from-[#6D28D9]
-            to-[#06B6D4]
-            hover:opacity-90
-            transition
-            disabled:opacity-50
-          "
+          className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#0B1F3A] hover:bg-[#143258] transition disabled:opacity-50"
         >
-          {loading
-            ? "Sending..."
-            : "Send Reset Link"}
+          {loading ? "Sending..." : "Send Reset Link"}
         </button>
 
-        <div className="text-center">
-          <Link
-            href="/login"
-            className="
-              text-sm
-              text-slate-400
-              hover:text-white
-              transition
-            "
-          >
-            Back to Login
+        <div className="text-center pt-1">
+          <Link href="/login" className="text-xs font-bold text-[#0D9488] hover:underline">
+            Back to Sign In
           </Link>
         </div>
       </form>

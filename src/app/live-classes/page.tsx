@@ -3,208 +3,253 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import AppLayout from "@/components/layout/AppLayout";
+import { LiveClassItem, liveClasses as fallbackClasses } from "@/lib/liveClasses";
+import { CURRENT_ACADEMIC_TERM } from "@/lib/nigerianCurriculum";
+import { useAuth } from "@/context/AuthContext";
 import {
   Video,
   Users,
   Clock,
-  Sparkles,
-  Calendar,
   Play,
-  Radio,
-  BookOpen,
-  ArrowRight,
-  Shield,
   Plus,
+  X,
+  Wifi,
+  BookOpen,
 } from "lucide-react";
-
-import AppLayout from "@/components/layout/AppLayout";
-import { liveClasses, LiveClassItem } from "@/lib/liveClasses";
-import { useAuth } from "@/context/AuthContext";
 
 export default function LiveClassesPage() {
   const { user } = useAuth();
-  const [now, setNow] = useState(new Date());
+  const router = useRouter();
+  const isTeacher = user?.role === "TEACHER" || user?.role === "ADMIN";
+
+  const [classes, setClasses] = useState<LiveClassItem[]>(fallbackClasses);
   const [filter, setFilter] = useState<"all" | "live" | "scheduled">("all");
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+
+  // Schedule form
+  const [title, setTitle] = useState("");
+  const [subject, setSubject] = useState("Mathematics");
+  const [topic, setTopic] = useState("");
+  const [classLevel, setClassLevel] = useState("SSS 2 Science");
+  const [timeWat, setTimeWat] = useState("03:00 PM – 04:00 PM WAT");
+  const [startNow, setStartNow] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
+    let active = true;
+    async function load() {
+      try {
+        const res = await fetch("/api/live-classes", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (active && Array.isArray(data.classes)) {
+          setClasses(data.classes);
+        }
+      } catch {
+        // fallback stays visible
+      }
+    }
+    load();
+    const timer = setInterval(load, 8000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
   }, []);
 
-  const featuredClass = liveClasses.find((c) => c.status === "live") || liveClasses[0];
+  const handleSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || creating) return;
+    setCreating(true);
+    try {
+      const res = await fetch("/api/live-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title,
+          subject,
+          topic: topic || "Interactive Term 2 Session",
+          classLevel,
+          timeWat,
+          teacher: user?.fullName || "Mrs. Funke Adewale",
+          startNow,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.classItem) {
+        setClasses((prev) => [data.classItem, ...prev]);
+        setIsScheduleOpen(false);
+        setTitle("");
+        setTopic("");
+        if (startNow) {
+          router.push(`/teacher/live-class/${data.classItem.id}`);
+        }
+      }
+    } finally {
+      setCreating(false);
+    }
+  };
 
-  const filteredClasses = liveClasses.filter((c) => {
+  const featuredClass = classes.find((c) => c.status === "live") || classes[0];
+  const filteredClasses = classes.filter((c) => {
     if (filter === "live") return c.status === "live";
-    if (filter === "scheduled") return c.status === "scheduled";
+    if (filter === "scheduled") return c.status === "scheduled" || c.status === "waiting";
     return true;
   });
 
   return (
     <AppLayout>
-      <div className="max-w-7xl mx-auto space-y-8 select-none">
+      <div className="space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-                Learnova Live Classes
-              </h1>
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Real-Time WebRTC
-              </span>
-            </div>
-            <p className="text-slate-400 mt-2 text-sm max-w-xl">
-              Join interactive virtual classrooms with high-definition video, real-time screen sharing, live polls, collaborative whiteboard, and Nova AI assistant.
+            <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+              {CURRENT_ACADEMIC_TERM} · Africa/Lagos (WAT)
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+              Learnova Live Classrooms
+            </h1>
+            <p className="text-sm text-slate-600 mt-1 max-w-2xl">
+              {isTeacher
+                ? "Launch and manage your live lessons, review raised-hand requests onto the stage, and run interactive polls."
+                : "Join your teacher's live lesson, download class guides, ask questions, and switch to Audio-Only Mode on low-data networks."}
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/teacher/live-class/math-001"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-900 border border-purple-500/40 text-purple-300 hover:text-white hover:bg-purple-950/60 font-semibold text-xs shadow-md transition"
-            >
-              <span>👩‍🏫</span>
-              <span>Host as Teacher</span>
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            {isTeacher && (
+              <button
+                onClick={() => setIsScheduleOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[#0B1F3A] text-xs font-bold transition whitespace-nowrap"
+              >
+                <Plus size={15} />
+                Schedule New Class
+              </button>
+            )}
 
-            <Link
-              href="/live-classes/math-001"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30 transition active:scale-95"
-            >
-              <Video size={16} />
-              <span>Join Active Room</span>
-            </Link>
+            {featuredClass && (
+              <Link
+                href={
+                  isTeacher
+                    ? `/teacher/live-class/${featuredClass.id}`
+                    : `/live-classes/${featuredClass.id}`
+                }
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold shadow-xs transition whitespace-nowrap"
+              >
+                <Video size={15} />
+                {isTeacher ? "Open Teacher Control Room" : "Join Active Class"}
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* FEATURED BANNER: Mathematics Live Class (Matching Reference Design) */}
-        {featuredClass && (
-          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#170e34] via-[#101935] to-[#0d1527] border border-purple-500/30 p-6 md:p-8 shadow-2xl">
-            <div className="relative z-10 grid lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center">
-              <div className="space-y-5">
-                <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    BROADCASTING LIVE NOW
-                  </span>
-                  <span className="text-xs text-slate-400 flex items-center gap-1 font-mono">
-                    <Clock size={13} />
-                    00:23:17 Elapsed
-                  </span>
-                </div>
+        {/* Low-Bandwidth Friendly Banner */}
+        <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-[#0B1F3A]">
+            <Wifi size={16} className="text-[#0D9488] shrink-0" />
+            <span>
+              <strong>Nigerian Bandwidth Optimization:</strong> Audio-First and 240p/360p stream modes are built into every classroom to save mobile data.
+            </span>
+          </div>
+          <span className="text-slate-500 font-semibold whitespace-nowrap">
+            Raised-Hand Stage Control Active
+          </span>
+        </div>
 
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+        {/* Featured Live Classroom */}
+        {featuredClass && (
+          <div className="rounded-2xl border border-slate-200 bg-[#0B1F3A] text-white overflow-hidden shadow-sm">
+            <div className="grid lg:grid-cols-[1.2fr_0.9fr] items-stretch">
+              <div className="p-6 sm:p-8 flex flex-col justify-between space-y-5">
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-teal-300 font-semibold">
+                    <span>{featuredClass.status === "live" ? "Broadcasting Now" : "Next Scheduled Session"}</span>
+                    <span>·</span>
+                    <span>{featuredClass.classLevel}</span>
+                    <span>·</span>
+                    <span className="tabular-nums">{featuredClass.timeWat}</span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
                     {featuredClass.title}
                   </h2>
-                  <p className="text-purple-300 font-medium text-base mt-1">
-                    {featuredClass.topic}
-                  </p>
+                  <p className="text-sm text-slate-300">{featuredClass.topic}</p>
                 </div>
 
-                {/* Teacher & Students stats */}
-                <div className="flex flex-wrap items-center gap-6 text-xs text-slate-300">
+                <div className="flex flex-wrap items-center gap-6 text-xs text-slate-200">
                   <div className="flex items-center gap-2.5">
-                    <div className="relative w-8 h-8 rounded-full overflow-hidden border border-purple-400">
+                    <div className="relative w-9 h-9 rounded-xl overflow-hidden border border-white/20 shrink-0">
                       <Image
-                        src={
-                          featuredClass.teacherAvatar ||
-                          "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
-                        }
+                        src={featuredClass.teacherAvatar}
                         alt={featuredClass.teacher}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">Instructor</span>
+                      <span className="text-slate-400 block text-[11px]">Instructor</span>
                       <span className="font-bold text-white">{featuredClass.teacher}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Users size={16} className="text-cyan-400" />
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">Connected</span>
-                      <span className="font-bold text-white">{featuredClass.studentsCount} Students Online</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-amber-400" />
-                    <div>
-                      <span className="text-slate-400 block text-[10px]">AI Co-Pilot</span>
-                      <span className="font-bold text-white">Nova AI Active</span>
-                    </div>
+                  <div className="flex items-center gap-2 tabular-nums">
+                    <Users size={15} className="text-[#F59E0B]" />
+                    <span>{featuredClass.studentsCount} students connected</span>
                   </div>
                 </div>
 
-                {/* Actions: Join as Student or Enter as Teacher */}
-                <div className="flex flex-wrap items-center gap-3 pt-2">
+                <div className="pt-1">
                   <Link
-                    href={`/live-classes/${featuredClass.id}`}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/40 transition active:scale-95"
+                    href={
+                      isTeacher
+                        ? `/teacher/live-class/${featuredClass.id}`
+                        : `/live-classes/${featuredClass.id}`
+                    }
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold transition whitespace-nowrap"
                   >
-                    <Play size={15} fill="white" />
-                    <span>Join Class (Student View)</span>
-                  </Link>
-
-                  <Link
-                    href={`/teacher/live-class/${featuredClass.id}`}
-                    className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white font-semibold text-xs transition"
-                  >
-                    <span>Teacher Control Room</span>
-                    <ArrowRight size={14} />
+                    <Play size={14} fill="currentColor" />
+                    {isTeacher ? "Enter Host Classroom" : "Join Live Classroom"}
                   </Link>
                 </div>
               </div>
 
-              {/* Right: Live Classroom Preview graphic */}
-              <div className="relative rounded-2xl overflow-hidden border border-slate-800 bg-[#070b14]/80 p-4 aspect-[16/10] hidden lg:flex flex-col justify-between shadow-2xl">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-purple-300">Live Stream Stage</span>
-                  <span className="flex items-center gap-1 text-emerald-400 font-mono text-[11px]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                    WebRTC Connected
-                  </span>
-                </div>
-
-                <div className="my-auto text-center space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-600/30 text-purple-400 border border-purple-500/40 mx-auto flex items-center justify-center">
-                    <Radio size={24} className="animate-pulse" />
+              <div className="relative min-h-[220px] lg:min-h-full bg-[#091529]">
+                <Image
+                  src={featuredClass.hostPoster}
+                  alt={featuredClass.title}
+                  fill
+                  className="object-cover opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/90 via-transparent to-transparent flex items-end p-5">
+                  <div className="text-xs text-slate-200">
+                    <p className="font-bold text-white">{featuredClass.examFocus}</p>
+                    <p className="text-slate-300 mt-0.5">
+                      Teacher video stage · Synced slides &amp; whiteboard
+                    </p>
                   </div>
-                  <h4 className="font-bold text-white text-sm">
-                    Interactive Mathematics Lecture
-                  </h4>
-                  <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                    Parabolas, Cartesian graphing, and real-time live poll exercises.
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-800/80">
-                  <span>Latency: ~32ms</span>
-                  <span className="text-purple-300 font-bold">1080p 60fps</span>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Filter Pills */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        {/* Filter Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-white border border-slate-200">
             {[
-              { id: "all", label: "All Classrooms" },
-              { id: "live", label: "Live Now 🔴" },
-              { id: "scheduled", label: "Upcoming Classes" },
+              { id: "all", label: "All Sessions" },
+              { id: "live", label: "Live Now" },
+              { id: "scheduled", label: "Upcoming" },
             ].map((f) => (
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                   filter === f.id
-                    ? "bg-purple-600 text-white shadow-md shadow-purple-600/20"
-                    : "bg-slate-900/90 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                    ? "bg-[#0B1F3A] text-white"
+                    : "text-slate-600 hover:text-[#0B1F3A]"
                 }`}
               >
                 {f.label}
@@ -212,94 +257,201 @@ export default function LiveClassesPage() {
             ))}
           </div>
 
-          <span className="text-xs text-slate-400">
-            {filteredClasses.length} Classes Available
+          <span className="text-xs font-semibold text-slate-500 tabular-nums">
+            {filteredClasses.length} classrooms available
           </span>
         </div>
 
         {/* Classes Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredClasses.map((cls) => {
             const isLive = cls.status === "live";
+            const targetHref = isTeacher
+              ? `/teacher/live-class/${cls.id}`
+              : `/live-classes/${cls.id}`;
 
             return (
               <div
                 key={cls.id}
-                className="rounded-3xl bg-[#0c1222] border border-slate-800 p-6 flex flex-col justify-between space-y-5 hover:border-purple-500/40 transition group shadow-xl"
+                className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between gap-5 shadow-xs hover:border-[#0D9488] transition"
               >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-900 border border-slate-800 text-purple-300">
-                      {cls.subject}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-[#0D9488]">
+                      {cls.subject} · {cls.classLevel}
                     </span>
-
-                    {isLive ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        LIVE
-                      </span>
-                    ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                        SCHEDULED
-                      </span>
-                    )}
+                    <span className={isLive ? "text-emerald-700" : "text-[#D97706]"}>
+                      {isLive ? "Live Now" : "Scheduled"}
+                    </span>
                   </div>
 
-                  <div>
-                    <h3 className="font-bold text-white text-lg group-hover:text-purple-300 transition">
-                      {cls.title}
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-2">
-                      {cls.topic}
-                    </p>
-                  </div>
+                  <h3 className="text-base font-extrabold text-[#0B1F3A]">{cls.title}</h3>
+                  <p className="text-xs text-slate-600 line-clamp-2">{cls.topic}</p>
                 </div>
 
-                <div className="space-y-4 pt-3 border-t border-slate-800/80">
-                  <div className="flex items-center justify-between text-xs text-slate-300">
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center justify-between text-xs text-slate-600">
                     <div className="flex items-center gap-2">
-                      <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-700">
+                      <div className="relative w-7 h-7 rounded-lg overflow-hidden border border-slate-200 shrink-0">
                         <Image
-                          src={
-                            cls.teacherAvatar ||
-                            "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80"
-                          }
+                          src={cls.teacherAvatar}
                           alt={cls.teacher}
                           fill
                           className="object-cover"
                         />
                       </div>
-                      <span className="text-slate-300 font-medium truncate max-w-[120px]">
+                      <span className="font-semibold text-[#0B1F3A] truncate max-w-[140px]">
                         {cls.teacher}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                      <Users size={14} className="text-cyan-400" />
-                      <span>{cls.studentsCount} Students</span>
-                    </div>
+                    <span className="flex items-center gap-1 font-medium tabular-nums">
+                      <Users size={13} className="text-[#0D9488]" />
+                      {cls.studentsCount}
+                    </span>
                   </div>
 
-                  {/* Join Classroom Button */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Link
-                      href={`/live-classes/${cls.id}`}
-                      className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs text-center shadow-md shadow-purple-600/20 transition active:scale-95"
-                    >
-                      Join Student
-                    </Link>
-                    <Link
-                      href={`/teacher/live-class/${cls.id}`}
-                      className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold text-center transition"
-                    >
-                      Host Teacher
-                    </Link>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 tabular-nums">
+                    <Clock size={12} />
+                    <span>{cls.timeWat}</span>
                   </div>
+
+                  <Link
+                    href={targetHref}
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold text-center block transition ${
+                      isLive
+                        ? "bg-[#0D9488] hover:bg-[#0F766E] text-white"
+                        : "bg-[#0B1F3A] hover:bg-[#143258] text-white"
+                    }`}
+                  >
+                    {isTeacher
+                      ? isLive
+                        ? "Enter Control Room"
+                        : "Launch Classroom"
+                      : isLive
+                      ? "Join Live Classroom"
+                      : "Enter Waiting Room"}
+                  </Link>
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Teacher Schedule Class Modal */}
+        {isScheduleOpen && isTeacher && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <form
+              onSubmit={handleSchedule}
+              className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-extrabold text-[#0B1F3A]">
+                  Schedule Live Classroom
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setIsScheduleOpen(false)}
+                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Class Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. SSS 3 Further Maths — Calculus Revision"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-[#F7F8FA] text-[#0B1F3A]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Subject</label>
+                    <input
+                      type="text"
+                      required
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-[#F7F8FA] text-[#0B1F3A]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Class Level</label>
+                    <select
+                      value={classLevel}
+                      onChange={(e) => setClassLevel(e.target.value)}
+                      className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-[#F7F8FA] text-[#0B1F3A]"
+                    >
+                      <option value="JSS 2 Basic">JSS 2 Basic</option>
+                      <option value="JSS 3 BECE">JSS 3 BECE</option>
+                      <option value="SSS 1 Science">SSS 1 Science</option>
+                      <option value="SSS 2 Science">SSS 2 Science</option>
+                      <option value="SSS 3 Intensive">SSS 3 Intensive</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">Lesson Topic</label>
+                  <input
+                    type="text"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Key syllabus objectives for this session"
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-[#F7F8FA] text-[#0B1F3A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">WAT Schedule</label>
+                  <input
+                    type="text"
+                    value={timeWat}
+                    onChange={(e) => setTimeWat(e.target.value)}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-[#F7F8FA] text-[#0B1F3A]"
+                  />
+                </div>
+
+                <label className="flex items-center gap-2 pt-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={startNow}
+                    onChange={(e) => setStartNow(e.target.checked)}
+                    className="accent-[#0D9488]"
+                  />
+                  <span className="font-semibold text-[#0B1F3A]">
+                    Launch Live Control Room immediately after creating
+                  </span>
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsScheduleOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="px-5 py-2 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold inline-flex items-center gap-1.5"
+                >
+                  <BookOpen size={14} />
+                  {creating ? "Creating..." : startNow ? "Create & Launch" : "Save Schedule"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </AppLayout>
   );

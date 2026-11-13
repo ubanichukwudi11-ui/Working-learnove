@@ -152,12 +152,10 @@ export default function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 w-full max-w-md"
+      className="space-y-5 w-full max-w-md"
     >
-
       <div>
-
-        <label className="block mb-2 text-sm text-slate-300">
+        <label className="block mb-1.5 text-sm font-semibold text-[#0F1F38]">
           Email Address
         </label>
 
@@ -165,274 +163,136 @@ export default function LoginForm() {
           type="email"
           value={email}
           onChange={(e) => {
-            setEmail(
-              e.target.value
-            );
-
+            setEmail(e.target.value);
             setErrors((prev) => ({
               ...prev,
               email: "",
             }));
           }}
-          placeholder="Enter your email"
-          className={`
-            w-full
-            rounded-2xl
-            border
-            bg-slate-900
-            text-white
-            placeholder:text-slate-500
-            p-3
-            outline-none
-            transition
-            ${
-              errors.email
-                ? "border-red-500"
-                : "border-slate-700 focus:border-cyan-500"
-            }
-          `}
+          placeholder="you@school.edu.ng"
+          className={`w-full rounded-xl border bg-[#F7F8FA] text-[#0F1F38] placeholder:text-slate-400 px-3.5 py-2.5 text-sm outline-none transition ${
+            errors.email
+              ? "border-red-500"
+              : "border-slate-300 focus:border-[#0B1F3A] focus:bg-white"
+          }`}
         />
 
         {errors.email && (
-          <p className="mt-2 text-sm text-red-400">
-            {errors.email}
-          </p>
+          <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>
         )}
-
       </div>
 
       <div>
-
-        <label className="block mb-2 text-sm text-slate-300">
+        <label className="block mb-1.5 text-sm font-semibold text-[#0F1F38]">
           Password
         </label>
 
         <div className="relative">
-
           <input
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => {
-              setPassword(
-                e.target.value
-              );
-
+              setPassword(e.target.value);
               setErrors((prev) => ({
                 ...prev,
                 password: "",
               }));
             }}
             placeholder="Enter password"
-            className={`
-              w-full
-              rounded-2xl
-              border
-              bg-slate-900
-              text-white
-              placeholder:text-slate-500
-              p-3
-              pr-12
-              outline-none
-              transition
-              ${
-                errors.password
-                  ? "border-red-500"
-                  : "border-slate-700 focus:border-cyan-500"
-              }
-            `}
+            className={`w-full rounded-xl border bg-[#F7F8FA] text-[#0F1F38] placeholder:text-slate-400 px-3.5 py-2.5 pr-11 text-sm outline-none transition ${
+              errors.password
+                ? "border-red-500"
+                : "border-slate-300 focus:border-[#0B1F3A] focus:bg-white"
+            }`}
           />
-                    <button
+          <button
             type="button"
-            onClick={() =>
-              setShowPassword(
-                !showPassword
-              )
-            }
-            className="
-              absolute
-              right-4
-              top-1/2
-              -translate-y-1/2
-              text-slate-400
-              hover:text-white
-              transition
-            "
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#0B1F3A] transition"
           >
-            {showPassword ? (
-              <EyeOff size={20} />
-            ) : (
-              <Eye size={20} />
-            )}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
-
         </div>
 
         {errors.password && (
-          <p className="mt-2 text-sm text-red-400">
-            {errors.password}
-          </p>
+          <p className="mt-1.5 text-xs text-red-600">{errors.password}</p>
         )}
-
       </div>
 
       <div className="flex items-center justify-between">
-
-        <label className="flex items-center gap-2 text-sm text-slate-300">
-
+        <label className="flex items-center gap-2 text-xs font-medium text-slate-600">
           <input
             type="checkbox"
             checked={rememberMe}
-            onChange={() =>
-              setRememberMe(
-                !rememberMe
-              )
-            }
-            className="rounded"
+            onChange={() => setRememberMe(!rememberMe)}
+            className="rounded border-slate-300 accent-[#0B1F3A]"
           />
-
           Remember me
-
         </label>
 
         <Link
           href="/forgot-password"
-          className="text-sm text-cyan-400 hover:text-cyan-300"
+          className="text-xs font-semibold text-[#0D9488] hover:underline"
         >
           Forgot Password?
         </Link>
-
       </div>
 
       {errors.general && (
-
-        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-4">
-
-          <p className="text-sm text-red-400">
-
-            {errors.general}
-
-          </p>
-
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3.5">
+          <p className="text-xs font-medium text-red-700">{errors.general}</p>
         </div>
-
       )}
 
       <button
         type="submit"
         disabled={loading}
-        className="
-          flex
-          w-full
-          items-center
-          justify-center
-          rounded-2xl
-          bg-gradient-to-r
-          from-cyan-500
-          to-blue-600
-          py-3
-          font-semibold
-          text-white
-          transition
-          hover:opacity-90
-          disabled:cursor-not-allowed
-          disabled:opacity-60
-        "
+        className="flex w-full items-center justify-center rounded-xl bg-[#0B1F3A] hover:bg-[#143258] py-3 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
       >
-
         {loading ? (
-
           <>
-
-            <Loader2
-              size={18}
-              className="mr-2 animate-spin"
-            />
-
+            <Loader2 size={17} className="mr-2 animate-spin" />
             Signing In...
-
           </>
-
         ) : (
-
           "Sign In"
-
         )}
-
       </button>
 
       <div className="relative">
-
         <div className="absolute inset-0 flex items-center">
-
-          <div className="w-full border-t border-slate-700" />
-
+          <div className="w-full border-t border-slate-200" />
         </div>
 
         <div className="relative flex justify-center">
-
-          <span className="bg-[#111827] px-4 text-sm text-slate-500">
-
+          <span className="bg-white px-3 text-xs font-medium text-slate-400">
             OR
-
           </span>
-
         </div>
-
       </div>
 
       <button
         type="button"
         onClick={loginWithGoogle}
-        className="
-          flex
-          w-full
-          items-center
-          justify-center
-          gap-3
-          rounded-2xl
-          border
-          border-slate-300
-          bg-white
-          py-3
-          font-medium
-          text-slate-900
-          transition
-          hover:bg-slate-100
-        "
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-slate-300 bg-white py-2.5 text-sm font-semibold text-[#0F1F38] transition hover:bg-slate-50"
       >
-
         <img
           src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
           alt="Google"
-          className="h-5 w-5"
+          className="h-4 w-4"
         />
-
-        <span>
-          Continue with Google
-        </span>
-
+        <span>Continue with Google</span>
       </button>
 
-      <div className="text-center text-sm text-slate-400">
-
-        Don't have an account?{" "}
-
+      <div className="text-center text-xs text-slate-600">
+        Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-cyan-400 hover:text-cyan-300"
+          className="font-semibold text-[#0D9488] hover:underline"
         >
-
           Create Account
-
         </Link>
-
       </div>
-
     </form>
-
   );
 }

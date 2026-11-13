@@ -1,50 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Video, ClipboardList } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
-type User = {
-  fullName: string;
-  role: string;
-};
+import { CURRENT_ACADEMIC_TERM, formatLagosDate } from "@/lib/nigerianCurriculum";
 
 export default function WelcomeHeader() {
-  const { user: authUser } = useAuth();
-  const [user, setUser] = useState<User | null>(authUser);
-
-  useEffect(() => {
-    if (authUser) {
-      setUser(authUser);
-      return;
-    }
-    try {
-      const saved =
-        localStorage.getItem("learnova_user") ||
-        localStorage.getItem("learnova-user");
-
-      if (saved) {
-        setUser(JSON.parse(saved));
-      }
-    } catch {}
-  }, [authUser]);
-
-  const firstName =
-    user?.fullName?.split(" ")[0] ||
-    "Student";
+  const { user } = useAuth();
+  const firstName = user?.fullName?.split(" ")[0] || "Student";
 
   return (
-    <div className="mb-8">
-      <h1 className="text-4xl font-bold text-white">
-        Hello {firstName} 👋
-      </h1>
+    <div className="mb-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+          {CURRENT_ACADEMIC_TERM} · {formatLagosDate()}
+        </p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1 tracking-tight">
+          Welcome back, {firstName}
+        </h1>
+        <p className="text-sm text-slate-600 mt-1">
+          SSS 2 Science · WAEC & JAMB Track — pick up where you left off or join today&apos;s live session.
+        </p>
+      </div>
 
-      <p className="text-slate-400 mt-2">
-        Welcome back to Learnova.
-      </p>
-
-      <p className="text-slate-500 mt-1">
-        Role: {user?.role || "STUDENT"}
-      </p>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <Link
+          href="/live-classes/math-001"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold shadow-xs transition whitespace-nowrap"
+        >
+          <Video size={15} />
+          Join Live Maths Class
+        </Link>
+        <Link
+          href="/assignments"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-[#0B1F3A] text-xs font-bold transition whitespace-nowrap"
+        >
+          <ClipboardList size={15} className="text-[#D97706]" />
+          2 Pending Assignments
+        </Link>
+      </div>
     </div>
   );
 }

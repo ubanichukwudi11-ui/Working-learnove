@@ -1,7 +1,18 @@
-// WebRTC and Media Stream Manager for Learnova Live Classroom
-// Handles real camera/microphone capture, screen sharing, audio analysis, and peer connection
+// Real WebRTC & Media Manager with Bandwidth Presets (Nigerian network friendly)
+// + Multi-peer Offer/Answer/ICE signaling relayed through /api/live-classes/[id] & BroadcastChannel
 
-import { classroomSync } from "./classroomSync";
+import { classroomSync, VideoQualityPreset } from "./classroomSync";
+
+export type MediaResult = {
+  stream: MediaStream | null;
+  errorReason: string | null;
+};
+
+const QUALITY_MAP: Record<VideoQualityPreset, { width: number; height: number; frameRate: number }> = {
+  low: { width: 320, height: 240, frameRate: 15 },
+  medium: { width: 640, height: 360, frameRate: 24 },
+  high: { width: 1280, height: 720, frameRate: 30 },
+};
 
 export class WebRTCManager {
   private localStream: MediaStream | null = null;
@@ -15,77 +26,104 @@ export class WebRTCManager {
   private audioLevelCallbacks: Set<(level: number) => void> = new Set();
   private animFrameId: number | null = null;
 
-  // ICE configuration with public STUN servers for reliable peer-to-peer WebRTC
   private rtcConfig: RTCConfiguration = {
     iceServers: [
       { urls: "stun:stun.l.google.com:19302" },
       { urls: "stun:stun1.l.google.com:19302" },
-      { urls: "stun:stun2.l.google.com:19302" },
     ],
   };
 
-  /**
-   * Request user camera and microphone
-   */
   public async startLocalMedia(
     video: boolean = true,
-    audio: boolean = true
-  ): Promise<MediaStream | null> {
+    audio: boolean = true,
+    quality: VideoQualityPreset = "medium"
+  ): Promise<MediaResult> {
     if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      console.warn("getUserMedia not supported in this browser");
-      return null;
+      return {
+        stream: null,
+        errorReason: "Browser does not support camera or microphone capture here.",
+      };
     }
+
+    // Stop any previous tracks cleanly
+    if (this.localStream) {
+      this.localStream.getTracks().forEach((t) => t.stop());
+      this.localStream = null;
+    }
+
+    const q = QUALITY_MAP[quality];
 
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia({
         video: video
           ? {
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
+              width: { ideal: q.width },
+              height: { ideal: q.height },
+              frameRate: { ideal: q.frameRate },
               facingMode: "user",
             }
           : false,
-        audio: audio,
+        audio: audio
+          ? {
+              echoCancellation: true,
+              noiseSuppression: true,
+            }
+          : false,
       });
 
+      this.isAudioMuted = !audio;
+      this.isVideoStopped = !video;
       this.setupAudioAnalysis(this.localStream);
-      return this.localStream;
+      return { stream: this.localStream, errorReason: null };
     } catch (err: any) {
-      console.warn("Could not acquire real camera/mic (user denied or no device):", err.message);
-      return null;
+      // Fallback: if camera failed but audio was requested, try audio-only gracefully
+      if (video && audio) {
+        try {
+          this.localStream = await navigator.mediaDevices.getUserMedia({
+            video: false,
+            audio: { echoCancellation: true, noiseSuppression: true },
+          });
+          this.isVideoStopped = true;
+          this.isAudioMuted = false;
+          this.setupAudioAnalysis(this.localStream);
+          return {
+            stream: this.localStream,
+            errorReason: "Camera unavailable — connected with microphone audio.",
+          };
+        } catch {
+          // ignore
+        }
+      }
+      return {
+        stream: null,
+        errorReason:
+          err?.name === "NotAllowedError"
+            ? "Camera/microphone permission was denied."
+            : "No camera/microphone detected on this device.",
+      };
     }
   }
 
-  /**
-   * Request user display/screen capture
-   */
-  public async startScreenShare(): Promise<MediaStream | null> {
+  public async startScreenShare(onNativeStop?: () => void): Promise<MediaStream | null> {
     if (typeof window === "undefined" || !navigator.mediaDevices?.getDisplayMedia) {
-      console.warn("getDisplayMedia not supported");
       return null;
     }
 
     try {
       this.screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
+        video: { frameRate: { ideal: 15 } },
+        audio: false,
       });
 
-      // Handle screen share stop via browser native UI
       const videoTrack = this.screenStream.getVideoTracks()[0];
       if (videoTrack) {
         videoTrack.onended = () => {
           this.stopScreenShare();
-          classroomSync.broadcast("SCREEN_SHARE_CHANGE", {
-            type: "slide",
-            slideTitle: "Quadratic Equations",
-          });
+          onNativeStop?.();
         };
       }
-
       return this.screenStream;
-    } catch (err) {
-      console.warn("User cancelled screen share", err);
+    } catch {
       return null;
     }
   }
@@ -113,9 +151,9 @@ export class WebRTCManager {
 
     const audioTracks = this.localStream.getAudioTracks();
     if (audioTracks.length > 0) {
-      const nextState = muted !== undefined ? !muted : !audioTracks[0].enabled;
-      audioTracks.forEach((t) => (t.enabled = nextState));
-      this.isAudioMuted = !nextState;
+      const nextEnabled = muted !== undefined ? !muted : !audioTracks[0].enabled;
+      audioTracks.forEach((t) => (t.enabled = nextEnabled));
+      this.isAudioMuted = !nextEnabled;
     } else {
       this.isAudioMuted = muted !== undefined ? muted : !this.isAudioMuted;
     }
@@ -130,9 +168,9 @@ export class WebRTCManager {
 
     const videoTracks = this.localStream.getVideoTracks();
     if (videoTracks.length > 0) {
-      const nextState = stopped !== undefined ? !stopped : !videoTracks[0].enabled;
-      videoTracks.forEach((t) => (t.enabled = nextState));
-      this.isVideoStopped = !nextState;
+      const nextEnabled = stopped !== undefined ? !stopped : !videoTracks[0].enabled;
+      videoTracks.forEach((t) => (t.enabled = nextEnabled));
+      this.isVideoStopped = !nextEnabled;
     } else {
       this.isVideoStopped = stopped !== undefined ? stopped : !this.isVideoStopped;
     }
@@ -152,6 +190,9 @@ export class WebRTCManager {
       const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
 
+      if (this.audioContext && this.audioContext.state !== "closed") {
+        this.audioContext.close().catch(() => {});
+      }
       this.audioContext = new AudioContextClass();
       const source = this.audioContext.createMediaStreamSource(stream);
       this.analyser = this.audioContext.createAnalyser();
@@ -166,31 +207,41 @@ export class WebRTCManager {
         if (!this.analyser || !this.audioDataArray) return;
         this.analyser.getByteFrequencyData(this.audioDataArray as unknown as Uint8Array<ArrayBuffer>);
         let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += this.audioDataArray[i];
-        }
+        for (let i = 0; i < bufferLength; i++) sum += this.audioDataArray[i];
         const average = sum / bufferLength;
         const normalized = Math.min(100, Math.round((average / 255) * 100));
-
         this.audioLevelCallbacks.forEach((cb) => cb(normalized));
         this.animFrameId = requestAnimationFrame(checkVolume);
       };
-
       checkVolume();
-    } catch (e) {
-      console.warn("Audio analysis setup skipped:", e);
+    } catch {
+      // ignore if audio context blocked
     }
   }
 
   public createPeerConnection(
-    peerId: string,
+    classId: string,
+    selfPeerId: string,
+    selfRole: "TEACHER" | "STUDENT",
+    remotePeerId: string,
     onRemoteStream: (stream: MediaStream) => void
   ): RTCPeerConnection {
+    const existing = this.peerConnections.get(remotePeerId);
+    if (existing) {
+      existing.close();
+      this.peerConnections.delete(remotePeerId);
+    }
+
     const pc = new RTCPeerConnection(this.rtcConfig);
 
     if (this.localStream) {
       this.localStream.getTracks().forEach((track) => {
         pc.addTrack(track, this.localStream!);
+      });
+    }
+    if (this.screenStream && selfRole === "TEACHER") {
+      this.screenStream.getTracks().forEach((track) => {
+        pc.addTrack(track, this.screenStream!);
       });
     }
 
@@ -202,15 +253,104 @@ export class WebRTCManager {
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
-        classroomSync.broadcast("WEBRTC_ICE", {
-          targetPeer: peerId,
-          candidate: event.candidate,
+        classroomSync.dispatchAction(classId, "WEBRTC_SIGNAL", {
+          fromPeerId: selfPeerId,
+          fromRole: selfRole,
+          toPeerId: remotePeerId,
+          kind: "ice",
+          payload: event.candidate.toJSON(),
         });
       }
     };
 
-    this.peerConnections.set(peerId, pc);
+    this.peerConnections.set(remotePeerId, pc);
     return pc;
+  }
+
+  public async sendOffer(
+    classId: string,
+    selfPeerId: string,
+    selfRole: "TEACHER" | "STUDENT",
+    remotePeerId: string,
+    onRemoteStream: (stream: MediaStream) => void
+  ) {
+    try {
+      const pc = this.createPeerConnection(
+        classId,
+        selfPeerId,
+        selfRole,
+        remotePeerId,
+        onRemoteStream
+      );
+      // Ensure transceiver exists even when camera is missing so one-way receive still works
+      if (pc.getTransceivers().length === 0) {
+        pc.addTransceiver("video", { direction: "recvonly" });
+        pc.addTransceiver("audio", { direction: "recvonly" });
+      }
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      await classroomSync.dispatchAction(classId, "WEBRTC_SIGNAL", {
+        fromPeerId: selfPeerId,
+        fromRole: selfRole,
+        toPeerId: remotePeerId,
+        kind: "offer",
+        payload: offer,
+      });
+    } catch {
+      // ignore signaling error when WebRTC unsupported
+    }
+  }
+
+  public async handleSignal(
+    classId: string,
+    selfPeerId: string,
+    selfRole: "TEACHER" | "STUDENT",
+    fromPeerId: string,
+    kind: string,
+    payload: any,
+    onRemoteStream: (stream: MediaStream) => void
+  ) {
+    try {
+      if (kind === "offer") {
+        const pc = this.createPeerConnection(
+          classId,
+          selfPeerId,
+          selfRole,
+          fromPeerId,
+          onRemoteStream
+        );
+        await pc.setRemoteDescription(new RTCSessionDescription(payload));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await classroomSync.dispatchAction(classId, "WEBRTC_SIGNAL", {
+          fromPeerId: selfPeerId,
+          fromRole: selfRole,
+          toPeerId: fromPeerId,
+          kind: "answer",
+          payload: answer,
+        });
+      } else if (kind === "answer") {
+        const pc = this.peerConnections.get(fromPeerId);
+        if (pc && pc.signalingState === "have-local-offer") {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload));
+        }
+      } else if (kind === "ice") {
+        const pc = this.peerConnections.get(fromPeerId);
+        if (pc && payload) {
+          await pc.addIceCandidate(new RTCIceCandidate(payload));
+        }
+      }
+    } catch {
+      // ignore out-of-order candidate errors
+    }
+  }
+
+  public closePeer(remotePeerId: string) {
+    const pc = this.peerConnections.get(remotePeerId);
+    if (pc) {
+      pc.close();
+      this.peerConnections.delete(remotePeerId);
+    }
   }
 
   public closeAll() {

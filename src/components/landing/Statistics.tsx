@@ -1,49 +1,25 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 const stats = [
-  {
-    number:"50K+",
-    label:"Students"
-  },
-  {
-    number:"800+",
-    label:"Teachers"
-  },
-  {
-    number:"120+",
-    label:"Schools"
-  },
-  {
-    number:"1M+",
-    label:"AI Questions Answered"
-  }
+  { number: "140+", label: "Nigerian Partner Schools" },
+  { number: "38,000+", label: "Active JSS & SSS Learners" },
+  { number: "94%", label: "WAEC & JAMB Pass Readiness" },
+  { number: "1,200+", label: "Verified Subject Teachers" },
 ];
 
 export default function Statistics() {
   return (
-    <section className="py-24 bg-[#0F172A]">
-      <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {stats.map((stat,index)=>(
-          <motion.div
-            key={stat.label}
-            initial={{opacity:0,y:30}}
-            whileInView={{opacity:1,y:0}}
-            transition={{
-              delay:index*.1
-            }}
-            viewport={{once:true}}
-            className="text-center"
-          >
-            <h2 className="text-5xl font-black bg-gradient-to-r from-violet-500 to-cyan-400 bg-clip-text text-transparent">
+    <section className="py-14 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
+      <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8">
+        {stats.map((stat) => (
+          <div key={stat.label} className="text-center lg:text-left">
+            <p className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A] tabular-nums">
               {stat.number}
-            </h2>
-
-            <p className="mt-4 text-slate-400">
+            </p>
+            <p className="mt-1.5 text-sm text-slate-600 font-medium">
               {stat.label}
             </p>
-          </motion.div>
+          </div>
         ))}
       </div>
     </section>

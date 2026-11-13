@@ -1,112 +1,90 @@
 "use client";
 
-import { motion } from "framer-motion";
 import {
-  Bot,
-  BookOpen,
   Video,
+  BookOpen,
+  ClipboardCheck,
+  Sparkles,
   BarChart3,
-  NotebookPen,
-  Trophy,
+  Users,
 } from "lucide-react";
-import Card from "@/components/ui/Card";
 
 const features = [
   {
-    icon: Bot,
-    title: "Nova AI",
-    description:
-      "Your personal AI tutor that explains concepts, answers questions and generates quizzes.",
-  },
-  {
     icon: Video,
-    title: "Live Classes",
+    title: "Role-Based Live Classrooms",
     description:
-      "Attend live interactive lessons with teachers from anywhere.",
+      "Dedicated Teacher Control Room and distraction-free Student Classroom with moderated raised-hand stage permissions and low-data audio mode.",
   },
   {
     icon: BookOpen,
-    title: "Smart Learning",
+    title: "JSS & SSS Curriculum Library",
     description:
-      "Organized subjects, lessons and resources in one place.",
+      "Structured Mathematics, English, Physics, Chemistry, Biology and Civic Education lessons organized by Nigerian school terms.",
   },
   {
-    icon: NotebookPen,
-    title: "Digital Notebook",
+    icon: ClipboardCheck,
+    title: "WAEC, NECO & JAMB CBT Prep",
     description:
-      "Save notes, summaries and AI-generated explanations.",
+      "Timed CBT practice, teacher-graded assignments, and instant marking feedback aligned with examination standards.",
+  },
+  {
+    icon: Sparkles,
+    title: "Nova AI Study Companion",
+    description:
+      "Step-by-step concept breakdowns, formula explanations, and guided revision tailored to topics a student finds challenging.",
   },
   {
     icon: BarChart3,
-    title: "Analytics",
+    title: "Term Analytics & Attendance",
     description:
-      "Track performance, strengths and areas that need improvement.",
+      "Clear progress tracking across terms, attendance registers, and topic mastery for students, teachers, and parents.",
   },
   {
-    icon: Trophy,
-    title: "Achievements",
+    icon: Users,
+    title: "Dedicated School Workspaces",
     description:
-      "Earn XP, badges and certificates as you complete your learning goals.",
+      "Purpose-built dashboards for Students, Teachers, Parents, and School Administrators with clear role boundaries.",
   },
 ];
 
 export default function Features() {
   return (
-    <section
-      id="features"
-      className="py-28 px-6 bg-[#0F172A]"
-    >
+    <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{opacity:0,y:30}}
-          whileInView={{opacity:1,y:0}}
-          transition={{duration:.6}}
-          viewport={{once:true}}
-          className="text-center"
-        >
-          <h2 className="text-4xl font-black">
-            Everything You Need
-          </h2>
-
-          <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-            Learnova combines artificial intelligence,
-            live learning and analytics into one
-            beautiful platform.
+        <div className="max-w-2xl">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#0D9488]">
+            Complete Academic Ecosystem
           </p>
-        </motion.div>
+          <h2
+            className="mt-2 text-3xl sm:text-4xl font-bold text-[#0B1F3A] tracking-tight"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Built around how Nigerian schools actually teach and learn.
+          </h2>
+          <p className="mt-3 text-slate-600 text-base">
+            Every workspace focuses on academic clarity—helping students stay consistent and giving teachers full classroom control.
+          </p>
+        </div>
 
-        <div className="grid gap-8 mt-16 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature, index) => {
+        <div className="grid gap-6 mt-12 md:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => {
             const Icon = feature.icon;
-
             return (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{opacity:0,y:40}}
-                whileInView={{opacity:1,y:0}}
-                transition={{
-                  duration:.5,
-                  delay:index*.1
-                }}
-                viewport={{once:true}}
+                className="rounded-2xl border border-slate-200 bg-[#F7F8FA] p-6 hover:border-[#0B1F3A]/30 hover:bg-white transition"
               >
-                <Card
-                  hover
-                  className="p-8 h-full"
-                >
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 flex items-center justify-center">
-                    <Icon size={28}/>
-                  </div>
-
-                  <h3 className="mt-6 text-2xl font-bold">
-                    {feature.title}
-                  </h3>
-
-                  <p className="mt-4 text-slate-400 leading-7">
-                    {feature.description}
-                  </p>
-                </Card>
-              </motion.div>
+                <div className="w-11 h-11 rounded-xl bg-[#0B1F3A] text-white flex items-center justify-center">
+                  <Icon size={20} />
+                </div>
+                <h3 className="mt-5 text-lg font-bold text-[#0B1F3A]">
+                  {feature.title}
+                </h3>
+                <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
             );
           })}
         </div>

@@ -1,17 +1,21 @@
 export const theme = {
   colors: {
-    primary: "#6C4DFF",
-    secondary: "#8B5CF6",
-    success: "#22C55E",
-    warning: "#F59E0B",
-    danger: "#EF4444",
+    navy: "#0B1F3A",
+    navyLight: "#143258",
+    teal: "#0D9488",
+    emerald: "#059669",
+    amber: "#D97706",
+    gold: "#F59E0B",
+    danger: "#DC2626",
 
-    background: "#F7F8FC",
+    background: "#F7F8FA",
+    cream: "#FAF8F3",
     card: "#FFFFFF",
 
-    textPrimary: "#111827",
-    textSecondary: "#6B7280",
+    textPrimary: "#0F1F38",
+    textSecondary: "#475569",
+    textMuted: "#64748B",
 
-    border: "#E5E7EB",
+    border: "#E2E8F0",
   },
 };

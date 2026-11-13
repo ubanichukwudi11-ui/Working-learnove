@@ -1,201 +1,80 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import { TeacherReviewProps } from "./types";
 
-export default function DocumentsGrid({
-  teacher,
-}: TeacherReviewProps) {
+export default function DocumentsGrid({ teacher }: TeacherReviewProps) {
   const documents = [
-    {
-      title: "Profile Photo",
-      file: teacher.profilePhoto,
-    },
-    {
-      title: "Teaching Certificate",
-      file: teacher.certificate,
-    },
-    {
-      title: "Degree Certificate",
-      file: teacher.degreeCertificate,
-    },
-    {
-      title: "Government ID",
-      file: teacher.governmentId,
-    },
-    {
-      title: "Curriculum Vitae",
-      file: teacher.cv,
-    },
+    { title: "Profile Photo", file: teacher.profilePhoto },
+    { title: "Teaching Certificate", file: teacher.certificate },
+    { title: "Degree Certificate", file: teacher.degreeCertificate },
+    { title: "Government ID", file: teacher.governmentId },
+    { title: "Curriculum Vitae", file: teacher.cv },
   ];
 
   return (
-    <div
-      className="
-      bg-[#111827]
-      border
-      border-slate-800
-      rounded-3xl
-      p-8
-      "
-    >
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold">
-          Uploaded Documents
-        </h2>
-
-        <p className="text-slate-400 mt-2">
-          Review every uploaded document before
-          approving this teacher.
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+      <div>
+        <h2 className="text-lg font-bold text-[#0B1F3A]">Uploaded Credentials</h2>
+        <p className="text-xs text-slate-600 mt-0.5">
+          Inspect submitted certificates and identification before approval.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {documents.map((doc) => (
-          <DocumentCard
-            key={doc.title}
-            title={doc.title}
-            file={doc.file}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {documents.map((doc) => {
+          const isImage =
+            doc.file?.includes("jpg") ||
+            doc.file?.includes("jpeg") ||
+            doc.file?.includes("png") ||
+            doc.file?.startsWith("data:image");
 
-function DocumentCard({
-  title,
-  file,
-}: {
-  title: string;
-  file?: string;
-}) {
-  const isImage =
-    file?.includes("jpg") ||
-    file?.includes("jpeg") ||
-    file?.includes("png") ||
-    file?.includes("gif") ||
-    file?.startsWith("data:image");
-
-  const isPdf =
-    file?.includes(".pdf");
-
-  return (
-    <div
-      className="
-      bg-slate-900
-      border
-      border-slate-800
-      rounded-2xl
-      overflow-hidden
-      hover:border-cyan-500/30
-      transition
-      "
-    >
-      {/* Preview */}
-
-      <div
-        className="
-        h-56
-        bg-slate-950
-        flex
-        items-center
-        justify-center
-        overflow-hidden
-        "
-      >
-        {!file ? (
-          <div className="text-center text-slate-500">
-            <div className="text-5xl mb-3">
-              📄
-            </div>
-
-            <p>No File Uploaded</p>
-          </div>
-        ) : isImage ? (
-          <img
-            src={file}
-            alt={title}
-            className="
-            w-full
-            h-full
-            object-cover
-            "
-          />
-        ) : isPdf ? (
-          <div className="text-center">
-            <div className="text-6xl">
-              📕
-            </div>
-
-            <p className="mt-3 text-slate-400">
-              PDF Document
-            </p>
-          </div>
-        ) : (
-          <div className="text-center">
-            <div className="text-6xl">
-              📁
-            </div>
-
-            <p className="mt-3 text-slate-400">
-              Document Uploaded
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-
-      <div className="p-5">
-
-        <h3 className="font-semibold text-lg">
-          {title}
-        </h3>
-
-        <p className="text-sm text-slate-400 mt-2">
-          {file
-            ? "Document available"
-            : "Document missing"}
-        </p>
-
-        {file && (
-          <div className="flex gap-3 mt-5">
-
-            <a
-              href={file}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="
-              flex-1
-              text-center
-              py-3
-              rounded-xl
-              bg-cyan-600
-              hover:bg-cyan-500
-              transition
-              "
+          return (
+            <div
+              key={doc.title}
+              className="rounded-xl border border-slate-200 bg-[#F7F8FA] overflow-hidden flex flex-col justify-between"
             >
-              View
-            </a>
+              <div className="h-36 bg-slate-100 flex items-center justify-center overflow-hidden">
+                {!doc.file ? (
+                  <div className="text-center text-slate-400">
+                    <FileText size={28} className="mx-auto mb-1" />
+                    <span className="text-xs">Not uploaded</span>
+                  </div>
+                ) : isImage ? (
+                  <img
+                    src={doc.file}
+                    alt={doc.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="text-center text-[#0B1F3A]">
+                    <FileText size={28} className="mx-auto mb-1 text-[#0D9488]" />
+                    <span className="text-xs font-semibold">Document Uploaded</span>
+                  </div>
+                )}
+              </div>
 
-            <a
-              href={file}
-              download
-              className="
-              flex-1
-              text-center
-              py-3
-              rounded-xl
-              bg-slate-700
-              hover:bg-slate-600
-              transition
-              "
-            >
-              Download
-            </a>
-
-          </div>
-        )}
+              <div className="p-4 flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs font-bold text-[#0B1F3A]">{doc.title}</p>
+                  <p className="text-[11px] text-slate-500">
+                    {doc.file ? "Available for review" : "Missing file"}
+                  </p>
+                </div>
+                {doc.file && (
+                  <a
+                    href={doc.file}
+                    download
+                    className="px-3 py-1.5 rounded-lg bg-[#0B1F3A] text-white text-xs font-bold"
+                  >
+                    Open
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

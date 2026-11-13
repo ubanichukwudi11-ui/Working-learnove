@@ -1,8 +1,11 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
+import Link from "next/link";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import { useAuth } from "@/context/AuthContext";
 import StudentLiveClassroom from "@/components/live-class/StudentLiveClassroom";
-import TeacherLiveClassroom from "@/components/live-class/TeacherLiveClassroom";
+import { ArrowRight } from "lucide-react";
 
 export default function LiveClassRoom({
   params,
@@ -10,47 +13,44 @@ export default function LiveClassRoom({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [viewMode, setViewMode] = useState<"student" | "teacher">("student");
 
   return (
-    <div className="relative min-h-screen bg-[#070b14]">
-      {/* Floating View Switcher (matches reference image's Teacher View and Student View pills) */}
-      <div className="fixed bottom-4 right-6 z-50 flex items-center bg-[#0c1222]/95 backdrop-blur-md border border-purple-500/50 rounded-full p-1 shadow-2xl">
-        <button
-          onClick={() => setViewMode("teacher")}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-1.5 ${
-            viewMode === "teacher"
-              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/40"
-              : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <span>👩‍🏫</span>
-          <span>Teacher View</span>
-        </button>
-        <button
-          onClick={() => setViewMode("student")}
-          className={`px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-1.5 ${
-            viewMode === "student"
-              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/40"
-              : "text-slate-400 hover:text-slate-200"
-          }`}
-        >
-          <span>👨‍🎓</span>
-          <span>Student View</span>
-        </button>
-      </div>
-
-      {viewMode === "teacher" ? (
-        <TeacherLiveClassroom
-          classId={id}
-          onSwitchToStudentView={() => setViewMode("student")}
-        />
-      ) : (
-        <StudentLiveClassroom
-          classId={id}
-          onSwitchToTeacherView={() => setViewMode("teacher")}
-        />
-      )}
-    </div>
+    <ProtectedRoute roles={["STUDENT", "ADMIN", "PARENT", "TEACHER"]}>
+      <StudentClassroomGate classId={id} />
+    </ProtectedRoute>
   );
+}
+
+function StudentClassroomGate({ classId }: { classId: string }) {
+  const { user } = useAuth();
+
+  if (user?.role === "TEACHER") {
+    return (
+      <div className="min-h-screen bg-[#0B1F3A] text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/15 bg-[#10294B] p-8 text-center space-y-4">
+          <h1 className="text-xl font-extrabold">Teacher Account Detected</h1>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Your signed-in role is Educator. Open the dedicated Teacher Control Room for this classroom to manage video broadcast, raised-hand approvals, polls, and attendance.
+          </p>
+          <div className="flex flex-col gap-2.5 pt-2">
+            <Link
+              href={`/teacher/live-class/${classId}`}
+              className="w-full py-3 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold inline-flex items-center justify-center gap-2"
+            >
+              Open Teacher Control Room
+              <ArrowRight size={14} />
+            </Link>
+            <Link
+              href="/live-classes"
+              className="w-full py-2.5 rounded-xl border border-white/15 text-xs font-semibold text-slate-200 hover:bg-white/5"
+            >
+              Back to Live Classes Hub
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <StudentLiveClassroom classId={classId} />;
 }

@@ -1,12 +1,16 @@
-// Real-time synchronization service for Learnova Live Classroom
-// Supports multi-tab / multi-user WebRTC signalling, broadcast messaging, and Supabase Realtime fallback
-
+// Shared Classroom Types & Multi-channel Sync Helper
 import { supabase } from "./supabase";
+
+export type StageStatus = "audience" | "pending" | "approved" | "invited";
+export type SessionStatus = "waiting" | "live" | "ended";
+export type ScreenShareType = "slide" | "window" | "whiteboard";
+export type VideoQualityPreset = "low" | "medium" | "high";
 
 export interface ChatMessage {
   id: string;
+  senderId: string;
   sender: string;
-  role: "teacher" | "student" | "system" | "nova";
+  role: "teacher" | "student" | "system";
   text: string;
   timestamp: string;
   avatar?: string;
@@ -18,11 +22,14 @@ export interface Participant {
   name: string;
   role: "TEACHER" | "STUDENT";
   avatar?: string;
-  initials?: string;
-  color?: string;
+  initials: string;
+  color: string;
   micOn: boolean;
   videoOn: boolean;
+  audioOnly?: boolean;
   handRaised: boolean;
+  handRaisedAt?: string;
+  stageStatus: StageStatus;
   isHost?: boolean;
   joinedAt: string;
 }
@@ -32,6 +39,7 @@ export interface LivePoll {
   question: string;
   options: { id: string; text: string; votes: number }[];
   totalVotes: number;
+  votedUserIds: string[];
   active: boolean;
   createdAt: string;
 }
@@ -50,30 +58,77 @@ export interface LiveAssignment {
   description: string;
   dueDate: string;
   totalStudents: number;
-  submittedCount: number;
+  submittedUserIds: string[];
   status: "active" | "completed";
 }
 
-export type ScreenShareType = "slide" | "window" | "whiteboard" | "none";
+export interface ClassQuestion {
+  id: string;
+  authorId: string;
+  authorName: string;
+  question: string;
+  answer?: string;
+  answeredBy?: string;
+  timestamp: string;
+  resolved: boolean;
+}
 
-export interface ClassroomState {
+export interface ClassAnnouncement {
+  id: string;
+  title: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface WhiteboardStroke {
+  id: string;
+  color: string;
+  width: number;
+  points: { x: number; y: number }[];
+}
+
+export interface SignalingEnvelope {
+  seq: number;
+  classId: string;
+  fromPeerId: string;
+  fromRole: "TEACHER" | "STUDENT";
+  toPeerId: string; // specific peer ID or "broadcast"
+  kind: "offer" | "answer" | "ice" | "request_offer" | "media_state";
+  payload: any;
+  createdAt: number;
+}
+
+export interface ClassroomSnapshot {
   classId: string;
   title: string;
+  topic: string;
   subject: string;
+  classLevel: string;
+  timeWat: string;
   teacherName: string;
-  timerSeconds: number;
-  isRecording: boolean;
+  teacherAvatar: string;
+  hostPoster: string;
+  sessionStatus: SessionStatus;
+  startedAt: number | null;
+  endedAt: number | null;
+  hostMicOn: boolean;
+  hostVideoOn: boolean;
+  hostAudioOnly: boolean;
+  hostScreenSharing: boolean;
   screenShare: {
     type: ScreenShareType;
-    slideTitle?: string;
-    activeStream?: boolean;
+    slideIndex: number;
   };
   poll: LivePoll | null;
-  assignment: LiveAssignment | null;
+  assignment: LiveAssignment;
   participants: Participant[];
   messages: ChatMessage[];
+  questions: ClassQuestion[];
+  announcement: ClassAnnouncement | null;
   resources: SharedResource[];
   classNotes: string;
+  whiteboardStrokes: WhiteboardStroke[];
+  version: number;
 }
 
 type SyncListener = (event: { type: string; payload: any }) => void;
@@ -84,33 +139,35 @@ class ClassroomSyncService {
   private listeners: Set<SyncListener> = new Set();
   private classId: string = "math-001";
 
-  constructor() {
-    if (typeof window !== "undefined") {
+  public init(classId: string) {
+    if (typeof window === "undefined") return;
+
+    if (this.channel && this.classId !== classId) {
+      this.cleanup();
+    }
+    this.classId = classId;
+
+    if (!this.channel) {
       try {
-        this.channel = new BroadcastChannel("learnova_live_room");
+        this.channel = new BroadcastChannel(`learnova_live_room_${classId}`);
         this.channel.onmessage = (event) => {
           this.notifyListeners(event.data);
         };
-      } catch (err) {
-        console.warn("BroadcastChannel not supported in this browser environment", err);
+      } catch {
+        // fallback handled by server polling + Supabase
       }
     }
-  }
 
-  public init(classId: string) {
-    this.classId = classId;
-
-    if (typeof window !== "undefined" && supabase) {
+    if (!this.supabaseChannel && supabase) {
       try {
-        // Connect to Supabase Realtime channel
         this.supabaseChannel = supabase.channel(`live_class:${classId}`);
         this.supabaseChannel
           .on("broadcast", { event: "classroom_sync" }, (payload: any) => {
             this.notifyListeners(payload.payload);
           })
           .subscribe();
-      } catch (e) {
-        console.warn("Supabase realtime subscription fallback", e);
+      } catch {
+        // ignore
       }
     }
   }
@@ -126,8 +183,8 @@ class ClassroomSyncService {
     this.listeners.forEach((l) => {
       try {
         l(data);
-      } catch (err) {
-        console.error("Error in sync listener:", err);
+      } catch {
+        // ignore listener failure
       }
     });
   }
@@ -135,19 +192,14 @@ class ClassroomSyncService {
   public broadcast(type: string, payload: any) {
     const message = { type, payload };
 
-    // 1. Broadcast locally across browser tabs
     if (this.channel) {
       try {
         this.channel.postMessage(message);
-      } catch (err) {
-        console.error("BroadcastChannel postMessage error:", err);
+      } catch {
+        // ignore
       }
     }
 
-    // 2. Notify local listeners immediately
-    this.notifyListeners(message);
-
-    // 3. Broadcast to remote Supabase Realtime if subscribed
     if (this.supabaseChannel) {
       try {
         this.supabaseChannel.send({
@@ -155,9 +207,51 @@ class ClassroomSyncService {
           event: "classroom_sync",
           payload: message,
         });
-      } catch (err) {
-        // Ignore remote send errors
+      } catch {
+        // ignore
       }
+    }
+  }
+
+  public async fetchSnapshot(
+    classId: string,
+    peerId?: string,
+    sinceSeq: number = 0
+  ): Promise<{ snapshot: ClassroomSnapshot; signals: SignalingEnvelope[]; latestSeq: number } | null> {
+    try {
+      const qs = new URLSearchParams();
+      if (peerId) qs.set("peerId", peerId);
+      qs.set("sinceSeq", String(sinceSeq));
+      const res = await fetch(`/api/live-classes/${encodeURIComponent(classId)}?${qs.toString()}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  public async dispatchAction(
+    classId: string,
+    action: string,
+    payload: Record<string, any> = {}
+  ): Promise<ClassroomSnapshot | null> {
+    try {
+      const res = await fetch(`/api/live-classes/${encodeURIComponent(classId)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ...payload }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.snapshot) {
+        this.broadcast("SNAPSHOT_UPDATED", { version: data.snapshot.version });
+        return data.snapshot as ClassroomSnapshot;
+      }
+      return null;
+    } catch {
+      return null;
     }
   }
 
@@ -169,7 +263,7 @@ class ClassroomSyncService {
     if (this.supabaseChannel && supabase) {
       try {
         supabase.removeChannel(this.supabaseChannel);
-      } catch (e) {
+      } catch {
         // ignore
       }
       this.supabaseChannel = null;

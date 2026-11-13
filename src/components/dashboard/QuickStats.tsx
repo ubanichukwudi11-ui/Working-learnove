@@ -1,148 +1,67 @@
 "use client";
 
-import {
-  Sparkles,
-  Flame,
-  BookOpenCheck,
-  TrendingUp,
-} from "lucide-react";
-
+import Link from "next/link";
+import { BookOpen, ClipboardList, CalendarCheck, Award } from "lucide-react";
 
 const stats = [
   {
-    title: "XP Earned",
-    value: "1,250",
-    icon: Sparkles,
-    color: "purple",
+    title: "Enrolled Subjects",
+    value: "6",
+    sub: "NERDC SSS 2 Core",
+    href: "/subjects",
+    icon: BookOpen,
+    accent: "text-[#0B1F3A] bg-slate-100",
   },
-
   {
-    title: "Study Streak",
-    value: "7 Days",
-    icon: Flame,
-    color: "orange",
+    title: "Assignments Due",
+    value: "2",
+    sub: "Next due tomorrow 6 PM",
+    href: "/assignments",
+    icon: ClipboardList,
+    accent: "text-[#D97706] bg-amber-50",
   },
-
   {
-    title: "Lessons Completed",
-    value: "42",
-    icon: BookOpenCheck,
-    color: "cyan",
+    title: "Term Attendance",
+    value: "96%",
+    sub: "23 of 24 live classes",
+    href: "/timetable",
+    icon: CalendarCheck,
+    accent: "text-[#0D9488] bg-teal-50",
   },
-
   {
-    title: "Weekly Progress",
-    value: "78%",
-    icon: TrendingUp,
-    color: "green",
+    title: "Continuous Assessment",
+    value: "81%",
+    sub: "+4% vs First Term",
+    href: "/analytics",
+    icon: Award,
+    accent: "text-emerald-700 bg-emerald-50",
   },
 ];
 
-
-
 export default function QuickStats() {
-
-
   return (
-
-    <div
-      className="
-      grid
-      grid-cols-2
-      lg:grid-cols-4
-      gap-4
-      mt-6
-      "
-    >
-
-      {stats.map((stat)=>{
-
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+      {stats.map((stat) => {
         const Icon = stat.icon;
-
-
         return (
-
-          <div
+          <Link
             key={stat.title}
-            className="
-            bg-[#111827]
-            border
-            border-slate-800
-            rounded-2xl
-            p-5
-            hover:-translate-y-1
-            hover:border-slate-700
-            transition-all
-            duration-300
-            "
+            href={stat.href}
+            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-300 hover:shadow-sm transition block"
           >
-
-            <div
-              className="
-              flex
-              justify-between
-              items-start
-              "
-            >
-
-              <div
-                className="
-                w-11
-                h-11
-                rounded-2xl
-                bg-gradient-to-r
-                from-[#6D28D9]
-                to-[#06B6D4]
-                flex
-                items-center
-                justify-center
-                "
-              >
-
-                <Icon
-                  size={22}
-                  className="text-white"
-                />
-
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold text-slate-500">{stat.title}</p>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${stat.accent}`}>
+                <Icon size={17} />
               </div>
-
-
             </div>
-
-
-
-            <p
-              className="
-              text-slate-400
-              text-sm
-              mt-5
-              "
-            >
-              {stat.title}
-            </p>
-
-
-
-            <h3
-              className="
-              text-2xl
-              font-bold
-              mt-2
-              "
-            >
+            <p className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-3 tabular-nums">
               {stat.value}
-            </h3>
-
-
-          </div>
-
-        )
-
+            </p>
+            <p className="text-xs text-slate-500 mt-1">{stat.sub}</p>
+          </Link>
+        );
       })}
-
-
     </div>
-
   );
-
 }

@@ -1,69 +1,47 @@
 "use client";
 
-import Image from "next/image";
+import Logo from "@/components/branding/Logo";
+import { CheckCircle2 } from "lucide-react";
+
+const highlights = [
+  "Live interactive classes with moderated raised-hand stage",
+  "WAEC, NECO & JAMB aligned JSS & SSS subjects",
+  "Teacher-graded assignments, attendance & lesson notes",
+  "Nova AI study tutor & low-bandwidth audio classroom mode",
+];
 
 export default function BrandingPanel() {
   return (
-    <div className="hidden lg:flex flex-1 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 border-r border-slate-800 p-12 flex-col justify-between">
-
+    <div className="hidden lg:flex flex-1 bg-[#0B1F3A] text-white p-12 flex-col justify-between">
       <div>
-        <Image
-          src="/images/logo.png"
-          alt="Learnova"
-          width={220}
-          height={70}
-          priority
-        />
+        <Logo dark />
 
-        <h1 className="mt-10 text-5xl font-extrabold leading-tight">
-          Learn.
+        <h1
+          className="mt-12 text-4xl font-bold leading-tight text-white"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Learn with clarity.
           <br />
-          Grow.
-          <br />
-          Achieve.
+          Teach with structure.
         </h1>
 
-        <p className="mt-6 text-slate-400 text-lg max-w-lg leading-8">
-          Africa's intelligent learning platform powered by
-          Artificial Intelligence.
+        <p className="mt-4 text-slate-300 text-base max-w-md leading-relaxed">
+          Nigeria&apos;s structured digital learning environment for JSS & SSS students, subject teachers, parents, and school administrators.
         </p>
       </div>
 
-      <div className="space-y-5">
-
-        <Feature text="🎥 Live Interactive Classes" />
-
-        <Feature text="🤖 AI Tutor & AI Study Assistant" />
-
-        <Feature text="📝 Smart Notes & Assignments" />
-
-        <Feature text="📊 Learning Analytics" />
-
-        <Feature text="🏆 Leaderboards & Achievements" />
-
-        <Feature text="👨‍👩‍👧 Parent Monitoring Portal" />
-
+      <div className="space-y-3.5">
+        {highlights.map((text) => (
+          <div key={text} className="flex items-center gap-3 text-sm text-slate-200">
+            <CheckCircle2 size={17} className="text-[#0D9488] shrink-0" />
+            <span>{text}</span>
+          </div>
+        ))}
       </div>
 
-      <div className="text-sm text-slate-500">
-        © {new Date().getFullYear()} Learnova.
-        <br />
-        Learn Smarter. Learn Better.
+      <div className="text-xs text-slate-400">
+        © {new Date().getFullYear()} Learnova · Africa/Lagos (WAT)
       </div>
-
-    </div>
-  );
-}
-
-function Feature({
-  text,
-}: {
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-3 text-slate-300">
-      <div className="w-2 h-2 rounded-full bg-cyan-400" />
-      <span>{text}</span>
     </div>
   );
 }

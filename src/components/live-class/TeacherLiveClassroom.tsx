@@ -1,1084 +1,920 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
-  GraduationCap,
-  LayoutDashboard,
-  BookOpen,
-  Video,
-  FileEdit,
-  CheckCircle,
-  NotebookPen,
-  Calendar,
-  Sparkles,
-  Trophy,
-  BarChart,
-  MessageSquare,
-  Bell,
-  User,
-  Settings,
   ArrowLeft,
-  Maximize2,
-  Minimize2,
   Mic,
   MicOff,
+  Video,
   VideoOff,
   Monitor,
   Hand,
-  BarChart2,
-  MoreHorizontal,
-  LayoutGrid,
-  Check,
-  Send,
   Users,
-  ChevronRight,
+  Send,
+  Sparkles,
+  Megaphone,
+  PhoneOff,
+  Check,
+  X,
+  UserPlus,
+  UserMinus,
+  Wifi,
+  Play,
+  ClipboardCheck,
   Pencil,
-  AppWindow,
-  Share2,
+  Presentation,
+  Radio,
 } from "lucide-react";
-
+import { useAuth } from "@/context/AuthContext";
 import {
+  ClassroomSnapshot,
   classroomSync,
-  ChatMessage,
-  Participant,
-  LivePoll,
-  LiveAssignment,
-  SharedResource,
+  ScreenShareType,
+  VideoQualityPreset,
+  WhiteboardStroke,
 } from "@/lib/classroomSync";
 import { webrtcManager } from "@/lib/webrtcManager";
+import PresentationStage from "./PresentationStage";
 import ClassroomTools from "./ClassroomTools";
 import NovaClassAssistantModal from "./NovaClassAssistantModal";
 
-export default function TeacherLiveClassroom({
-  classId = "math-001",
-  onSwitchToStudentView,
-}: {
-  classId?: string;
-  onSwitchToStudentView?: () => void;
-}) {
-  const router = useRouter();
-
-  // Media & WebRTC states
-  const [isMicMuted, setIsMicMuted] = useState(false);
-  const [isVideoStopped, setIsVideoStopped] = useState(false);
-  const [useRealCamera, setUseRealCamera] = useState(false);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [screenShareSource, setScreenShareSource] = useState<
-    "screen1" | "window" | "whiteboard"
-  >("screen1");
-  const [audioLevel, setAudioLevel] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [timerSeconds, setTimerSeconds] = useState(23 * 60 + 17); // 00:23:17 as in reference
-  const [isRecording, setIsRecording] = useState(true);
-
-  // Tab states for interactive tools container
-  const [activeToolTab, setActiveToolTab] = useState<
-    "share" | "polls" | "assignments" | "resources" | "notes"
-  >("share");
-
-  // Real-time classroom data
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "1",
-      sender: "Alex Carter",
-      role: "student",
-      text: "Can you explain this again?",
-      timestamp: "10:24 AM",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-    },
-    {
-      id: "2",
-      sender: "Ms. Sarah Johnson",
-      role: "teacher",
-      text: "Sure, let me show another example.",
-      timestamp: "10:25 AM",
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80",
-      important: true,
-    },
-    {
-      id: "3",
-      sender: "Sophia Kim",
-      role: "student",
-      text: "Thank you ma'am! 🙏",
-      timestamp: "10:26 AM",
-      avatar:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80",
-    },
-  ]);
-  const [chatInput, setChatInput] = useState("");
-
-  const [participants, setParticipants] = useState<Participant[]>([
-    {
-      id: "p1",
-      name: "Alex Carter",
-      role: "STUDENT",
-      avatar:
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80",
-      initials: "AS",
-      color: "bg-blue-600",
-      micOn: true,
-      videoOn: true,
-      handRaised: false,
-      joinedAt: "10:00 AM",
-    },
-    {
-      id: "p2",
-      name: "Sophia Kim",
-      role: "STUDENT",
-      avatar:
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&auto=format&fit=crop&q=80",
-      initials: "SK",
-      color: "bg-purple-600",
-      micOn: false,
-      videoOn: true,
-      handRaised: false,
-      joinedAt: "10:01 AM",
-    },
-    {
-      id: "p3",
-      name: "Daniel Smith",
-      role: "STUDENT",
-      avatar:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80",
-      initials: "DS",
-      color: "bg-amber-600",
-      micOn: false,
-      videoOn: true,
-      handRaised: true, // Daniel has hand raised in reference image!
-      joinedAt: "10:02 AM",
-    },
-    {
-      id: "p4",
-      name: "Grace Wilson",
-      role: "STUDENT",
-      avatar:
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80",
-      initials: "GW",
-      color: "bg-cyan-600",
-      micOn: true,
-      videoOn: true,
-      handRaised: false,
-      joinedAt: "10:04 AM",
-    },
-    {
-      id: "p5",
-      name: "James Brown",
-      role: "STUDENT",
-      avatar:
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80",
-      initials: "JB",
-      color: "bg-emerald-600",
-      micOn: false,
-      videoOn: true,
-      handRaised: false,
-      joinedAt: "10:05 AM",
-    },
-  ]);
-
-  const [activePoll, setActivePoll] = useState<LivePoll | null>({
-    id: "poll-1",
-    question: "If a > 0 in y = ax² + bx + c, which way does the parabola open?",
-    options: [
-      { id: "opt-1", text: "Opens Upwards (Minimum vertex)", votes: 19 },
-      { id: "opt-2", text: "Opens Downwards (Maximum vertex)", votes: 3 },
-      { id: "opt-3", text: "Horizontal (Parallel to x-axis)", votes: 2 },
-    ],
-    totalVotes: 24,
-    active: true,
-    createdAt: "10:20 AM",
-  });
-
-  const [activeAssignment] = useState<LiveAssignment>({
-    id: "assign-1",
-    title: "Quadratic Graphs Practice",
-    description: "Plot 5 quadratic curves and calculate vertex coordinates.",
-    dueDate: "Today 6:00 PM",
-    totalStudents: 24,
-    submittedCount: 18,
-    status: "active",
-  });
-
-  const [resources] = useState<SharedResource[]>([
-    {
-      id: "res-1",
-      title: "Quadratic Equations Notes",
-      type: "pdf",
-      size: "2.4 MB",
-      url: "#",
-    },
-    {
-      id: "res-2",
-      title: "Parabola & Vertex Formula Cheat Sheet",
-      type: "pdf",
-      size: "1.1 MB",
-      url: "#",
-    },
-  ]);
-
-  const [classNotes, setClassNotes] = useState(
-    "• Standard form: ax² + bx + c = 0\n• Discriminant D = b² - 4ac dictates number of real solutions\n• Vertex coordinates: h = -b / (2a), k = f(h)\n• Homework due by 6:00 PM today."
+function RemoteVideoTile({ stream, label }: { stream: MediaStream; label: string }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream;
+  }, [stream]);
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      aria-label={label}
+      className="w-full h-full object-cover"
+    />
   );
+}
 
+export default function TeacherLiveClassroom({ classId = "math-001" }: { classId?: string }) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const hostPeerId = useMemo(() => `teacher-${user?.id || "host"}`, [user?.id]);
+
+  const [snapshot, setSnapshot] = useState<ClassroomSnapshot | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
+  const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
+  const [mediaNotice, setMediaNotice] = useState<string | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
+  const [quality, setQuality] = useState<VideoQualityPreset>("medium");
+
+  const [rightTab, setRightTab] = useState<"roster" | "chat" | "attendance">("roster");
+  const [bottomTab, setBottomTab] = useState<
+    "polls" | "qa" | "resources" | "assignments" | "notes"
+  >("polls");
+  const [chatInput, setChatInput] = useState("");
+  const [isAnnouncementOpen, setIsAnnouncementOpen] = useState(false);
+  const [announcementText, setAnnouncementText] = useState("");
+  const [isEndModalOpen, setIsEndModalOpen] = useState(false);
   const [isNovaOpen, setIsNovaOpen] = useState(false);
-  const [selectedStudentAction, setSelectedStudentAction] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
-  const chatBottomRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const seqRef = useRef(0);
+  const knownPeersOfferedRef = useRef<Set<string>>(new Set());
 
-  // Classroom timer tick
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimerSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  const syncFromServer = useCallback(async () => {
+    const res = await classroomSync.fetchSnapshot(classId, hostPeerId, seqRef.current);
+    if (!res) return;
+    seqRef.current = res.latestSeq;
+    setSnapshot(res.snapshot);
 
-  // Format timer seconds into HH:MM:SS
-  const formatTime = (totalSeconds: number) => {
-    const hrs = Math.floor(totalSeconds / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins
-      .toString()
-      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
+    for (const sig of res.signals) {
+      await webrtcManager.handleSignal(
+        classId,
+        hostPeerId,
+        "TEACHER",
+        sig.fromPeerId,
+        sig.kind,
+        sig.payload,
+        (stream) => {
+          setRemoteStreams((prev) => ({ ...prev, [sig.fromPeerId]: stream }));
+        }
+      );
+    }
+  }, [classId, hostPeerId]);
 
-  // Sync listener for cross-tab events
   useEffect(() => {
     classroomSync.init(classId);
 
-    const unsubscribe = classroomSync.subscribe(({ type, payload }) => {
-      if (type === "CHAT_MESSAGE") {
-        setMessages((prev) => [...prev, payload]);
-      } else if (type === "RAISE_HAND") {
-        setParticipants((prev) =>
-          prev.map((p) =>
-            p.id === payload.userId || p.name === payload.userName
-              ? { ...p, handRaised: payload.raised }
-              : p
-          )
-        );
-      } else if (type === "POLL_VOTE") {
-        setActivePoll((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            totalVotes: prev.totalVotes + 1,
-            options: prev.options.map((opt) =>
-              opt.id === payload.optionId ? { ...opt, votes: opt.votes + 1 } : opt
-            ),
-          };
-        });
-      } else if (type === "MUTE_PARTICIPANT") {
-        setParticipants((prev) =>
-          prev.map((p) =>
-            p.id === payload.userId ? { ...p, micOn: !payload.muted } : p
-          )
-        );
+    const init = async () => {
+      await classroomSync.dispatchAction(classId, "JOIN_ROOM", {
+        userId: hostPeerId,
+        name: user?.fullName || "Mrs. Funke Adewale",
+        role: "TEACHER",
+        actorRole: "TEACHER",
+      });
+      await syncFromServer();
+    };
+    init();
+
+    const unsub = classroomSync.subscribe(({ type }) => {
+      if (type === "SNAPSHOT_UPDATED") {
+        syncFromServer();
       }
+    });
+
+    const pollTimer = setInterval(syncFromServer, 2000);
+    return () => {
+      unsub();
+      clearInterval(pollTimer);
+    };
+  }, [classId, hostPeerId, user?.fullName, syncFromServer]);
+
+  // Start teacher local camera/mic on entry with graceful fallback
+  useEffect(() => {
+    let mounted = true;
+    const startHostMedia = async () => {
+      const res = await webrtcManager.startLocalMedia(true, true, quality);
+      if (!mounted) return;
+      if (res.stream) setLocalStream(res.stream);
+      if (res.errorReason) setMediaNotice(res.errorReason);
+    };
+    startHostMedia();
+
+    const unsubAudio = webrtcManager.onAudioLevel((lvl) => {
+      if (mounted) setAudioLevel(lvl);
     });
 
     return () => {
-      unsubscribe();
-    };
-  }, [classId]);
-
-  // Audio analysis subscriber
-  useEffect(() => {
-    const unsub = webrtcManager.onAudioLevel((level) => {
-      setAudioLevel(level);
-    });
-    return unsub;
-  }, []);
-
-  // Scroll chat to bottom on new message
-  useEffect(() => {
-    chatBottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Handle local webcam toggle
-  const toggleRealCamera = async () => {
-    if (!useRealCamera) {
-      const stream = await webrtcManager.startLocalMedia(true, true);
-      if (stream && localVideoRef.current) {
-        localVideoRef.current.srcObject = stream;
-        setUseRealCamera(true);
-      }
-    } else {
+      mounted = false;
+      unsubAudio();
       webrtcManager.closeAll();
-      setUseRealCamera(false);
-    }
-  };
+    };
+  }, [quality]);
 
-  // Handle Screen Share toggle
-  const handleStartScreenShare = async (source: "screen1" | "window" | "whiteboard") => {
-    setScreenShareSource(source);
-    if (source === "window") {
-      const stream = await webrtcManager.startScreenShare();
-      if (stream) {
-        setIsScreenSharing(true);
-        classroomSync.broadcast("SCREEN_SHARE_CHANGE", {
-          type: "window",
-          slideTitle: "Teacher Desktop / Window",
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  // Elapsed timer synchronized from session start
+  useEffect(() => {
+    if (!snapshot?.startedAt || snapshot.sessionStatus !== "live") return;
+    const update = () => {
+      setElapsedSeconds(Math.max(0, Math.floor((Date.now() - snapshot.startedAt!) / 1000)));
+    };
+    update();
+    const t = setInterval(update, 1000);
+    return () => clearInterval(t);
+  }, [snapshot?.startedAt, snapshot?.sessionStatus]);
+
+  // Offer WebRTC stream to any real connected student peers
+  useEffect(() => {
+    if (!snapshot) return;
+    const realStudentIds = snapshot.participants
+      .filter((p) => p.role === "STUDENT" && !p.id.startsWith("demo-"))
+      .map((p) => p.id);
+
+    for (const sid of realStudentIds) {
+      if (!knownPeersOfferedRef.current.has(sid)) {
+        knownPeersOfferedRef.current.add(sid);
+        webrtcManager.sendOffer(classId, hostPeerId, "TEACHER", sid, (stream) => {
+          setRemoteStreams((prev) => ({ ...prev, [sid]: stream }));
         });
       }
-    } else if (source === "whiteboard") {
-      setIsScreenSharing(true);
-      classroomSync.broadcast("SCREEN_SHARE_CHANGE", {
-        type: "whiteboard",
-        slideTitle: "Interactive Math Whiteboard",
-      });
+    }
+  }, [snapshot, classId, hostPeerId]);
+
+  const act = async (action: string, payload: Record<string, any> = {}) => {
+    const next = await classroomSync.dispatchAction(classId, action, {
+      actorRole: "TEACHER",
+      ...payload,
+    });
+    if (next) setSnapshot(next);
+  };
+
+  const handleToggleMic = async () => {
+    const muted = webrtcManager.toggleMute();
+    await act("TOGGLE_HOST_MEDIA", { hostMicOn: !muted });
+  };
+
+  const handleToggleCam = async () => {
+    const stopped = webrtcManager.toggleVideo();
+    await act("TOGGLE_HOST_MEDIA", { hostVideoOn: !stopped });
+  };
+
+  const handleAudioOnlyToggle = async () => {
+    const nextAudioOnly = !snapshot?.hostAudioOnly;
+    if (nextAudioOnly) {
+      webrtcManager.toggleVideo(true);
     } else {
-      // Screen 1 (default Quadratic Equations slide)
+      webrtcManager.toggleVideo(false);
+    }
+    await act("TOGGLE_HOST_MEDIA", {
+      hostAudioOnly: nextAudioOnly,
+      hostVideoOn: !nextAudioOnly,
+    });
+  };
+
+  const handleStageMode = async (mode: ScreenShareType) => {
+    if (mode === "window") {
+      const stream = await webrtcManager.startScreenShare(() => {
+        setScreenStream(null);
+        act("TOGGLE_HOST_MEDIA", { hostScreenSharing: false });
+        act("SET_STAGE_VIEW", { type: "slide" });
+      });
+      if (!stream) {
+        setMediaNotice("Screen sharing was cancelled or is unsupported in this browser.");
+        return;
+      }
+      setScreenStream(stream);
+      await act("TOGGLE_HOST_MEDIA", { hostScreenSharing: true });
+      await act("SET_STAGE_VIEW", { type: "window" });
+    } else {
       webrtcManager.stopScreenShare();
-      setIsScreenSharing(true);
-      classroomSync.broadcast("SCREEN_SHARE_CHANGE", {
-        type: "slide",
-        slideTitle: "Quadratic Equations",
-      });
+      setScreenStream(null);
+      await act("TOGGLE_HOST_MEDIA", { hostScreenSharing: false });
+      await act("SET_STAGE_VIEW", { type: mode });
     }
   };
 
-  // Chat message send handler
-  const handleSendMessage = () => {
-    if (!chatInput.trim()) return;
-
-    const newMsg: ChatMessage = {
-      id: Date.now().toString(),
-      sender: "Ms. Sarah Johnson",
-      role: "teacher",
-      text: chatInput,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      avatar:
-        "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80",
-      important: true,
-    };
-
-    classroomSync.broadcast("CHAT_MESSAGE", newMsg);
-    setChatInput("");
+  const handleEndClass = async () => {
+    await act("END_CLASS");
+    webrtcManager.closeAll();
+    setIsEndModalOpen(false);
+    router.push("/live-classes");
   };
 
-  // Teacher actions on student
-  const handleMuteStudent = (id: string, currentMuted: boolean) => {
-    classroomSync.broadcast("MUTE_PARTICIPANT", {
-      userId: id,
-      muted: currentMuted,
-    });
-    setParticipants((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, micOn: !currentMuted } : p))
-    );
-    setSelectedStudentAction(null);
+  const formatDuration = (sec: number) => {
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  const handleLowerHand = (id: string) => {
-    classroomSync.broadcast("RAISE_HAND", {
-      userId: id,
-      raised: false,
-    });
-    setParticipants((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, handRaised: false } : p))
-    );
-    setSelectedStudentAction(null);
-  };
-
-  // Toggle Fullscreen
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen().catch(() => {});
-      setIsFullscreen(false);
-    }
-  };
-
-  // Sidebar navigation items matching Learnova design
-  const navItems = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Courses", href: "/subjects", icon: BookOpen },
-    { name: "Live Classes", href: "/live-classes", icon: Video, active: true },
-    { name: "Assignments", href: "/dashboard", icon: FileEdit },
-    { name: "Tests", href: "/dashboard", icon: CheckCircle },
-    { name: "Notebook", href: "/notebook", icon: NotebookPen },
-    { name: "Study Planner", href: "/dashboard", icon: Calendar },
-    { name: "Nova AI", href: "/nova", icon: Sparkles },
-    { name: "Achievements", href: "/dashboard", icon: Trophy },
-    { name: "Leaderboard", href: "/dashboard", icon: BarChart },
-    { name: "Messages", href: "/dashboard", icon: MessageSquare, badge: 3 },
-    { name: "Notifications", href: "/dashboard", icon: Bell, badge: 5 },
-    { name: "Profile", href: "/dashboard", icon: User },
-    { name: "Settings", href: "/dashboard", icon: Settings },
-  ];
+  const participants = snapshot?.participants || [];
+  const raisedHands = participants.filter((p) => p.handRaised || p.stageStatus === "pending");
+  const stageStudents = participants.filter((p) => p.stageStatus === "approved");
+  const hostVideoActive = Boolean(snapshot?.hostVideoOn && !snapshot?.hostAudioOnly && localStream);
 
   return (
-    <div
-      ref={containerRef}
-      className="min-h-screen bg-[#070b14] text-white flex select-none font-sans"
-    >
-      {/* 1. LEFT NAVIGATION SIDEBAR (Teacher View) */}
-      <aside className="w-56 bg-[#0c1222] border-r border-slate-800/80 flex flex-col justify-between py-5 px-3 flex-shrink-0 hidden xl:flex">
-        <div className="space-y-6">
-          {/* Logo */}
-          <Link href="/dashboard" className="flex items-center gap-2.5 px-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg shadow-purple-600/40">
-              <GraduationCap size={22} />
-            </div>
-            <span className="text-xl font-black tracking-tight text-white">
-              Learnova
-            </span>
+    <div className="min-h-screen bg-[#060E1B] text-white flex flex-col">
+      {/* Top Studio Header */}
+      <header className="h-16 border-b border-white/10 bg-[#0B1F3A] px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <Link
+            href="/teacher"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-200 whitespace-nowrap"
+          >
+            <ArrowLeft size={14} />
+            Workspace
           </Link>
-
-          {/* Navigation Items */}
-          <nav className="space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition ${
-                    item.active
-                      ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon size={17} />
-                    <span>{item.name}</span>
-                  </div>
-                  {item.badge && (
-                    <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-bold">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
+          <div className="min-w-0">
+            <h1 className="text-sm sm:text-base font-extrabold truncate">
+              {snapshot?.title || "Teacher Live Classroom"}
+            </h1>
+            <p className="text-[11px] text-teal-300 truncate">
+              Teacher Control Room · {snapshot?.classLevel || "SSS 2"} · {snapshot?.timeWat || "WAT"}
+            </p>
+          </div>
         </div>
 
-        {/* Quick Classroom View Switcher for Evaluator/Reviewer */}
-        {onSwitchToStudentView && (
-          <div className="p-2 bg-slate-900/80 rounded-2xl border border-purple-500/30 text-center">
-            <span className="text-[10px] text-purple-300 uppercase tracking-wider block mb-1">
-              Active Mode
-            </span>
+        <div className="flex items-center gap-3 shrink-0">
+          {snapshot?.sessionStatus === "live" ? (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-bold text-emerald-300 tabular-nums">
+              <Radio size={13} />
+              <span>LIVE</span>
+              <span>·</span>
+              <span>{formatDuration(elapsedSeconds)}</span>
+            </div>
+          ) : (
             <button
-              onClick={onSwitchToStudentView}
-              className="w-full py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white shadow transition"
+              onClick={() => act("START_CLASS")}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold whitespace-nowrap"
             >
-              Switch to Student View
+              <Play size={13} fill="currentColor" />
+              Start Live Class
             </button>
-          </div>
-        )}
-      </aside>
+          )}
 
-      {/* 2. MAIN CLASSROOM WORKSPACE */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        {/* Top Header Bar */}
-        <header className="px-6 py-3.5 border-b border-slate-800/80 bg-[#090f1d]/90 backdrop-blur flex items-center justify-between gap-4 sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/live-classes"
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition"
+          {raisedHands.length > 0 && (
+            <button
+              onClick={() => setRightTab("roster")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D97706] text-white text-xs font-bold tabular-nums whitespace-nowrap"
             >
-              <ArrowLeft size={14} />
-              <span>Back to Classes</span>
-            </Link>
+              <Hand size={13} />
+              {raisedHands.length} Raised
+            </button>
+          )}
 
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base md:text-lg font-bold text-white tracking-tight">
-                  Mathematics Live Class
-                </h1>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  LIVE
+          <button
+            onClick={() => setIsEndModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold whitespace-nowrap"
+          >
+            <PhoneOff size={13} />
+            End Class
+          </button>
+        </div>
+      </header>
+
+      {/* Alerts: Media fallback or Active Raised Hand */}
+      {(mediaNotice || raisedHands.length > 0) && (
+        <div className="px-4 sm:px-6 pt-3 flex flex-col sm:flex-row gap-2.5">
+          {raisedHands.map((st) => (
+            <div
+              key={st.id}
+              className="flex-1 rounded-xl border border-amber-400/40 bg-amber-500/15 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs"
+            >
+              <div className="flex items-center gap-2.5">
+                <Hand size={15} className="text-[#F59E0B] shrink-0" />
+                <span>
+                  <strong className="text-white">{st.name}</strong> raised hand to join the stage{" "}
+                  <span className="text-amber-200">({st.handRaisedAt || "Now"})</span>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Today • 10:00 AM – 11:00 AM | 24 Students
-              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => act("APPROVE_STAGE", { targetUserId: st.id })}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold"
+                >
+                  <Check size={13} />
+                  Approve to Stage
+                </button>
+                <button
+                  onClick={() => act("REJECT_STAGE", { targetUserId: st.id })}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold"
+                >
+                  <X size={13} />
+                  Decline
+                </button>
+              </div>
             </div>
-          </div>
+          ))}
 
-          <div className="flex items-center gap-3">
-            {/* Recording Indicator */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-              <span className="font-bold text-red-400 text-xs tracking-wider">REC</span>
-              <span className="font-mono text-slate-300 text-xs">{formatTime(timerSeconds)}</span>
+          {mediaNotice && (
+            <div className="rounded-xl border border-white/15 bg-[#0B1F3A] px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-slate-200">
+              <span>{mediaNotice}</span>
+              <button onClick={() => setMediaNotice(null)} className="text-slate-400 hover:text-white">
+                <X size={14} />
+              </button>
             </div>
+          )}
+        </div>
+      )}
 
-            {/* Fullscreen Button */}
-            <button
-              onClick={toggleFullscreen}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition"
-              title="Fullscreen"
-            >
-              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-
-            {/* End Class Button */}
-            <button
-              onClick={() => {
-                if (confirm("End this live classroom session for all students?")) {
-                  classroomSync.broadcast("CHAT_MESSAGE", {
-                    id: Date.now().toString(),
-                    sender: "Ms. Sarah Johnson",
-                    role: "teacher",
-                    text: "Class session ended by teacher. Thank you everyone!",
-                    timestamp: new Date().toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
-                    important: true,
-                  });
-                  router.push("/live-classes");
-                }
-              }}
-              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition shadow-md shadow-red-600/30 active:scale-95"
-            >
-              End Class
-            </button>
-          </div>
-        </header>
-
-        {/* Classroom Center Grid: Video & Tools on left, Sidebar (Participants & Chat) on right */}
-        <div className="flex-1 p-6 grid xl:grid-cols-[1fr_360px] gap-6 max-w-[1720px] w-full mx-auto">
-          {/* LEFT COLUMN: Teacher Video + Student Strip + Interactive Tools */}
-          <div className="space-y-4 flex flex-col justify-between">
-            {/* Main Teacher Live Video Feed */}
-            <div className="relative rounded-3xl overflow-hidden bg-[#0d1527] border border-slate-800 aspect-[16/9] max-h-[460px] flex items-center justify-center shadow-2xl group">
-              {useRealCamera ? (
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                /* High-Quality Teacher Feed Image Matching Reference */
-                <div className="relative w-full h-full">
-                  <Image
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&auto=format&fit=crop&q=80"
-                    alt="Ms. Sarah Johnson"
-                    fill
-                    className="object-cover object-top"
-                    priority
+      {/* Main Studio Body */}
+      <div className="flex-1 p-4 sm:p-6 grid lg:grid-cols-[1.55fr_0.9fr] gap-5 items-start">
+        {/* LEFT COLUMN: Stage + Host/Stage Video + Controls + Interactive Tools */}
+        <div className="space-y-4">
+          {/* Host Video + Stage Guests + Presentation Stage */}
+          <div className="grid md:grid-cols-[0.42fr_1fr] gap-4 items-stretch">
+            {/* Teacher Camera + Stage Guests Column */}
+            <div className="space-y-3 flex flex-col">
+              {/* Teacher Host Video Feed */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-[#0B1F3A] aspect-[4/3] shadow-sm">
+                {hostVideoActive ? (
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
                   />
-                  {/* Subtle blackboard mathematical formula overlay */}
-                  <div className="absolute top-6 right-8 pointer-events-none opacity-40 select-none hidden md:block">
-                    <p className="font-serif text-3xl font-bold text-white tracking-widest drop-shadow-md">
-                      a² + b² = c²
+                ) : (
+                  <Image
+                    src={snapshot?.hostPoster || "/images/teacher-live-poster.jpg"}
+                    alt={snapshot?.teacherName || "Instructor"}
+                    fill
+                    className="object-cover opacity-85"
+                  />
+                )}
+
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 flex items-center justify-between text-xs">
+                  <div>
+                    <p className="font-bold text-white leading-tight">
+                      {snapshot?.teacherName || user?.fullName || "Instructor"}
+                    </p>
+                    <p className="text-[11px] text-teal-300">
+                      Host · {snapshot?.hostAudioOnly ? "Audio-Only Mode" : snapshot?.hostVideoOn ? "Camera Live" : "Camera Paused"}
                     </p>
                   </div>
-                </div>
-              )}
-
-              {/* Floating Teacher Name Badge */}
-              <div className="absolute bottom-4 left-4 z-10 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-950/80 backdrop-blur-md border border-purple-500/40 text-purple-200 text-xs font-bold shadow-lg">
-                <span>👑</span>
-                <span>Ms. Sarah Johnson</span>
-                {audioLevel > 10 && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                )}
-              </div>
-
-              {/* Toggle to Real Camera if Teacher wants live webcam */}
-              <button
-                onClick={toggleRealCamera}
-                className="absolute top-4 right-4 z-10 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-purple-600/90 backdrop-blur border border-slate-700/60 text-[11px] font-semibold text-slate-200 transition opacity-0 group-hover:opacity-100"
-              >
-                {useRealCamera ? "Show Standard Feed" : "Use Real Webcam"}
-              </button>
-            </div>
-
-            {/* Student Video Strip (Directly beneath Teacher Video) */}
-            <div className="flex items-center gap-3 overflow-x-auto py-1 no-scrollbar">
-              {/* Alex Carter [AS] */}
-              <div className="relative flex-shrink-0 w-28 h-20 rounded-2xl bg-slate-900 border border-slate-800 p-2 flex flex-col justify-between items-center text-center">
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs text-white">
-                  AS
-                </div>
-                <div className="flex items-center justify-center gap-1 w-full">
-                  <span className="text-[10px] font-medium text-slate-300 truncate">
-                    Alex Carter
-                  </span>
-                  <Mic size={10} className="text-emerald-400 flex-shrink-0" />
-                </div>
-              </div>
-
-              {/* Sophia Kim [SK] */}
-              <div className="relative flex-shrink-0 w-28 h-20 rounded-2xl bg-slate-900 border border-slate-800 p-2 flex flex-col justify-between items-center text-center">
-                <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-bold text-xs text-white">
-                  SK
-                </div>
-                <div className="flex items-center justify-center gap-1 w-full">
-                  <span className="text-[10px] font-medium text-slate-300 truncate">
-                    Sophia Kim
-                  </span>
-                  <MicOff size={10} className="text-red-400 flex-shrink-0" />
-                </div>
-              </div>
-
-              {/* Daniel Smith (Photo avatar + Raised Hand badge) */}
-              <div className="relative flex-shrink-0 w-28 h-20 rounded-2xl bg-slate-900 border-2 border-emerald-500/60 p-2 flex flex-col justify-between items-center text-center shadow-lg shadow-emerald-500/10">
-                <div className="relative w-8 h-8 rounded-full overflow-hidden border border-emerald-400">
-                  <Image
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80"
-                    alt="Daniel Smith"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute -top-1 -right-1 bg-emerald-500 rounded-full p-0.5 text-white">
-                    <Hand size={8} />
+                  <div className="flex items-center gap-1.5">
+                    {snapshot?.hostMicOn ? (
+                      <span className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] tabular-nums">
+                        MIC {audioLevel}%
+                      </span>
+                    ) : (
+                      <span className="p-1.5 rounded-md bg-rose-600/80 text-white">
+                        <MicOff size={12} />
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div className="flex items-center justify-center gap-1 w-full">
-                  <span className="text-[10px] font-bold text-emerald-300 truncate">
-                    Daniel Smith
-                  </span>
-                  <Mic size={10} className="text-emerald-400 flex-shrink-0" />
-                </div>
               </div>
 
-              {/* Grace Wilson [GW] */}
-              <div className="relative flex-shrink-0 w-28 h-20 rounded-2xl bg-slate-900 border border-slate-800 p-2 flex flex-col justify-between items-center text-center">
-                <div className="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center font-bold text-xs text-white">
-                  GW
-                </div>
-                <div className="flex items-center justify-center gap-1 w-full">
-                  <span className="text-[10px] font-medium text-slate-300 truncate">
-                    Grace Wilson
-                  </span>
-                  <MicOff size={10} className="text-red-400 flex-shrink-0" />
-                </div>
-              </div>
-
-              {/* +19 Students Pill */}
-              <button
-                onClick={() => {
-                  const el = document.getElementById("participants-card");
-                  el?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="flex-shrink-0 w-20 h-20 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-purple-500 flex items-center justify-center font-bold text-slate-300 hover:text-white text-sm transition"
-              >
-                +19
-              </button>
-            </div>
-
-            {/* Interactive Tools Container (Share Screen, Polls, Assignments, Resources, Notes) */}
-            <div className="rounded-3xl bg-[#0c1222] border border-slate-800 p-5 space-y-4">
-              {/* Tab Selector Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                {[
-                  { id: "share", label: "Share Screen" },
-                  { id: "polls", label: "Polls" },
-                  { id: "assignments", label: "Assignments" },
-                  { id: "resources", label: "Resources" },
-                  { id: "notes", label: "Notes" },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveToolTab(tab.id as any)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex-shrink-0 ${
-                      activeToolTab === tab.id
-                        ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-                        : "bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Tab 1: Share Screen Options (Matching Reference Image) */}
-              {activeToolTab === "share" && (
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
-                  {/* Card 1: Screen 1 (Selected with checkmark ring) */}
+              {/* Approved Student(s) On Stage ONLY */}
+              {stageStudents.length > 0 ? (
+                stageStudents.map((st) => (
                   <div
-                    onClick={() => handleStartScreenShare("screen1")}
-                    className={`relative p-3 rounded-2xl border transition cursor-pointer flex flex-col justify-between aspect-[4/3] ${
-                      screenShareSource === "screen1"
-                        ? "border-purple-500 bg-purple-950/30 shadow-lg shadow-purple-600/10"
-                        : "border-slate-800 bg-slate-900 hover:border-slate-700"
-                    }`}
+                    key={st.id}
+                    className="relative rounded-2xl overflow-hidden border border-[#0D9488] bg-[#0B1F3A] p-3 space-y-2"
                   >
-                    {/* Checkmark badge */}
-                    {screenShareSource === "screen1" && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center shadow">
-                        <Check size={12} strokeWidth={3} />
+                    {remoteStreams[st.id] && st.videoOn ? (
+                      <div className="relative rounded-xl overflow-hidden aspect-video bg-black">
+                        <RemoteVideoTile stream={remoteStreams[st.id]} label={st.name} />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#0D9488] flex items-center justify-center font-bold text-xs shrink-0">
+                          {st.initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-white truncate">{st.name}</p>
+                          <p className="text-[11px] text-teal-300">
+                            On Stage · {st.micOn ? "Speaking / Mic Live" : "Muted"}
+                          </p>
+                        </div>
                       </div>
                     )}
 
-                    {/* Miniature slide representation */}
-                    <div className="w-full flex-1 rounded-xl bg-white/90 p-2 text-[9px] text-slate-800 font-bold flex flex-col justify-center items-center">
-                      <span className="text-[10px] text-purple-900">Learnova</span>
-                      <span className="text-[8px] text-slate-600">Quadratic Equations</span>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() =>
+                          act("MUTE_STUDENT", { targetUserId: st.id, micOn: !st.micOn })
+                        }
+                        className="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-bold"
+                      >
+                        {st.micOn ? "Mute Mic" : "Allow Mic"}
+                      </button>
+                      <button
+                        onClick={() => act("REMOVE_STAGE", { targetUserId: st.id })}
+                        className="flex-1 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-[11px] font-bold"
+                      >
+                        Remove Stage
+                      </button>
                     </div>
-
-                    <span className="text-xs font-semibold text-slate-300 mt-2 block text-center">
-                      Screen 1
-                    </span>
                   </div>
-
-                  {/* Card 2: Window (Chrome Icon) */}
-                  <div
-                    onClick={() => handleStartScreenShare("window")}
-                    className={`relative p-3 rounded-2xl border transition cursor-pointer flex flex-col justify-between aspect-[4/3] ${
-                      screenShareSource === "window"
-                        ? "border-purple-500 bg-purple-950/30"
-                        : "border-slate-800 bg-slate-900 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="w-full flex-1 rounded-xl bg-slate-800/80 flex items-center justify-center text-cyan-400">
-                      <AppWindow size={28} />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-300 mt-2 block text-center">
-                      Window
-                    </span>
-                  </div>
-
-                  {/* Card 3: Whiteboard (Pencil Icon) */}
-                  <div
-                    onClick={() => handleStartScreenShare("whiteboard")}
-                    className={`relative p-3 rounded-2xl border transition cursor-pointer flex flex-col justify-between aspect-[4/3] ${
-                      screenShareSource === "whiteboard"
-                        ? "border-purple-500 bg-purple-950/30"
-                        : "border-slate-800 bg-slate-900 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="w-full flex-1 rounded-xl bg-slate-800/80 flex items-center justify-center text-amber-400">
-                      <Pencil size={26} />
-                    </div>
-                    <span className="text-xs font-semibold text-slate-300 mt-2 block text-center">
-                      Whiteboard
-                    </span>
-                  </div>
-
-                  {/* Share Action Button */}
-                  <div className="flex flex-col justify-center">
-                    <button
-                      onClick={() => handleStartScreenShare(screenShareSource)}
-                      className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition active:scale-95"
-                    >
-                      Broadcast Screen
-                    </button>
-                  </div>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-[#0B1F3A]/60 p-4 text-xs text-slate-300 flex-1 flex flex-col justify-center">
+                  <p className="font-bold text-white">No Students on Stage</p>
+                  <p className="text-slate-400 mt-1 leading-relaxed">
+                    Students join as audience avatars. Approve a raised hand or invite someone from the roster to unlock their mic &amp; camera here.
+                  </p>
                 </div>
-              )}
-
-              {/* Tabs 2, 3, 4, 5: Modular Tools */}
-              {activeToolTab !== "share" && (
-                <ClassroomTools
-                  tab={activeToolTab}
-                  isTeacher={true}
-                  poll={activePoll}
-                  onCreatePoll={(q, opts) => {
-                    const newP: LivePoll = {
-                      id: Date.now().toString(),
-                      question: q,
-                      options: opts.map((opt, i) => ({
-                        id: `opt-${i}`,
-                        text: opt,
-                        votes: 0,
-                      })),
-                      totalVotes: 0,
-                      active: true,
-                      createdAt: new Date().toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      }),
-                    };
-                    setActivePoll(newP);
-                    classroomSync.broadcast("POLL_CREATED", newP);
-                  }}
-                  assignment={activeAssignment}
-                  resources={resources}
-                  classNotes={classNotes}
-                  onUpdateNotes={(n) => setClassNotes(n)}
-                  onAskNova={(p) => setIsNovaOpen(true)}
-                />
               )}
             </div>
 
-            {/* Bottom Dock Control Bar (Teacher) */}
-            <div className="flex items-center justify-center gap-3 py-2">
-              <div className="bg-[#0e1424] border border-slate-800 rounded-3xl px-4 py-2 flex items-center gap-3 shadow-xl">
-                {/* Mute */}
-                <button
-                  onClick={() => setIsMicMuted(!isMicMuted)}
-                  className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition ${
-                    isMicMuted
-                      ? "bg-red-500/20 text-red-400"
-                      : "hover:bg-slate-800 text-slate-300 hover:text-white"
-                  }`}
-                >
-                  {isMicMuted ? <MicOff size={18} /> : <Mic size={18} />}
-                  <span className="text-[10px] font-semibold">
-                    {isMicMuted ? "Unmute" : "Mute"}
-                  </span>
-                </button>
+            {/* Presentation / Screen Share / Whiteboard Stage */}
+            <PresentationStage
+              classId={classId}
+              subject={snapshot?.subject}
+              type={snapshot?.screenShare.type || "slide"}
+              slideIndex={snapshot?.screenShare.slideIndex || 0}
+              screenStream={screenStream}
+              whiteboardStrokes={snapshot?.whiteboardStrokes || []}
+              isTeacher
+              onChangeSlide={(nextIndex) => act("SET_STAGE_VIEW", { slideIndex: nextIndex })}
+              onAddStroke={(stroke: WhiteboardStroke) => act("WHITEBOARD_STROKE", { stroke })}
+              onClearWhiteboard={() => act("CLEAR_WHITEBOARD")}
+              onAskNova={() => setIsNovaOpen(true)}
+            />
+          </div>
 
-                {/* Video */}
-                <button
-                  onClick={() => setIsVideoStopped(!isVideoStopped)}
-                  className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl transition ${
-                    isVideoStopped
-                      ? "bg-red-500/20 text-red-400"
-                      : "hover:bg-slate-800 text-slate-300 hover:text-white"
-                  }`}
-                >
-                  {isVideoStopped ? <VideoOff size={18} /> : <Video size={18} />}
-                  <span className="text-[10px] font-semibold">
-                    {isVideoStopped ? "Start Video" : "Stop Video"}
-                  </span>
-                </button>
+          {/* Teacher Studio Toolbar */}
+          <div className="rounded-2xl border border-white/10 bg-[#0B1F3A] p-3 flex flex-wrap items-center justify-between gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleToggleMic}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                  snapshot?.hostMicOn
+                    ? "bg-white/10 hover:bg-white/15 text-white"
+                    : "bg-rose-600 text-white"
+                }`}
+              >
+                {snapshot?.hostMicOn ? <Mic size={14} /> : <MicOff size={14} />}
+                {snapshot?.hostMicOn ? "Mute" : "Unmute"}
+              </button>
 
-                {/* Share Screen (Green monitor icon) */}
-                <button
-                  onClick={() => setActiveToolTab("share")}
-                  className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl hover:bg-slate-800 text-emerald-400 transition"
-                >
-                  <Monitor size={18} />
-                  <span className="text-[10px] font-semibold">Share Screen</span>
-                </button>
+              <button
+                onClick={handleToggleCam}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                  snapshot?.hostVideoOn && !snapshot?.hostAudioOnly
+                    ? "bg-white/10 hover:bg-white/15 text-white"
+                    : "bg-rose-600 text-white"
+                }`}
+              >
+                {snapshot?.hostVideoOn && !snapshot?.hostAudioOnly ? (
+                  <Video size={14} />
+                ) : (
+                  <VideoOff size={14} />
+                )}
+                Camera
+              </button>
 
-                {/* Raise Hand */}
-                <button
-                  onClick={() => {
-                    alert("Hand-raise permissions: Enabled for all 24 students.");
-                  }}
-                  className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl hover:bg-slate-800 text-slate-300 hover:text-white transition"
-                >
-                  <Hand size={18} />
-                  <span className="text-[10px] font-semibold">Raise Hand</span>
-                </button>
+              <button
+                onClick={handleAudioOnlyToggle}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
+                  snapshot?.hostAudioOnly
+                    ? "bg-[#D97706] text-white"
+                    : "bg-white/10 hover:bg-white/15 text-slate-200"
+                }`}
+              >
+                <Wifi size={14} />
+                {snapshot?.hostAudioOnly ? "Audio-Only Active" : "Audio-Only"}
+              </button>
 
-                {/* Polls */}
-                <button
-                  onClick={() => setActiveToolTab("polls")}
-                  className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl hover:bg-slate-800 text-slate-300 hover:text-white transition"
-                >
-                  <BarChart2 size={18} />
-                  <span className="text-[10px] font-semibold">Polls</span>
-                </button>
+              <select
+                value={quality}
+                onChange={(e) => setQuality(e.target.value as VideoQualityPreset)}
+                aria-label="Broadcast Video Quality"
+                className="h-9 px-2.5 rounded-xl border border-white/15 bg-[#091529] text-xs font-semibold text-white"
+              >
+                <option value="low">Data Saver 240p</option>
+                <option value="medium">Balanced 360p</option>
+                <option value="high">HD 720p</option>
+              </select>
+            </div>
 
-                {/* More */}
-                <button
-                  onClick={() => setIsNovaOpen(true)}
-                  className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-2xl hover:bg-slate-800 text-slate-300 hover:text-white transition"
-                >
-                  <MoreHorizontal size={18} />
-                  <span className="text-[10px] font-semibold">More</span>
-                </button>
-
-                {/* Class Tools (Purple button with 4-square grid) */}
-                <button
-                  onClick={() => setActiveToolTab("resources")}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md shadow-purple-600/30 transition"
-                >
-                  <LayoutGrid size={15} />
-                  <span>Class Tools</span>
-                </button>
-              </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => handleStageMode("slide")}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${
+                  snapshot?.screenShare.type === "slide"
+                    ? "bg-[#0D9488] text-white"
+                    : "bg-white/10 text-slate-200"
+                }`}
+              >
+                <Presentation size={14} />
+                Slides
+              </button>
+              <button
+                onClick={() => handleStageMode("whiteboard")}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${
+                  snapshot?.screenShare.type === "whiteboard"
+                    ? "bg-[#0D9488] text-white"
+                    : "bg-white/10 text-slate-200"
+                }`}
+              >
+                <Pencil size={14} />
+                Whiteboard
+              </button>
+              <button
+                onClick={() => handleStageMode("window")}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${
+                  snapshot?.screenShare.type === "window"
+                    ? "bg-[#0D9488] text-white"
+                    : "bg-white/10 text-slate-200"
+                }`}
+              >
+                <Monitor size={14} />
+                Share Screen
+              </button>
+              <button
+                onClick={() => setIsAnnouncementOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F59E0B]"
+              >
+                <Megaphone size={14} />
+                Announce
+              </button>
+              <button
+                onClick={() => setIsNovaOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0D9488]/20 hover:bg-[#0D9488]/30 border border-[#0D9488]/40 text-xs font-bold text-teal-200"
+              >
+                <Sparkles size={14} />
+                Nova Co-Teacher
+              </button>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Participants (24) Card + Live Chat Card */}
-          <div className="space-y-4 flex flex-col">
-            {/* 1. PARTICIPANTS (24) CARD */}
-            <div
-              id="participants-card"
-              className="rounded-3xl bg-[#0c1222] border border-slate-800 p-5 flex flex-col"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-white text-sm">
-                  Participants ({participants.length + 19})
-                </h3>
+          {/* Lower Interactive Tabs */}
+          <div className="rounded-2xl border border-white/10 bg-[#0B1F3A] p-4 space-y-4">
+            <div className="flex flex-wrap gap-1.5 border-b border-white/10 pb-3">
+              {[
+                { id: "polls", label: "Live Polls" },
+                { id: "qa", label: `Q&A (${snapshot?.questions.length || 0})` },
+                { id: "resources", label: "Class Materials" },
+                { id: "assignments", label: "Assignments" },
+                { id: "notes", label: "Class Notes" },
+              ].map((t) => (
                 <button
-                  onClick={() =>
-                    alert("Full participant roster: 24 active students connected via WebRTC.")
-                  }
-                  className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1"
+                  key={t.id}
+                  onClick={() => setBottomTab(t.id as any)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                    bottomTab === t.id
+                      ? "bg-[#0D9488] text-white"
+                      : "text-slate-300 hover:bg-white/10"
+                  }`}
                 >
-                  <span>See all</span>
-                  <span>→</span>
+                  {t.label}
                 </button>
-              </div>
-
-              {/* Participant List */}
-              <div className="space-y-3">
-                {participants.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-900/60 transition group cursor-pointer"
-                    onClick={() =>
-                      setSelectedStudentAction(selectedStudentAction === p.id ? null : p.id)
-                    }
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-9 h-9 rounded-full overflow-hidden bg-slate-800 border border-slate-700 flex-shrink-0">
-                        {p.avatar ? (
-                          <Image
-                            src={p.avatar}
-                            alt={p.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center font-bold text-xs text-white">
-                            {p.initials}
-                          </div>
-                        )}
-                        {p.handRaised && (
-                          <div className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-slate-900 flex items-center justify-center text-[8px] text-white">
-                            ✋
-                          </div>
-                        )}
-                      </div>
-
-                      <div>
-                        <h4 className="text-xs font-bold text-white group-hover:text-purple-300 transition">
-                          {p.name}
-                        </h4>
-                        <span className="text-[10px] text-slate-400">
-                          (Student) {p.handRaised && "• Hand Raised"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 text-slate-400">
-                      {p.micOn ? (
-                        <Mic size={14} className="text-emerald-400" />
-                      ) : (
-                        <MicOff size={14} className="text-red-400" />
-                      )}
-                      <Video size={14} className="text-slate-300" />
-                    </div>
-                  </div>
-                ))}
-
-                {/* +19 More Button */}
-                <button
-                  onClick={() =>
-                    alert("Displaying all 24 connected students in this classroom.")
-                  }
-                  className="w-full py-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-xs font-semibold text-slate-300 hover:text-white transition text-center"
-                >
-                  + 19 more
-                </button>
-              </div>
-
-              {/* Student Action Popup if Teacher clicks a participant */}
-              {selectedStudentAction && (
-                <div className="mt-3 p-3 rounded-2xl bg-purple-950/40 border border-purple-500/30 flex items-center justify-between text-xs">
-                  <span className="text-purple-200">Teacher Control</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleMuteStudent(selectedStudentAction, true)}
-                      className="px-2.5 py-1 bg-red-600 rounded-lg text-[11px] font-bold"
-                    >
-                      Mute Audio
-                    </button>
-                    <button
-                      onClick={() => handleLowerHand(selectedStudentAction)}
-                      className="px-2.5 py-1 bg-slate-800 rounded-lg text-[11px]"
-                    >
-                      Lower Hand
-                    </button>
-                  </div>
-                </div>
-              )}
+              ))}
             </div>
 
-            {/* 2. LIVE CHAT CARD */}
-            <div className="rounded-3xl bg-[#0c1222] border border-slate-800 p-5 flex-1 flex flex-col justify-between min-h-[380px]">
-              <div>
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800/80">
-                  <h3 className="font-bold text-white text-sm">Live Chat</h3>
-                  <button
-                    onClick={() => setIsNovaOpen(true)}
-                    className="flex items-center gap-1 text-[11px] text-purple-400 hover:text-purple-300"
-                  >
-                    <Sparkles size={12} />
-                    <span>Nova AI</span>
-                  </button>
-                </div>
+            {snapshot && (
+              <ClassroomTools
+                tab={bottomTab}
+                isTeacher
+                userId={hostPeerId}
+                userName={snapshot.teacherName}
+                poll={snapshot.poll}
+                onCreatePoll={(question, options) =>
+                  act("CREATE_POLL", { question, options })
+                }
+                questions={snapshot.questions}
+                onAnswerQuestion={(questionId, answer) =>
+                  act("ANSWER_QUESTION", { questionId, answer })
+                }
+                assignment={snapshot.assignment}
+                resources={snapshot.resources}
+                onShareResource={(title, size) =>
+                  act("SHARE_MATERIAL", { title, size })
+                }
+                classNotes={snapshot.classNotes}
+                onUpdateNotes={(notes) => act("UPDATE_NOTES", { notes })}
+                onAskNova={() => setIsNovaOpen(true)}
+              />
+            )}
+          </div>
+        </div>
 
-                {/* Messages Feed */}
-                <div className="space-y-3.5 max-h-[290px] overflow-y-auto pr-1 no-scrollbar">
-                  {messages.map((m) => (
-                    <div key={m.id} className="flex gap-2.5 items-start">
-                      <div className="relative w-8 h-8 rounded-full overflow-hidden bg-slate-800 flex-shrink-0 border border-slate-700">
-                        {m.avatar ? (
-                          <Image src={m.avatar} alt={m.sender} fill className="object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center font-bold text-[10px] text-white">
-                            {m.sender[0]}
-                          </div>
-                        )}
-                      </div>
+        {/* RIGHT COLUMN: Avatar Student Roster + Raised Hands + Live Chat + Attendance */}
+        <aside className="rounded-2xl border border-white/10 bg-[#0B1F3A] flex flex-col h-[720px] overflow-hidden">
+          <div className="p-3 border-b border-white/10 grid grid-cols-3 gap-1 bg-[#091529]">
+            <button
+              onClick={() => setRightTab("roster")}
+              className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 ${
+                rightTab === "roster" ? "bg-[#0D9488] text-white" : "text-slate-300"
+              }`}
+            >
+              <Users size={13} />
+              Students ({participants.length})
+            </button>
+            <button
+              onClick={() => setRightTab("chat")}
+              className={`py-2 rounded-lg text-xs font-bold ${
+                rightTab === "chat" ? "bg-[#0D9488] text-white" : "text-slate-300"
+              }`}
+            >
+              Chat ({snapshot?.messages.length || 0})
+            </button>
+            <button
+              onClick={() => setRightTab("attendance")}
+              className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 ${
+                rightTab === "attendance" ? "bg-[#0D9488] text-white" : "text-slate-300"
+              }`}
+            >
+              <ClipboardCheck size={13} />
+              Register
+            </button>
+          </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-white truncate">
-                            {m.sender}
-                          </span>
-                          <span className="text-[10px] text-slate-500">{m.timestamp}</span>
-                        </div>
-                        <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">
-                          {m.text}
-                        </p>
+          {rightTab === "roster" && (
+            <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5">
+              <p className="text-[11px] text-slate-400">
+                Students display as compact avatars by default. Approve raised hands or invite students to unlock their mic &amp; camera on stage.
+              </p>
+              {participants.map((p) => (
+                <div
+                  key={p.id}
+                  className="rounded-xl border border-white/10 bg-[#091529] p-3 flex items-center justify-between gap-2.5"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {p.avatar ? (
+                      <div className="relative w-9 h-9 rounded-full overflow-hidden border border-white/15 shrink-0">
+                        <Image src={p.avatar} alt={p.name} fill className="object-cover" />
                       </div>
+                    ) : (
+                      <div
+                        className={`w-9 h-9 rounded-full ${p.color} flex items-center justify-center text-xs font-extrabold text-white shrink-0`}
+                      >
+                        {p.initials}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-white truncate">{p.name}</p>
+                      <p className="text-[11px] text-slate-400">
+                        {p.stageStatus === "approved"
+                          ? "On Stage"
+                          : p.stageStatus === "pending" || p.handRaised
+                          ? "Hand Raised"
+                          : p.stageStatus === "invited"
+                          ? "Invited to Stage"
+                          : p.audioOnly
+                          ? "Audio-Only Audience"
+                          : "Audience"}
+                      </p>
                     </div>
-                  ))}
-                  <div ref={chatBottomRef} />
-                </div>
-              </div>
+                  </div>
 
-              {/* Chat Input Bar */}
-              <div className="pt-3 border-t border-slate-800/80 flex items-center gap-2">
+                  <div className="flex items-center gap-1 shrink-0">
+                    {p.stageStatus === "pending" || p.handRaised ? (
+                      <>
+                        <button
+                          onClick={() => act("APPROVE_STAGE", { targetUserId: p.id })}
+                          className="p-1.5 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white"
+                          title="Approve to stage"
+                        >
+                          <Check size={13} />
+                        </button>
+                        <button
+                          onClick={() => act("REJECT_STAGE", { targetUserId: p.id })}
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200"
+                          title="Decline request"
+                        >
+                          <X size={13} />
+                        </button>
+                      </>
+                    ) : p.stageStatus === "approved" ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            act("MUTE_STUDENT", { targetUserId: p.id, micOn: !p.micOn })
+                          }
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200"
+                          title={p.micOn ? "Mute" : "Unmute"}
+                        >
+                          {p.micOn ? <Mic size={13} /> : <MicOff size={13} />}
+                        </button>
+                        <button
+                          onClick={() => act("REMOVE_STAGE", { targetUserId: p.id })}
+                          className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200"
+                          title="Remove from stage"
+                        >
+                          <UserMinus size={13} />
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => act("INVITE_STAGE", { targetUserId: p.id })}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-[#0D9488] text-[11px] font-bold text-slate-100 transition"
+                        title="Invite student onto stage"
+                      >
+                        <UserPlus size={12} />
+                        Invite
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {rightTab === "chat" && (
+            <>
+              <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5">
+                {(snapshot?.messages || []).map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`rounded-xl p-2.5 text-xs ${
+                      msg.role === "system"
+                        ? "bg-white/5 text-slate-300 text-center text-[11px]"
+                        : msg.role === "teacher"
+                        ? "bg-[#0D9488]/20 border border-[#0D9488]/30"
+                        : "bg-[#091529] border border-white/10"
+                    }`}
+                  >
+                    {msg.role !== "system" && (
+                      <div className="flex items-center justify-between text-[11px] mb-0.5">
+                        <span className="font-bold text-teal-300">{msg.sender}</span>
+                        <span className="text-slate-400 tabular-nums">{msg.timestamp}</span>
+                      </div>
+                    )}
+                    <p className="text-slate-100 leading-relaxed">{msg.text}</p>
+                  </div>
+                ))}
+              </div>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!chatInput.trim()) return;
+                  act("SEND_CHAT", {
+                    userId: hostPeerId,
+                    sender: snapshot?.teacherName || user?.fullName || "Instructor",
+                    text: chatInput,
+                    important: true,
+                  });
+                  setChatInput("");
+                }}
+                className="p-3 border-t border-white/10 flex gap-2 bg-[#091529]"
+              >
                 <input
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSendMessage();
-                  }}
-                  placeholder="Type a message..."
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition"
+                  placeholder="Message your class..."
+                  className="flex-1 h-9 px-3 rounded-xl border border-white/15 bg-[#060E1B] text-xs text-white"
                 />
                 <button
-                  onClick={handleSendMessage}
-                  disabled={!chatInput.trim()}
-                  className="p-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white shadow-md shadow-purple-600/30 transition active:scale-95 flex-shrink-0"
+                  type="submit"
+                  className="px-3.5 h-9 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white inline-flex items-center justify-center"
                 >
-                  <Send size={15} />
+                  <Send size={14} />
                 </button>
-              </div>
+              </form>
+            </>
+          )}
+
+          {rightTab === "attendance" && (
+            <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5 text-xs">
+              <p className="text-[11px] text-slate-400">
+                Live session check-in times (Africa/Lagos WAT):
+              </p>
+              {participants.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between py-2 border-b border-white/10"
+                >
+                  <span className="font-semibold text-white">{p.name}</span>
+                  <span className="text-teal-300 font-mono tabular-nums">
+                    Present · {p.joinedAt}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </aside>
+      </div>
+
+      {/* Broadcast Announcement Modal */}
+      {isAnnouncementOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await act("SEND_ANNOUNCEMENT", {
+                title: "Teacher Announcement",
+                message: announcementText,
+              });
+              setIsAnnouncementOpen(false);
+              setAnnouncementText("");
+            }}
+            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white text-[#0B1F3A] p-6 space-y-4"
+          >
+            <h3 className="text-base font-extrabold">Broadcast Classroom Announcement</h3>
+            <textarea
+              rows={3}
+              required
+              value={announcementText}
+              onChange={(e) => setAnnouncementText(e.target.value)}
+              placeholder="e.g. Copy formula 2 into your notebooks before our WAEC drill!"
+              className="w-full rounded-xl border border-slate-200 bg-[#F7F8FA] p-3 text-xs text-[#0B1F3A]"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsAnnouncementOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold"
+              >
+                Pin to Class
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* End Class Confirmation Modal */}
+      {isEndModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white text-[#0B1F3A] p-6 space-y-4">
+            <h3 className="text-base font-extrabold">End Live Classroom?</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              This will end the live broadcast for all connected students and lock the stage.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setIsEndModalOpen(false)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700"
+              >
+                Stay in Class
+              </button>
+              <button
+                onClick={handleEndClass}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"
+              >
+                End Class for All
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Nova AI Modal */}
       <NovaClassAssistantModal
         isOpen={isNovaOpen}
         onClose={() => setIsNovaOpen(false)}
-        isTeacher={true}
+        subject={snapshot?.subject}
+        topic={snapshot?.topic}
+        isTeacher
       />
     </div>
   );

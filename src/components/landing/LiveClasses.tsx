@@ -1,98 +1,134 @@
 "use client";
 
-import { motion } from "framer-motion";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
-import { Video, Clock, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Clock, Users, ArrowRight, Radio } from "lucide-react";
 
 const classes = [
   {
-    subject: "Physics",
-    teacher: "Mr. James",
-    time: "9:00 AM",
-    status: "LIVE",
+    id: "math-001",
+    subject: "Mathematics · SSS 2",
+    topic: "Quadratic Equations & Parabola Graphs",
+    teacher: "Mrs. Funke Adewale",
+    avatar: "/images/avatar-funke.jpg",
+    time: "10:00 AM – 11:00 AM WAT",
+    students: 38,
+    status: "LIVE NOW",
   },
   {
-    subject: "Mathematics",
-    teacher: "Mrs. Sarah",
-    time: "11:00 AM",
-    status: "Upcoming",
+    id: "science-001",
+    subject: "Physics · SSS 2",
+    topic: "Newton's Laws of Motion & Momentum",
+    teacher: "Mr. Chinedu Emeka",
+    avatar: "/images/avatar-chinedu.jpg",
+    time: "01:00 PM – 02:00 PM WAT",
+    students: 34,
+    status: "TODAY",
   },
   {
-    subject: "Chemistry",
-    teacher: "Dr. Alex",
-    time: "2:00 PM",
-    status: "Upcoming",
+    id: "chemistry-001",
+    subject: "Chemistry · SSS 3",
+    topic: "Hydrocarbons & WAEC Volumetric Analysis",
+    teacher: "Dr. Ibrahim Bello",
+    avatar: "/images/avatar-ibrahim.jpg",
+    time: "03:30 PM – 04:30 PM WAT",
+    students: 41,
+    status: "TODAY",
   },
 ];
 
 export default function LiveClasses() {
   return (
-    <section id="live" className="py-28 bg-[#111827] px-6">
+    <section id="live" className="py-20 px-4 sm:px-6 lg:px-8 bg-[#F7F8FA]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <span className="text-cyan-400 font-semibold">
-            Live Learning
-          </span>
-
-          <h2 className="text-5xl font-black mt-4">
-            Attend Interactive Classes
-          </h2>
-
-          <p className="text-slate-400 mt-5 max-w-2xl mx-auto">
-            Learn directly from experienced teachers with live
-            video classes, real-time questions and class recordings.
-          </p>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#0D9488]">
+              Interactive Virtual Classrooms
+            </p>
+            <h2
+              className="mt-2 text-3xl sm:text-4xl font-bold text-[#0B1F3A] tracking-tight"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Attend structured live lessons in real time
+            </h2>
+          </div>
+          <Link
+            href="/live-classes"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0B1F3A] hover:text-[#0D9488] transition shrink-0"
+          >
+            View full timetable
+            <ArrowRight size={16} />
+          </Link>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {classes.map((item, index) => (
-            <motion.div
-              key={item.subject}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card hover className="p-6">
-                <div className="flex justify-between items-center">
-                  <Video className="text-cyan-400" />
+        <div className="grid md:grid-cols-3 gap-6">
+          {classes.map((item) => {
+            const isLive = item.status === "LIVE NOW";
+            return (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between shadow-xs hover:shadow-md transition"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 text-xs font-bold">
+                    <span className="text-[#0B1F3A]">{item.subject}</span>
+                    <span
+                      className={`inline-flex items-center gap-1 ${
+                        isLive ? "text-emerald-600" : "text-slate-500"
+                      }`}
+                    >
+                      {isLive && <Radio size={13} />}
+                      {item.status}
+                    </span>
+                  </div>
 
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${
-                      item.status === "LIVE"
-                        ? "bg-red-500 text-white"
-                        : "bg-slate-700 text-slate-200"
+                  <h3 className="mt-3 text-lg font-bold text-[#0F1F38] leading-snug">
+                    {item.topic}
+                  </h3>
+
+                  <div className="mt-4 flex items-center gap-3">
+                    <div className="relative w-9 h-9 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                      <Image
+                        src={item.avatar}
+                        alt={item.teacher}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="text-xs">
+                      <p className="font-semibold text-[#0F1F38]">{item.teacher}</p>
+                      <p className="text-slate-500">Lead Instructor</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between text-xs text-slate-600 tabular-nums">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Clock size={14} className="text-[#0D9488]" />
+                      {item.time}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Users size={14} className="text-slate-400" />
+                      {item.students}
+                    </span>
+                  </div>
+
+                  <Link
+                    href={`/live-classes/${item.id}`}
+                    className={`w-full py-2.5 rounded-xl text-xs font-bold text-center block transition ${
+                      isLive
+                        ? "bg-[#0D9488] hover:bg-[#0F766E] text-white"
+                        : "bg-[#F1F4F8] hover:bg-slate-200 text-[#0B1F3A]"
                     }`}
                   >
-                    {item.status}
-                  </span>
+                    {isLive ? "Enter Live Classroom" : "View Class Room"}
+                  </Link>
                 </div>
-
-                <h3 className="mt-6 text-2xl font-bold">
-                  {item.subject}
-                </h3>
-
-                <p className="text-slate-400 mt-2">
-                  {item.teacher}
-                </p>
-
-                <div className="flex items-center gap-2 mt-6 text-slate-400">
-                  <Clock size={18} />
-                  {item.time}
-                </div>
-
-                <div className="flex items-center gap-2 mt-3 text-slate-400">
-                  <Users size={18} />
-                  250 Students
-                </div>
-
-                <Button fullWidth className="mt-8">
-                  Join Class
-                </Button>
-              </Card>
-            </motion.div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

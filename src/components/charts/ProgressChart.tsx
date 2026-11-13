@@ -10,104 +10,54 @@ import {
   CartesianGrid,
 } from "recharts";
 
-
 const data = [
-  {
-    day: "Mon",
-    xp: 120,
-  },
-  {
-    day: "Tue",
-    xp: 240,
-  },
-  {
-    day: "Wed",
-    xp: 180,
-  },
-  {
-    day: "Thu",
-    xp: 320,
-  },
-  {
-    day: "Fri",
-    xp: 450,
-  },
-  {
-    day: "Sat",
-    xp: 520,
-  },
-  {
-    day: "Sun",
-    xp: 650,
-  },
+  { week: "Wk 1", score: 68 },
+  { week: "Wk 2", score: 71 },
+  { week: "Wk 3", score: 74 },
+  { week: "Wk 4", score: 73 },
+  { week: "Wk 5", score: 78 },
+  { week: "Wk 6", score: 81 },
+  { week: "Wk 7", score: 84 },
 ];
 
+export default function ProgressChart() {
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-bold text-base text-[#0B1F3A]">Term Assessment Trend</h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Weekly average across CBT &amp; classwork (%)
+          </p>
+        </div>
+        <span className="text-sm font-extrabold text-[#0D9488] tabular-nums">84%</span>
+      </div>
 
-export default function ProgressChart(){
-
-return (
-
-<div
-className="
-bg-[#111827]
-border
-border-slate-800
-rounded-2xl
-p-6
-"
->
-
-<h3 className="font-bold text-lg">
-Learning Progress
-</h3>
-
-
-<p className="text-sm text-slate-400 mt-1">
-Weekly XP growth
-</p>
-
-
-<div className="h-[260px] mt-5">
-
-<ResponsiveContainer width="100%" height="100%">
-
-<LineChart data={data}>
-
-
-<CartesianGrid
-strokeDasharray="3 3"
-/>
-
-
-<XAxis
-dataKey="day"
-/>
-
-
-<YAxis />
-
-
-<Tooltip />
-
-
-<Line
-type="monotone"
-dataKey="xp"
-stroke="#6D28D9"
-strokeWidth={3}
-/>
-
-
-</LineChart>
-
-</ResponsiveContainer>
-
-
-</div>
-
-
-</div>
-
-)
-
+      <div className="h-[240px] mt-5">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+            <XAxis dataKey="week" stroke="#64748B" fontSize={12} />
+            <YAxis domain={[50, 100]} stroke="#64748B" fontSize={12} />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#FFFFFF",
+                borderColor: "#E2E8F0",
+                borderRadius: "12px",
+                color: "#0F1F38",
+                fontSize: "12px",
+              }}
+            />
+            <Line
+              type="monotone"
+              dataKey="score"
+              stroke="#0D9488"
+              strokeWidth={3}
+              dot={{ r: 4, fill: "#0B1F3A" }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 }

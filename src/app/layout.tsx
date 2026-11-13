@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+import "@fontsource/inter/800.css";
 import { AuthProvider } from "@/context/AuthContext";
-import "@fontsource/inter";
 import "./globals.css";
 
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
-});
-
 export const metadata: Metadata = {
-  title: "Learnova v2",
-  description: "Next-generation AI learning platform with sleek chat integration.",
+  title: "Learnova — Nigerian Digital School & Live Learning Platform",
+  description:
+    "Interactive live classrooms, WAEC, NECO & JAMB preparation, curriculum-aligned subjects, and Nova AI tutoring built for Nigerian students, teachers, and schools.",
+  openGraph: {
+    title: "Learnova — Nigerian Digital School & Live Learning Platform",
+    description:
+      "Interactive live classrooms, WAEC, NECO & JAMB preparation, curriculum-aligned subjects, and Nova AI tutoring built for Nigerian students, teachers, and schools.",
+  },
 };
 
 export default function RootLayout({
@@ -20,11 +24,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${jakarta.className} bg-[#0F172A] text-white antialiased`}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+    <html lang="en">
+      <body className="font-sans bg-[#F7F8FA] text-[#0F1F38] antialiased">
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

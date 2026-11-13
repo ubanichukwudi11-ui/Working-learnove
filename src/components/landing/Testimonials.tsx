@@ -1,54 +1,54 @@
 "use client";
 
-import Card from "@/components/ui/Card";
-
 const testimonials = [
   {
-    name: "David",
-    role: "WAEC Student",
-    text: "Learnova helped me improve my grades and understand difficult topics with Nova AI.",
+    name: "Toluwani Adeyemi",
+    role: "SSS 3 Student · Lagos",
+    text: "Joining live Mathematics and Physics revisions after school helped me raise my WAEC mock score from 58% to 84% in one term.",
   },
   {
-    name: "Grace",
-    role: "Teacher",
-    text: "Managing assignments and live classes has never been this easy.",
+    name: "Mrs. Funke Adewale",
+    role: "Senior Mathematics Teacher · Ibadan",
+    text: "Approving students onto the live stage only when they raise their hands keeps my 40-student class orderly even on average mobile data.",
   },
   {
-    name: "Mrs. Okafor",
-    role: "Parent",
-    text: "I can now monitor my child's attendance and academic progress from anywhere.",
+    name: "Engr. Nnamdi Okafor",
+    role: "Parent · Abuja",
+    text: "I can check my son's attendance, homework submissions, and term scores between work meetings without waiting for end-of-term open day.",
   },
 ];
 
 export default function Testimonials() {
   return (
-    <section className="py-28 bg-[#0F172A] px-6">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-center text-5xl font-black">
-          Loved by Students, Teachers & Parents
-        </h2>
+        <div className="max-w-2xl">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#0D9488]">
+            Trusted Across Nigeria
+          </p>
+          <h2
+            className="mt-2 text-3xl sm:text-4xl font-bold text-[#0B1F3A] tracking-tight"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Built with students, teachers, and parents
+          </h2>
+        </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mt-16">
+        <div className="grid md:grid-cols-3 gap-6 mt-10">
           {testimonials.map((item) => (
-            <Card key={item.name} hover className="p-8">
-              <div className="text-yellow-400 text-xl">
-                ★★★★★
-              </div>
-
-              <p className="mt-6 text-slate-300 leading-7">
-                "{item.text}"
+            <div
+              key={item.name}
+              className="rounded-2xl border border-slate-200 bg-[#FAF8F3] p-6 flex flex-col justify-between"
+            >
+              <p className="text-sm text-slate-700 leading-relaxed">
+                &ldquo;{item.text}&rdquo;
               </p>
 
-              <div className="mt-8">
-                <h3 className="font-bold">
-                  {item.name}
-                </h3>
-
-                <p className="text-slate-400">
-                  {item.role}
-                </p>
+              <div className="mt-6 pt-4 border-t border-slate-200/80">
+                <p className="text-sm font-bold text-[#0B1F3A]">{item.name}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{item.role}</p>
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       </div>

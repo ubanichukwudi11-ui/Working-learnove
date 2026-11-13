@@ -1,258 +1,68 @@
 "use client";
 
-import {
-  Calculator,
-  Atom,
-  BookOpen,
-  FlaskConical,
-  Leaf,
-  TrendingUp,
-} from "lucide-react";
-
-
-const subjects = [
-  {
-    name:"Mathematics",
-    description:"Master calculations and problem solving.",
-    progress:72,
-    icon:Calculator,
-  },
-
-  {
-    name:"Physics",
-    description:"Understand motion, forces and energy.",
-    progress:62,
-    icon:Atom,
-  },
-
-  {
-    name:"English",
-    description:"Improve grammar and communication.",
-    progress:90,
-    icon:BookOpen,
-  },
-
-  {
-    name:"Chemistry",
-    description:"Explore reactions and elements.",
-    progress:65,
-    icon:FlaskConical,
-  },
-
-  {
-    name:"Biology",
-    description:"Learn life sciences.",
-    progress:78,
-    icon:Leaf,
-  },
-
-  {
-    name:"Economics",
-    description:"Understand markets and systems.",
-    progress:55,
-    icon:TrendingUp,
-  },
-];
-
-
-
-export default function SubjectGrid(){
-
-return (
-
-<section className="mt-10">
-
-
-<div className="flex justify-between items-center mb-5">
-
-<h2 className="text-2xl font-bold">
-Your Subjects
-</h2>
-
-
-<button
-className="
-text-sm
-text-cyan-400
-hover:text-cyan-300
-"
->
-View All
-</button>
-
-</div>
-
-
-
-<div
-className="
-grid
-md:grid-cols-2
-xl:grid-cols-3
-gap-5
-"
->
-
-
-{subjects.map((subject)=>{
-
-
-const Icon = subject.icon;
-
-
-return (
-
-<div
-key={subject.name}
-className="
-bg-[#111827]
-border
-border-slate-800
-rounded-2xl
-p-5
-hover:-translate-y-1
-hover:border-purple-500/40
-transition-all
-duration-300
-"
->
-
-
-<div
-className="
-w-12
-h-12
-rounded-2xl
-bg-gradient-to-r
-from-[#6D28D9]
-to-[#06B6D4]
-flex
-items-center
-justify-center
-"
->
-
-<Icon
-size={24}
-/>
-
-</div>
-
-
-
-<h3
-className="
-text-lg
-font-bold
-mt-5
-"
->
-{subject.name}
-</h3>
-
-
-
-<p
-className="
-text-sm
-text-slate-400
-mt-2
-"
->
-{subject.description}
-</p>
-
-
-
-<div className="mt-5">
-
-
-<div
-className="
-flex
-justify-between
-text-sm
-mb-2
-"
->
-
-<span className="text-slate-400">
-Progress
-</span>
-
-
-<span>
-{subject.progress}%
-</span>
-
-
-</div>
-
-
-
-<div
-className="
-h-2
-bg-slate-800
-rounded-full
-overflow-hidden
-"
->
-
-<div
-style={{
-width:`${subject.progress}%`
-}}
-className="
-h-full
-rounded-full
-bg-gradient-to-r
-from-[#6D28D9]
-to-[#06B6D4]
-"
-/>
-
-
-</div>
-
-
-</div>
-
-
-
-<button
-className="
-mt-5
-w-full
-py-2.5
-rounded-xl
-bg-slate-800
-hover:bg-gradient-to-r
-hover:from-[#6D28D9]
-hover:to-[#06B6D4]
-transition-all
-font-medium
-"
->
-
-Open Subject
-
-</button>
-
-
-</div>
-
-)
-
-
-})}
-
-
-</div>
-
-
-</section>
-
-)
-
+import Link from "next/link";
+import { ArrowRight, BookOpen } from "lucide-react";
+import { NIGERIAN_SUBJECTS } from "@/lib/nigerianCurriculum";
+
+export default function SubjectGrid() {
+  return (
+    <section className="mt-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-lg font-bold text-[#0B1F3A]">Your Term Subjects</h2>
+          <p className="text-xs text-slate-500">
+            NERDC &amp; WAEC syllabus modules for SSS 2 Science
+          </p>
+        </div>
+        <Link
+          href="/subjects"
+          className="inline-flex items-center gap-1 text-xs font-bold text-[#0D9488] hover:underline"
+        >
+          View all subjects
+          <ArrowRight size={14} />
+        </Link>
+      </div>
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {NIGERIAN_SUBJECTS.map((subject) => (
+          <Link
+            key={subject.id}
+            href={`/subjects/${subject.id}`}
+            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#0D9488] hover:shadow-sm transition flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <span className="font-bold text-[#0D9488]">{subject.code}</span>
+                <span className="text-slate-500 font-medium">{subject.examTrack}</span>
+              </div>
+
+              <h3 className="mt-2.5 text-base font-bold text-[#0B1F3A] flex items-center gap-2">
+                <BookOpen size={16} className="text-slate-400 shrink-0" />
+                <span>{subject.name}</span>
+              </h3>
+
+              <p className="mt-1 text-xs text-slate-500 line-clamp-1">
+                Next: {subject.nextTopic}
+              </p>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-slate-500">{subject.teacher}</span>
+                <span className="font-bold text-[#0B1F3A] tabular-nums">
+                  {subject.progress}%
+                </span>
+              </div>
+              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#0D9488] rounded-full"
+                  style={{ width: `${subject.progress}%` }}
+                />
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
 }

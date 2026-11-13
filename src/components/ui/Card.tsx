@@ -17,13 +17,8 @@ export default function Card({
   return (
     <div
       className={clsx(
-        "rounded-2xl",
-        "border border-slate-800",
-        "bg-[#111827]",
-        "shadow-lg",
-        "transition-all duration-300",
-        hover &&
-          "hover:border-violet-500 hover:-translate-y-1 hover:shadow-violet-500/20",
+        "rounded-2xl border border-slate-200 bg-white text-[#0F1F38] shadow-xs transition-all duration-200",
+        hover && "hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5",
         className
       )}
     >

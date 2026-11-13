@@ -3,222 +3,94 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-
 import {
   LayoutDashboard,
+  BookOpen,
   Video,
-  FileText,
   ClipboardList,
-  Users,
+  FileText,
   CalendarCheck,
-  FolderOpen,
+  Users,
   User,
-  Settings,
   LogOut,
   GraduationCap,
 } from "lucide-react";
 
-
 const links = [
-  {
-    name: "Dashboard",
-    href: "/teacher",
-    icon: LayoutDashboard,
-  },
-  {
-    name: "My Classes",
-    href: "/teacher/classes",
-    icon: Video,
-  },
-  {
-    name: "Assignments",
-    href: "/teacher/assignments",
-    icon: ClipboardList,
-  },
-  {
-    name: "Notes",
-    href: "/teacher/notes",
-    icon: FileText,
-  },
-  {
-    name: "Attendance",
-    href: "/teacher/attendance",
-    icon: CalendarCheck,
-  },
-  {
-    name: "Students",
-    href: "/teacher/students",
-    icon: Users,
-  },
-  {
-    name: "Recordings",
-    href: "/teacher/recordings",
-    icon: FolderOpen,
-  },
-  {
-    name: "Profile",
-    href: "/teacher/profile",
-    icon: User,
-  },
+  { name: "Teacher Desk", href: "/teacher", icon: LayoutDashboard, exact: true },
+  { name: "My Classes", href: "/teacher/classes", icon: BookOpen },
+  { name: "Live Classes", href: "/live-classes", icon: Video },
+  { name: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
+  { name: "Lesson Notes", href: "/teacher/notes", icon: FileText },
+  { name: "Attendance", href: "/teacher/attendance", icon: CalendarCheck },
+  { name: "Students", href: "/teacher/students", icon: Users },
+  { name: "Profile", href: "/teacher/profile", icon: User },
 ];
 
-
 export default function TeacherSidebar() {
-
   const pathname = usePathname();
-
   const router = useRouter();
-
   const { logout } = useAuth();
 
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/login");
+  };
 
   return (
-    <aside
-      className="
-      fixed
-      left-0
-      top-0
-      h-screen
-      w-20
-      z-50
-      bg-[#111827]
-      border-r
-      border-slate-800
-      flex
-      flex-col
-      "
-    >
-
-      <div
-        className="
-        h-20
-        flex
-        items-center
-        justify-center
-        border-b
-        border-slate-800
-        "
+    <aside className="hidden md:flex fixed left-0 top-0 h-screen md:w-20 lg:w-60 z-50 bg-[#0B1F3A] text-white flex-col border-r border-white/10">
+      <Link
+        href="/teacher"
+        className="h-16 flex items-center justify-center lg:justify-start gap-3 px-4 border-b border-white/10 shrink-0"
       >
-        <div
-          className="
-          w-10
-          h-10
-          rounded-2xl
-          bg-gradient-to-br
-          from-green-500
-          to-cyan-500
-          flex
-          items-center
-          justify-center
-          text-white
-          "
-        >
-          <GraduationCap size={18}/>
+        <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-[#F59E0B] shrink-0">
+          <GraduationCap size={20} />
         </div>
-      </div>
+        <div className="hidden lg:block leading-tight">
+          <span className="font-extrabold text-base tracking-tight text-white">
+            Learnova
+          </span>
+          <span className="block text-[11px] text-amber-300 font-medium">
+            Educator Workspace
+          </span>
+        </div>
+      </Link>
 
+      <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto sidebar-scroll">
+        {links.map((item) => {
+          const Icon = item.icon;
+          const active = item.exact
+            ? pathname === item.href
+            : pathname === item.href || pathname.startsWith(item.href + "/");
 
-      <nav
-        className="
-        flex-1
-        py-6
-        flex
-        flex-col
-        items-center
-        gap-3
-        "
-      >
-
-        {links.map((item)=>{
-
-          const Icon=item.icon;
-
-          const active =
-            pathname === item.href ||
-            pathname.startsWith(item.href+"/");
-
-
-          return(
+          return (
             <Link
               key={item.href}
               href={item.href}
               title={item.name}
-              className={`
-              w-12
-              h-12
-              rounded-2xl
-              flex
-              items-center
-              justify-center
-              transition
-
-              ${
+              className={`flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                 active
-                ?"bg-green-500 text-white"
-                :"text-slate-400 hover:bg-slate-800 hover:text-white"
-              }
-              `}
+                  ? "bg-[#0D9488] text-white shadow-sm"
+                  : "text-slate-300 hover:bg-white/10 hover:text-white"
+              }`}
             >
-              <Icon size={22}/>
+              <Icon size={19} className="shrink-0" />
+              <span className="hidden lg:inline truncate">{item.name}</span>
             </Link>
           );
-
         })}
-
       </nav>
 
-
-      <div
-        className="
-        border-t
-        border-slate-800
-        py-5
-        flex
-        flex-col
-        items-center
-        gap-3
-        "
-      >
-
+      <div className="border-t border-white/10 p-3 shrink-0">
         <button
-          className="
-          w-12
-          h-12
-          rounded-2xl
-          text-slate-400
-          hover:bg-slate-800
-          flex
-          items-center
-          justify-center
-          "
+          onClick={handleLogout}
+          title="Sign Out"
+          className="w-full flex items-center justify-center lg:justify-start gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:bg-red-500/15 hover:text-red-300 transition"
         >
-          <Settings size={22}/>
+          <LogOut size={19} className="shrink-0" />
+          <span className="hidden lg:inline">Sign Out</span>
         </button>
-
-
-        <button
-          onClick={() => {
-            logout();
-            router.replace("/login");
-          }}
-          className="
-          w-12
-          h-12
-          rounded-2xl
-          text-slate-400
-          hover:bg-red-500/10
-          hover:text-red-400
-          flex
-          items-center
-          justify-center
-          "
-        >
-          <LogOut size={22}/>
-        </button>
-
       </div>
-
-
     </aside>
   );
 }

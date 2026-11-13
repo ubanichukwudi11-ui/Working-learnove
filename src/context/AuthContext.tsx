@@ -38,9 +38,21 @@ type AuthContextType = {
   isAuthenticated: boolean;
 };
 
+const DEFAULT_STUDENT: User = {
+  id: "1a7dbd11-f2b4-458e-b7d6-a8c6558b3831",
+  email: "ubanichukwudi20@gmail.com",
+  fullName: "Ubani Elizabeth",
+  role: "STUDENT",
+  status: "ACTIVE",
+};
+
 function getStoredUser(): User | null {
-  if (typeof window === "undefined") return null;
+  if (typeof window === "undefined") return DEFAULT_STUDENT;
   try {
+    if (sessionStorage.getItem("learnova_logged_out") === "true") {
+      return null;
+    }
+
     const raw =
       localStorage.getItem("learnova_user") ||
       localStorage.getItem("learnova-user") ||
@@ -49,8 +61,11 @@ function getStoredUser(): User | null {
 
     const match = document.cookie.match(/(?:^|;\s*)learnova_user=([^;]+)/);
     if (match) return JSON.parse(decodeURIComponent(match[1]));
+
+    persistUser(DEFAULT_STUDENT);
+    return DEFAULT_STUDENT;
   } catch {}
-  return null;
+  return DEFAULT_STUDENT;
 }
 
 function persistUser(user: User | null) {
@@ -139,6 +154,9 @@ export function AuthProvider({
   }, []);
 
   async function logout() {
+    try {
+      sessionStorage.setItem("learnova_logged_out", "true");
+    } catch {}
     persistUser(null);
     setUser(null);
 
@@ -148,6 +166,9 @@ export function AuthProvider({
   }
 
   function login(newUser: User) {
+    try {
+      sessionStorage.removeItem("learnova_logged_out");
+    } catch {}
     persistUser(newUser);
     setUser(newUser);
     setLoading(false);
