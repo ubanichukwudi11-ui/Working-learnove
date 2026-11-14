@@ -66,7 +66,6 @@ export default function AdminAiCopilot({
 }: AdminAiCopilotProps) {
   const [activeTab, setActiveTab] = useState<"timetable" | "copilot">(defaultTab);
   const [snapshot, setSnapshot] = useState<any>(null);
-  const [aiConfigured, setAiConfigured] = useState(true);
 
   // Timetable AI state
   const [goal, setGoal] = useState(TIMETABLE_PRESETS[0]);
@@ -99,7 +98,6 @@ export default function AdminAiCopilot({
       const res = await fetch("/api/lms/admin-ai", { cache: "no-store" });
       if (!res.ok) return;
       const json = await res.json();
-      setAiConfigured(Boolean(json.aiConfigured));
       setSnapshot(json.snapshot || null);
     } catch {
       // ignore initial error
@@ -269,16 +267,6 @@ export default function AdminAiCopilot({
         </div>
       </div>
 
-      {!aiConfigured && (
-        <div className="mx-5 mt-4 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-800 flex items-center gap-2">
-          <AlertTriangle size={15} className="shrink-0" />
-          <span>
-            Gemini AI key is not yet configured in the runtime environment. Set{" "}
-            <code className="font-mono font-bold">GEMINI_API_KEY</code> on the server to enable AI generation.
-          </span>
-        </div>
-      )}
-
       {aiFeedback && (
         <div
           className={`mx-5 mt-4 rounded-xl px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border ${
@@ -344,7 +332,7 @@ export default function AdminAiCopilot({
 
               <button
                 type="submit"
-                disabled={planning || !aiConfigured}
+                disabled={planning}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#132c52] text-white text-xs sm:text-sm font-bold disabled:opacity-50 transition"
               >
                 {planning ? (
@@ -492,7 +480,7 @@ export default function AdminAiCopilot({
               <button
                 key={idx}
                 type="button"
-                disabled={chatting || !aiConfigured}
+                disabled={chatting}
                 onClick={() => handleSendChat(p)}
                 className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-[#0D9488] text-slate-700 transition text-left"
               >
@@ -548,7 +536,7 @@ export default function AdminAiCopilot({
             />
             <button
               type="submit"
-              disabled={chatting || !chatInput.trim() || !aiConfigured}
+              disabled={chatting || !chatInput.trim()}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-semibold disabled:opacity-50 transition shrink-0"
             >
               <Send size={15} /> Ask
