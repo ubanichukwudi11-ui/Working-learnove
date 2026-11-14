@@ -71,6 +71,11 @@
 
 .learnova-banner-dark {
   background: linear-gradient(135deg, #070d24 0%, #151a44 55%, #24195e 100%);
+  box-shadow:
+    0 18px 40px -16px rgba(79, 70, 229, 0.36),
+    -14px 10px 30px -14px rgba(249, 115, 22, 0.16),
+    14px -8px 32px -14px rgba(6, 182, 212, 0.26),
+    0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .learnova-card {
@@ -78,6 +83,69 @@
   border: 1px solid #e4e1f5;
   border-radius: 1rem;
   box-shadow: 0 1px 2px rgba(11, 18, 48, 0.04);
+}
+
+.learnova-card-glow {
+  background-color: #ffffff;
+  border: 1px solid #dcd7f5;
+  border-radius: 1rem;
+  box-shadow:
+    0 14px 32px -14px rgba(79, 70, 229, 0.2),
+    -10px 8px 24px -14px rgba(124, 58, 237, 0.16),
+    10px -6px 24px -14px rgba(6, 182, 212, 0.18),
+    0 1px 3px rgba(11, 18, 48, 0.05);
+  transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+}
+
+.learnova-card-glow:hover {
+  border-color: #c4b5fd;
+  box-shadow:
+    0 18px 40px -14px rgba(79, 70, 229, 0.28),
+    -12px 10px 28px -14px rgba(249, 115, 22, 0.15),
+    12px -8px 28px -14px rgba(6, 182, 212, 0.24),
+    0 2px 6px rgba(11, 18, 48, 0.06);
+}
+
+.learnova-ambient-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.learnova-ambient-stage::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 86%, rgba(249, 115, 22, 0.4), transparent 50%),
+    radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.48), transparent 52%),
+    radial-gradient(circle at 82% 88%, rgba(168, 85, 247, 0.44), transparent 54%),
+    radial-gradient(circle at 18% 18%, rgba(79, 70, 229, 0.42), transparent 50%);
+  filter: blur(22px);
+  opacity: 0.88;
+}
+
+.learnova-ambient-stage-soft {
+  position: relative;
+  isolation: isolate;
+}
+
+.learnova-ambient-stage-soft::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 14% 86%, rgba(249, 115, 22, 0.22), transparent 52%),
+    radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.28), transparent 54%),
+    radial-gradient(circle at 82% 88%, rgba(124, 58, 237, 0.26), transparent 56%),
+    radial-gradient(circle at 18% 18%, rgba(79, 70, 229, 0.24), transparent 52%);
+  filter: blur(20px);
+  opacity: 0.82;
 }
 
 .learnova-input {

@@ -55,7 +55,7 @@ export default function PracticeProgressShowcase() {
 
         <div className="grid lg:grid-cols-12 gap-6 items-stretch">
           {/* Left 6-Col: Interactive Timed CBT Drill */}
-          <div className="lg:col-span-6 min-w-0 rounded-3xl border border-[#E4E1F5] bg-[#FAF8FF] p-5 sm:p-8 flex flex-col justify-between gap-6">
+          <div className="lg:col-span-6 min-w-0 learnova-card-glow rounded-3xl bg-[#FAF8FF] p-5 sm:p-8 flex flex-col justify-between gap-6">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="landing-mono text-xs font-semibold text-[#6D28D9] uppercase tracking-wider">
@@ -177,7 +177,7 @@ export default function PracticeProgressShowcase() {
           </div>
 
           {/* Right 6-Col: Student Progress & WAEC Development */}
-          <div className="lg:col-span-6 min-w-0 rounded-3xl bg-gradient-to-br from-[#11173F] via-[#171B4D] to-[#231955] text-white p-5 sm:p-8 flex flex-col justify-between gap-6 border border-indigo-900/50">
+          <div className="lg:col-span-6 min-w-0 learnova-ambient-stage-soft rounded-3xl bg-gradient-to-br from-[#11173F] via-[#171B4D] to-[#231955] text-white p-5 sm:p-8 flex flex-col justify-between gap-6 border border-indigo-900/50">
             <div className="space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="landing-mono text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">

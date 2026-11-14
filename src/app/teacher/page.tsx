@@ -70,7 +70,7 @@ function TeacherWorkspace() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
               Educator Workspace · Africa/Lagos (WAT)

@@ -86,7 +86,7 @@ export default function NovaShowcase() {
         </div>
 
         {/* Right Interactive Mini-Classroom Studio */}
-        <div className="lg:col-span-7 min-w-0">
+        <div className="lg:col-span-7 min-w-0 learnova-ambient-stage-soft rounded-3xl">
           <div className="rounded-3xl bg-[#0B1230] border border-indigo-900/60 shadow-2xl shadow-indigo-950/20 overflow-hidden text-white">
             {/* Studio Top Switcher Bar */}
             <div className="border-b border-white/10 bg-[#070D24] px-4 sm:px-5 py-4 flex flex-wrap items-center justify-between gap-3">

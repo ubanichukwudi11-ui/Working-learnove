@@ -145,6 +145,7 @@ export default function RolePortalsShowcase() {
         </div>
 
         {/* Active Portal Feature Card */}
+        <div className="learnova-ambient-stage-soft rounded-3xl">
         <div className="rounded-3xl bg-white border border-[#E4E1F5] shadow-sm shadow-indigo-950/5 overflow-hidden grid lg:grid-cols-12 items-stretch">
           <div className="lg:col-span-5 min-w-0 relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[400px] w-full bg-[#0B1230]">
             <Image
@@ -214,6 +215,7 @@ export default function RolePortalsShowcase() {
               </Link>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

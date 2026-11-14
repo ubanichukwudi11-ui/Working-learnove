@@ -476,7 +476,8 @@ export default function Features() {
             </div>
 
             {/* Right Active Video Lesson Preview */}
-            <div className="lg:col-span-7 min-w-0 rounded-2xl bg-[#0B1230] text-white border border-indigo-900/60 overflow-hidden flex flex-col justify-between">
+            <div className="lg:col-span-7 min-w-0 learnova-ambient-stage-soft rounded-2xl">
+            <div className="rounded-2xl bg-[#0B1230] text-white border border-indigo-900/60 overflow-hidden flex flex-col justify-between h-full">
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-[#070D24]">
                 <Image
                   src={heroCampusImg}
@@ -560,6 +561,7 @@ export default function Features() {
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>

@@ -48,7 +48,7 @@ export default function Testimonials() {
 
         <div className="grid lg:grid-cols-12 gap-6 items-stretch">
           {/* Featured Outcome Quote */}
-          <div className="lg:col-span-6 min-w-0 rounded-3xl bg-gradient-to-br from-[#0B1230] via-[#141B46] to-[#231955] text-white border border-indigo-900/50 p-7 sm:p-9 flex flex-col justify-between gap-8">
+          <div className="lg:col-span-6 min-w-0 learnova-ambient-stage-soft rounded-3xl bg-gradient-to-br from-[#0B1230] via-[#141B46] to-[#231955] text-white border border-indigo-900/50 p-7 sm:p-9 flex flex-col justify-between gap-8">
             <div className="space-y-4">
               <p className="landing-mono text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
                 {featured.metric}

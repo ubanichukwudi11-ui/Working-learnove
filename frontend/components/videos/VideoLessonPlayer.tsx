@@ -83,7 +83,8 @@ export default function VideoLessonPlayer({
   if (ytId) {
     return (
       <div className="space-y-2">
-        <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-[#E4E1F5] shadow-sm">
+        <div className="learnova-ambient-stage-soft rounded-2xl">
+          <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-white/15 shadow-sm">
           <iframe
             key={ytId}
             src={`https://www.youtube.com/embed/${ytId}?rel=0`}
@@ -92,6 +93,7 @@ export default function VideoLessonPlayer({
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
+          </div>
         </div>
         <div className="flex items-center justify-between text-xs text-[#6B6F94] px-1">
           <span>Curated YouTube Lesson</span>
@@ -114,7 +116,8 @@ export default function VideoLessonPlayer({
     /\.(mp4|webm|mov|m4v|ogv)(\?|$)/i.test(video.videoUrl)
   ) {
     return (
-      <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-[#E4E1F5] shadow-sm">
+      <div className="learnova-ambient-stage-soft rounded-2xl">
+      <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-white/15 shadow-sm">
         <video
           key={video.videoUrl}
           src={video.videoUrl}
@@ -123,6 +126,7 @@ export default function VideoLessonPlayer({
           preload="metadata"
           className="w-full h-full object-contain"
         />
+      </div>
       </div>
     );
   }

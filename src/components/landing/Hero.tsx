@@ -128,6 +128,7 @@ export default function Hero() {
           {/* Right Layered Platform Ecosystem Composition */}
           <div className="lg:col-span-7 min-w-0 space-y-4">
             {/* Main Interactive Learnova Stage Window */}
+            <div className="learnova-ambient-stage rounded-2xl">
             <div className="relative rounded-2xl border border-indigo-400/25 bg-[#0D1336] shadow-2xl shadow-black/40 overflow-hidden">
               {/* Interactive Ecosystem View Switcher */}
               <div className="border-b border-white/10 bg-[#0A0F2C] px-3.5 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -442,6 +443,7 @@ export default function Hero() {
                 )}
               </div>
             </div>
+            </div>
 
             {/* Bottom Ecosystem Trio Cards */}
             <div className="grid sm:grid-cols-3 gap-3">
@@ -459,7 +461,7 @@ export default function Hero() {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-indigo-400/20 bg-[#121942]/90 px-4 py-3 flex items-center gap-3 min-w-0">
+              <div className="learnova-ambient-stage-soft rounded-xl border border-[#7C3AED]/40 bg-[#121942]/95 px-4 py-3 flex items-center gap-3 min-w-0">
                 <div className="w-9 h-9 rounded-lg bg-[#06B6D4]/20 text-[#22D3EE] flex items-center justify-center shrink-0">
                   <Sparkles size={17} />
                 </div>

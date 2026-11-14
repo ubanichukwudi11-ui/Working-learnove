@@ -19,7 +19,7 @@ export default function CTA() {
         }}
       />
 
-      <div className="relative mx-auto max-w-6xl rounded-3xl border border-indigo-400/25 bg-[#0A1030]/75 p-8 sm:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-8 shadow-2xl shadow-black/35">
+      <div className="relative mx-auto max-w-6xl learnova-ambient-stage rounded-3xl border border-indigo-400/25 bg-[#0A1030]/80 p-8 sm:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-8 shadow-2xl shadow-black/35">
         <div className="max-w-2xl space-y-3">
           <p className="landing-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#22D3EE]">
             Join The Learnova Campus

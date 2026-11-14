@@ -256,7 +256,7 @@ export default function NovaLiveVoicePanel() {
 
   return (
     <div className="p-2 sm:p-4 space-y-5 max-w-4xl mx-auto">
-      <div className="learnova-banner-dark bg-architectural-grid-dark text-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark rounded-3xl text-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1.5 min-w-0">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
             <Radio size={14} className={status === "live" ? "text-emerald-400" : "text-[#22D3EE]"} />

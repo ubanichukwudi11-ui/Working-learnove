@@ -17,7 +17,7 @@ export default function AuthLayout({
           <Logo href="/" variant="learnova" />
         </div>
 
-        <div className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white p-6 sm:p-8 shadow-xl shadow-[#0B1230]/6 text-[#0B1230]">
+        <div className="w-full max-w-md learnova-ambient-stage-soft learnova-card-glow rounded-2xl p-6 sm:p-8 text-[#0B1230]">
           {children}
         </div>
       </div>

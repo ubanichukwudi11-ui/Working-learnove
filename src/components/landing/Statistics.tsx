@@ -53,24 +53,26 @@ export default function Statistics() {
     >
       <div className="mx-auto max-w-7xl space-y-12">
         {/* Metrics Strip */}
-        <div className="rounded-2xl bg-white border border-[#E4E1F5] shadow-sm shadow-indigo-950/5 grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
-          {metrics.map((stat, idx) => (
-            <div
-              key={stat.label}
-              className={`p-5 sm:p-7 min-w-0 border-[#EAE7FA] ${
-                idx < 2 ? "border-b lg:border-b-0" : ""
-              } ${idx % 2 === 0 ? "border-r" : ""} ${
-                idx === 1 ? "lg:border-r" : ""
-              }`}
-            >
-              <p className="landing-display text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1E1B4B] tabular-nums">
-                {stat.number}
-              </p>
-              <p className="mt-1.5 text-xs sm:text-sm font-semibold text-[#5B21B6]">
-                {stat.label}
-              </p>
-            </div>
-          ))}
+        <div className="learnova-ambient-stage-soft rounded-2xl">
+          <div className="learnova-card-glow rounded-2xl grid grid-cols-2 lg:grid-cols-4 overflow-hidden">
+            {metrics.map((stat, idx) => (
+              <div
+                key={stat.label}
+                className={`p-5 sm:p-7 min-w-0 border-[#EAE7FA] ${
+                  idx < 2 ? "border-b lg:border-b-0" : ""
+                } ${idx % 2 === 0 ? "border-r" : ""} ${
+                  idx === 1 ? "lg:border-r" : ""
+                }`}
+              >
+                <p className="landing-display text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1E1B4B] tabular-nums">
+                  {stat.number}
+                </p>
+                <p className="mt-1.5 text-xs sm:text-sm font-semibold text-[#5B21B6]">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* 4-Step Learning Rhythm */}

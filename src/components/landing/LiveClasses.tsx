@@ -136,7 +136,7 @@ export default function LiveClasses() {
         {/* Interactive Classroom Stage + Moderation & Schedule */}
         <div className="grid lg:grid-cols-12 gap-6 items-stretch">
           {/* Left 7-Col Interactive Stage Simulation */}
-          <div className="lg:col-span-7 min-w-0 rounded-3xl border border-indigo-400/25 bg-[#0A1030] p-4 sm:p-6 flex flex-col justify-between gap-4 sm:gap-5 shadow-2xl shadow-black/35">
+          <div className="lg:col-span-7 min-w-0 learnova-ambient-stage rounded-3xl border border-indigo-400/25 bg-[#0A1030] p-4 sm:p-6 flex flex-col justify-between gap-4 sm:gap-5 shadow-2xl shadow-black/35">
             {/* Main Teacher Video Feed + Clean Status Footer */}
             <div className="rounded-2xl overflow-hidden border border-white/15 bg-[#070D24]">
               <div className="relative aspect-[16/10] sm:aspect-[16/9]">
@@ -302,7 +302,11 @@ export default function LiveClasses() {
               {todayTimetable.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-indigo-400/20 bg-[#0E163D]/85 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 hover:border-[#7C3AED]/50 transition-colors"
+                  className={`rounded-2xl border bg-[#0E163D]/90 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 transition-colors ${
+                    item.live
+                      ? "learnova-ambient-stage-soft border-[#22D3EE]/40 hover:border-[#22D3EE]/70"
+                      : "border-indigo-400/20 hover:border-[#7C3AED]/50"
+                  }`}
                 >
                   <div className="space-y-2 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs landing-mono">

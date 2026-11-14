@@ -115,7 +115,7 @@ export default function Pricing() {
               key={plan.name}
               className={`rounded-3xl p-7 sm:p-8 flex flex-col justify-between transition-colors ${
                 plan.featured
-                  ? "bg-gradient-to-br from-[#0B1230] via-[#131946] to-[#231955] text-white border-2 border-[#7C3AED] shadow-xl shadow-indigo-950/20"
+                  ? "learnova-ambient-stage-soft bg-gradient-to-br from-[#0B1230] via-[#131946] to-[#231955] text-white border-2 border-[#7C3AED] shadow-xl shadow-indigo-950/20"
                   : "bg-white text-[#0B1230] border border-[#E4E1F5]"
               }`}
             >

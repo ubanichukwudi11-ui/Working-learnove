@@ -24,7 +24,7 @@ export default function RegisterPage() {
         <div className="grid gap-6 md:grid-cols-3">
           <Link
             href="/register/student"
-            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 shadow-xs hover:border-[#7C3AED] hover:shadow-lg hover:shadow-[#4F46E5]/8 transition-all flex flex-col justify-between"
+            className="group learnova-card-glow rounded-2xl p-7 hover:-translate-y-0.5 transition-all flex flex-col justify-between"
           >
             <div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shadow-md shadow-[#4F46E5]/20">
@@ -45,7 +45,7 @@ export default function RegisterPage() {
 
           <Link
             href="/register/teacher"
-            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 shadow-xs hover:border-[#4F46E5] hover:shadow-lg hover:shadow-[#4F46E5]/8 transition-all flex flex-col justify-between"
+            className="group learnova-card-glow rounded-2xl p-7 hover:-translate-y-0.5 transition-all flex flex-col justify-between"
           >
             <div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0B1230] to-[#151A44] text-[#22D3EE] flex items-center justify-center shadow-md shadow-[#0B1230]/15">
@@ -66,7 +66,7 @@ export default function RegisterPage() {
 
           <Link
             href="/register/parent"
-            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 shadow-xs hover:border-[#06B6D4] hover:shadow-lg hover:shadow-[#06B6D4]/8 transition-all flex flex-col justify-between"
+            className="group learnova-card-glow rounded-2xl p-7 hover:-translate-y-0.5 transition-all flex flex-col justify-between"
           >
             <div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white flex items-center justify-center shadow-md shadow-[#06B6D4]/20">

@@ -155,7 +155,7 @@ function ParentContent() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header Banner */}
-        <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               {activeWard

@@ -158,7 +158,7 @@ export default function LiveClassesPage() {
             <>
               {/* Featured Active / Next Classroom */}
               {featuredClass && !isAdmin && (
-                <div className="learnova-banner-dark bg-architectural-grid-dark text-white p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark rounded-3xl text-white p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                   <div className="space-y-2.5 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-[#22D3EE] font-semibold">
                       <span>{featuredClass.status === "live" ? "Broadcasting Now" : "Your Allocated Session"}</span>

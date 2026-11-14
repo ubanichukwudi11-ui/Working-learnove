@@ -75,7 +75,7 @@ export default function DashboardPage() {
       <AppLayout>
         <div className="space-y-6">
           {/* Welcome Header */}
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 border border-white/10 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
                 Student Learning Portal · {levelName}
@@ -204,7 +204,7 @@ export default function DashboardPage() {
 
               {/* Allocated Live Classrooms & Timetable */}
               <div className="grid lg:grid-cols-2 gap-6 items-start">
-                <div className="learnova-card p-6 space-y-4 min-w-0">
+                <div className="learnova-card-glow p-6 space-y-4 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                       <Video size={17} className="text-[#4F46E5]" />

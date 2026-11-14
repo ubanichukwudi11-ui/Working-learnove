@@ -73,7 +73,7 @@ export default function AnalyticsPage() {
       <AppLayout>
         <div className="space-y-6">
           {/* Header & Official PDF Report Card Download */}
-          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
                 {analytics
