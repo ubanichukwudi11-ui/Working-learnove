@@ -1,12 +1,15 @@
-import { liveClasses, LiveClassItem } from "./liveClasses";
-import type {
-  ClassroomSnapshot,
-  Participant,
-  SignalingEnvelope,
-} from "./classroomSync";
+import type { ClassroomSnapshot, SignalingEnvelope } from "./classroomSync";
+import type { ClassroomRecord, LmsStateData } from "./lmsTypes";
+import {
+  appendAuditLog,
+  appendNotification,
+  isStudentEntitledForSubject,
+  loadLmsState,
+  mutateLmsState,
+} from "./lmsDb";
+import type { AuthenticatedSessionUser } from "./serverAuth";
 
 interface LiveRegistryStore {
-  classes: LiveClassItem[];
   rooms: Map<string, ClassroomSnapshot>;
   signals: Map<string, SignalingEnvelope[]>;
   seqCounter: number;
@@ -17,7 +20,6 @@ const g = globalThis as unknown as { __learnovaLiveStore?: LiveRegistryStore };
 function getStore(): LiveRegistryStore {
   if (!g.__learnovaLiveStore) {
     g.__learnovaLiveStore = {
-      classes: [...liveClasses],
       rooms: new Map(),
       signals: new Map(),
       seqCounter: 0,
@@ -35,103 +37,34 @@ function formatWatTime(): string {
   }).format(new Date());
 }
 
-function makeDefaultParticipants(): Participant[] {
-  return [
-    {
-      id: "demo-st-chidi",
-      name: "Chidi Nwankwo",
-      role: "STUDENT",
-      avatar: "/images/avatar-chinedu.jpg",
-      initials: "CN",
-      color: "bg-[#0D9488]",
-      micOn: false,
-      videoOn: false,
-      audioOnly: false,
-      handRaised: false,
-      stageStatus: "audience",
-      joinedAt: "08:30 AM",
-    },
-    {
-      id: "demo-st-amina",
-      name: "Amina Yusuf",
-      role: "STUDENT",
-      avatar: "/images/avatar-funke.jpg",
-      initials: "AY",
-      color: "bg-[#0B1F3A]",
-      micOn: false,
-      videoOn: false,
-      audioOnly: false,
-      handRaised: true,
-      handRaisedAt: "08:36 AM",
-      stageStatus: "pending",
-      joinedAt: "08:31 AM",
-    },
-    {
-      id: "demo-st-tolu",
-      name: "Toluwani Adeyemi",
-      role: "STUDENT",
-      initials: "TA",
-      color: "bg-[#D97706]",
-      micOn: false,
-      videoOn: false,
-      audioOnly: true,
-      handRaised: false,
-      stageStatus: "audience",
-      joinedAt: "08:33 AM",
-    },
-    {
-      id: "demo-st-zainab",
-      name: "Zainab Musa",
-      role: "STUDENT",
-      initials: "ZM",
-      color: "bg-slate-700",
-      micOn: false,
-      videoOn: false,
-      audioOnly: false,
-      handRaised: false,
-      stageStatus: "audience",
-      joinedAt: "08:34 AM",
-    },
-  ];
+function formatTimeRangeWat(start: string, end: string): string {
+  return `${start} – ${end} WAT`;
 }
 
-function createInitialSnapshot(classId: string): ClassroomSnapshot {
-  const store = getStore();
-  const meta =
-    store.classes.find((c) => c.id === classId) ||
-    ({
-      id: classId,
-      title: `Live Classroom · ${classId}`,
-      topic: "Interactive Term Revision & Past Question Walkthrough",
-      teacher: "Mrs. Funke Adewale",
-      teacherAvatar: "/images/avatar-funke.jpg",
-      hostPoster: "/images/teacher-live-poster.jpg",
-      subject: "Mathematics",
-      classLevel: "SSS 2 Science",
-      term: "2025/2026 Session · Second Term",
-      timeWat: "08:30 AM – 09:30 AM WAT",
-      examFocus: "WAEC & JAMB Core",
-      startTime: new Date().toISOString(),
-      endTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      studentsCount: 18,
-      status: classId === "math-001" ? "live" : "waiting",
-    } as LiveClassItem);
-
-  const isAlreadyLive = meta.status === "live";
+function buildSnapshotFromClassroom(roomRecord: ClassroomRecord): ClassroomSnapshot {
+  const sessionStatus =
+    roomRecord.status === "LIVE"
+      ? "live"
+      : roomRecord.status === "ENDED"
+      ? "ended"
+      : "waiting";
 
   return {
-    classId: meta.id,
-    title: meta.title,
-    topic: meta.topic,
-    subject: meta.subject,
-    classLevel: meta.classLevel,
-    timeWat: meta.timeWat,
-    teacherName: meta.teacher,
-    teacherAvatar: meta.teacherAvatar,
-    hostPoster: meta.hostPoster,
-    sessionStatus: isAlreadyLive ? "live" : "waiting",
-    startedAt: isAlreadyLive ? Date.now() - 18 * 60 * 1000 : null,
-    endedAt: null,
+    classId: roomRecord.id,
+    title: roomRecord.lessonTitle || `${roomRecord.subjectName} · ${roomRecord.groupName}`,
+    topic:
+      roomRecord.lessonDescription ||
+      roomRecord.lessonObjectives ||
+      `${roomRecord.classLevelName} Interactive Lesson`,
+    subject: roomRecord.subjectName,
+    classLevel: `${roomRecord.classLevelName} · ${roomRecord.groupName}`,
+    timeWat: `${roomRecord.dayOfWeek} · ${formatTimeRangeWat(roomRecord.startTime, roomRecord.endTime)}`,
+    teacherName: roomRecord.teacherName,
+    teacherAvatar: "/images/avatar-funke.jpg",
+    hostPoster: "/images/teacher-live-poster.jpg",
+    sessionStatus,
+    startedAt: roomRecord.startedAt ? new Date(roomRecord.startedAt).getTime() : null,
+    endedAt: roomRecord.endedAt ? new Date(roomRecord.endedAt).getTime() : null,
     hostMicOn: true,
     hostVideoOn: true,
     hostAudioOnly: false,
@@ -140,140 +73,172 @@ function createInitialSnapshot(classId: string): ClassroomSnapshot {
       type: "slide",
       slideIndex: 0,
     },
-    poll: {
-      id: "poll-initial",
-      question: "For y = ax² + bx + c, when a > 0 the parabola opens:",
-      options: [
-        { id: "opt-1", text: "Upwards (Minimum Turning Point)", votes: 14 },
-        { id: "opt-2", text: "Downwards (Maximum Turning Point)", votes: 2 },
-        { id: "opt-3", text: "Sideways along the y-axis", votes: 1 },
-      ],
-      totalVotes: 17,
-      votedUserIds: [],
-      active: true,
-      createdAt: "08:35 AM",
-    },
+    poll: null,
     assignment: {
-      id: "assign-1",
-      title: `${meta.subject} Term 2 Practice Worksheet`,
+      id: `assign-${roomRecord.id}`,
+      title: `${roomRecord.subjectName} Lesson Task`,
       description:
-        "Complete questions 1–4 from the lesson guide and upload your working steps before 6:00 PM WAT.",
-      dueDate: "Today · 6:00 PM WAT",
-      totalStudents: 24,
+        roomRecord.assignmentsText ||
+        "Follow your teacher's instructions during this session.",
+      dueDate: `${roomRecord.dayOfWeek} · End of Lesson`,
+      totalStudents: roomRecord.studentUserIds.length,
       submittedUserIds: [],
       status: "active",
     },
-    participants: makeDefaultParticipants(),
+    participants: [],
     messages: [
       {
-        id: "msg-welcome",
-        senderId: "host",
-        sender: meta.teacher,
-        role: "teacher",
-        text: `Welcome to ${meta.title}. Raise your hand anytime if you want to speak on stage.`,
-        timestamp: "08:30 AM",
-        avatar: meta.teacherAvatar,
+        id: `msg-welcome-${roomRecord.id}`,
+        senderId: "system",
+        sender: "System",
+        role: "system",
+        text: `Welcome to ${roomRecord.classLevelName} ${roomRecord.subjectName} (${roomRecord.groupName}).`,
+        timestamp: formatWatTime(),
         important: true,
       },
     ],
-    questions: [
-      {
-        id: "q-1",
-        authorId: "demo-st-chidi",
-        authorName: "Chidi Nwankwo",
-        question: "Ma, does x = -b / (2a) always give the turning point x-coordinate?",
-        answer: "Yes — substitute that x back into f(x) to get the exact y-coordinate of the vertex.",
-        answeredBy: meta.teacher,
-        timestamp: "08:34 AM",
-        resolved: true,
-      },
-    ],
+    questions: [],
     announcement: null,
-    resources: [
-      {
-        id: "res-1",
-        title: `${meta.subject} Lesson Note & Worked Examples`,
-        type: "pdf",
-        size: "1.4 MB",
-        url: "#lesson-note",
-      },
-      {
-        id: "res-2",
-        title: "WAEC / NECO Formula Quick Reference",
-        type: "pdf",
-        size: "680 KB",
-        url: "#formula-sheet",
-      },
-    ],
-    classNotes: `${meta.title}\n• Key definitions and worked steps discussed in class.\n• Focus on exam presentation marks and clear units.`,
+    resources: roomRecord.materials.map((m) => ({
+      id: m.id,
+      title: m.title,
+      type: m.type === "LINK" ? "link" : m.type === "WORKSHEET" ? "doc" : "pdf",
+      size: m.type,
+      url: m.url || "#material",
+    })),
+    classNotes:
+      roomRecord.lessonNotes ||
+      `${roomRecord.lessonTitle}\n• Objectives: ${roomRecord.lessonObjectives || "Core syllabus mastery"}`,
     whiteboardStrokes: [],
     version: 1,
   };
 }
 
-export function listClassesFromServer(): LiveClassItem[] {
-  const store = getStore();
-  return store.classes.map((cls) => {
-    const room = store.rooms.get(cls.id);
-    if (!room) return cls;
+export interface RoomAccessResult {
+  allowed: boolean;
+  httpStatus: 200 | 403 | 404;
+  code?: string;
+  error?: string;
+  classroom?: ClassroomRecord;
+  state?: LmsStateData;
+}
+
+export async function verifyLiveRoomAccess(
+  classId: string,
+  user: AuthenticatedSessionUser
+): Promise<RoomAccessResult> {
+  const state = await loadLmsState();
+  const room = state.classrooms.find((c) => c.id === classId);
+  if (!room) {
     return {
-      ...cls,
-      status:
-        room.sessionStatus === "live"
-          ? "live"
-          : room.sessionStatus === "ended"
-          ? "ended"
-          : cls.status,
-      studentsCount: room.participants.filter((p) => p.role === "STUDENT").length,
+      allowed: false,
+      httpStatus: 404,
+      code: "NOT_FOUND",
+      error: "Classroom not found or no longer active.",
     };
-  });
-}
+  }
 
-export function createClassOnServer(input: {
-  title: string;
-  topic: string;
-  subject: string;
-  classLevel: string;
-  timeWat: string;
-  teacher: string;
-  startNow?: boolean;
-}): LiveClassItem {
-  const store = getStore();
-  const slug = input.subject.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  const id = `${slug}-${Date.now().toString().slice(-4)}`;
-  const item: LiveClassItem = {
-    id,
-    title: input.title,
-    topic: input.topic,
-    teacher: input.teacher,
-    teacherAvatar: "/images/avatar-funke.jpg",
-    hostPoster: "/images/teacher-live-poster.jpg",
-    subject: input.subject,
-    classLevel: input.classLevel,
-    term: "2025/2026 Session · Second Term",
-    timeWat: input.timeWat,
-    examFocus: "WAEC & JAMB Core",
-    startTime: new Date().toISOString(),
-    endTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-    studentsCount: 0,
-    status: input.startNow ? "live" : "scheduled",
+  if (room.status === "CANCELLED") {
+    return {
+      allowed: false,
+      httpStatus: 403,
+      code: "ROOM_CANCELLED",
+      error: "This classroom session has been cancelled by school administration.",
+      classroom: room,
+    };
+  }
+
+  // Admins inspect operational status in /admin/classrooms, NOT private live audio/video streams
+  if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
+    return {
+      allowed: false,
+      httpStatus: 403,
+      code: "ADMIN_STREAM_RESTRICTED",
+      error:
+        "Administrators monitor classroom capacity and status from the Classroom Control Centre and do not join private live streams.",
+      classroom: room,
+    };
+  }
+
+  if (user.role === "TEACHER") {
+    if (room.teacherUserId !== user.id) {
+      return {
+        allowed: false,
+        httpStatus: 403,
+        code: "NOT_ASSIGNED",
+        error: "You are not the assigned teacher for this classroom group.",
+        classroom: room,
+      };
+    }
+    return { allowed: true, httpStatus: 200, classroom: room, state };
+  }
+
+  if (user.role === "STUDENT") {
+    const tt = state.timetableEntries.find((e) => e.id === room.timetableEntryId);
+    if (!tt || tt.publicationStatus !== "PUBLISHED") {
+      return {
+        allowed: false,
+        httpStatus: 403,
+        code: "NOT_PUBLISHED",
+        error: "This lesson timetable is not published yet.",
+        classroom: room,
+      };
+    }
+
+    if (!room.studentUserIds.includes(user.id)) {
+      return {
+        allowed: false,
+        httpStatus: 403,
+        code: "NOT_ASSIGNED",
+        error:
+          "You are not allocated to this classroom group. Please join your assigned group from your timetable.",
+        classroom: room,
+      };
+    }
+
+    const ent = isStudentEntitledForSubject(state, user.id, room.subjectId, room.classLevelId);
+    if (!ent.entitled) {
+      return {
+        allowed: false,
+        httpStatus: 403,
+        code: "SUBSCRIPTION_REQUIRED",
+        error: ent.reason,
+        classroom: room,
+      };
+    }
+
+    return { allowed: true, httpStatus: 200, classroom: room, state };
+  }
+
+  return {
+    allowed: false,
+    httpStatus: 403,
+    code: "FORBIDDEN",
+    error: "This role cannot join live classroom streams.",
   };
-  store.classes.unshift(item);
-  getRoomSnapshot(id);
-  if (input.startNow) {
-    const room = store.rooms.get(id)!;
-    room.sessionStatus = "live";
-    room.startedAt = Date.now();
-  }
-  return item;
 }
 
-export function getRoomSnapshot(classId: string): ClassroomSnapshot {
+export function getRoomSnapshotFromRecord(roomRecord: ClassroomRecord): ClassroomSnapshot {
   const store = getStore();
-  if (!store.rooms.has(classId)) {
-    store.rooms.set(classId, createInitialSnapshot(classId));
+  let snap = store.rooms.get(roomRecord.id);
+  if (!snap) {
+    snap = buildSnapshotFromClassroom(roomRecord);
+    store.rooms.set(roomRecord.id, snap);
+  } else {
+    // Keep authoritative LMS status, teacher, notes, and materials synchronized
+    snap.title = roomRecord.lessonTitle || snap.title;
+    snap.topic = roomRecord.lessonDescription || snap.topic;
+    snap.teacherName = roomRecord.teacherName;
+    snap.sessionStatus =
+      roomRecord.status === "LIVE"
+        ? "live"
+        : roomRecord.status === "ENDED"
+        ? "ended"
+        : "waiting";
+    snap.startedAt = roomRecord.startedAt ? new Date(roomRecord.startedAt).getTime() : null;
+    snap.endedAt = roomRecord.endedAt ? new Date(roomRecord.endedAt).getTime() : null;
   }
-  return store.rooms.get(classId)!;
+  return snap;
 }
 
 export function getSignalsSince(
@@ -295,39 +260,35 @@ export function getSignalsSince(
   };
 }
 
-export function applyRoomAction(classId: string, body: Record<string, any>): ClassroomSnapshot {
+export async function applyAuthenticatedRoomAction(
+  classId: string,
+  roomRecord: ClassroomRecord,
+  user: AuthenticatedSessionUser,
+  body: Record<string, any>
+): Promise<ClassroomSnapshot> {
   const store = getStore();
-  const room = getRoomSnapshot(classId);
+  const room = getRoomSnapshotFromRecord(roomRecord);
   const action = String(body.action || "");
-  const actorRole = String(body.actorRole || "STUDENT").toUpperCase();
-  const isTeacherActor = actorRole === "TEACHER" || actorRole === "ADMIN";
+  const isTeacherActor = user.role === "TEACHER" && roomRecord.teacherUserId === user.id;
   const nowStr = formatWatTime();
 
   switch (action) {
     case "JOIN_ROOM": {
-      const id = String(body.userId || "").trim();
-      const name = String(body.name || "Learner").trim();
-      const role = body.role === "TEACHER" ? "TEACHER" : "STUDENT";
-      if (!id) break;
-
-      if (role === "TEACHER") {
-        room.teacherName = name || room.teacherName;
-        if (room.sessionStatus === "waiting") {
-          room.sessionStatus = "live";
-          room.startedAt = Date.now();
-        }
-      } else {
-        const existing = room.participants.find((p) => p.id === id);
+      if (user.role === "TEACHER" && isTeacherActor) {
+        room.teacherName = user.fullName || room.teacherName;
+        // Note: Joining room in prep/waiting does NOT auto-start broadcast. Teacher explicitly clicks START_CLASS.
+      } else if (user.role === "STUDENT") {
+        const existing = room.participants.find((p) => p.id === user.id);
         if (!existing) {
-          const initials = name
+          const initials = user.fullName
             .split(/\s+/)
             .map((w) => w[0])
             .join("")
             .slice(0, 2)
             .toUpperCase();
           room.participants.unshift({
-            id,
-            name,
+            id: user.id,
+            name: user.fullName,
             role: "STUDENT",
             initials: initials || "ST",
             color: "bg-[#0D9488]",
@@ -339,14 +300,34 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
             joinedAt: nowStr,
           });
         }
+
+        // Persist attendance PRESENT when room is live
+        if (roomRecord.status === "LIVE") {
+          await mutateLmsState((state) => {
+            const existingAtt = state.attendanceRecords.find(
+              (a) => a.classroomId === classId && a.studentUserId === user.id
+            );
+            if (!existingAtt) {
+              state.attendanceRecords.push({
+                id: `att-${classId}-${user.id}`,
+                classroomId: classId,
+                studentUserId: user.id,
+                studentName: user.fullName,
+                status: "PRESENT",
+                joinedAt: new Date().toISOString(),
+                recordedBy: "System (Live Join)",
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          });
+        }
       }
       room.version++;
       break;
     }
 
     case "LEAVE_ROOM": {
-      const id = String(body.userId || "");
-      room.participants = room.participants.filter((p) => p.id !== id);
+      room.participants = room.participants.filter((p) => p.id !== user.id);
       room.version++;
       break;
     }
@@ -363,6 +344,32 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
         role: "system",
         text: `${room.teacherName} started the live class session.`,
         timestamp: nowStr,
+      });
+      await mutateLmsState((state) => {
+        const lmsRoom = state.classrooms.find((c) => c.id === classId);
+        if (lmsRoom) {
+          lmsRoom.status = "LIVE";
+          lmsRoom.startedAt = lmsRoom.startedAt || new Date().toISOString();
+          lmsRoom.endedAt = undefined;
+          for (const sid of lmsRoom.studentUserIds) {
+            appendNotification(state, {
+              recipientUserId: sid,
+              recipientRole: "STUDENT",
+              category: "CLASSROOM",
+              title: `LIVE NOW: ${lmsRoom.subjectName} (${lmsRoom.groupName})`,
+              message: `${lmsRoom.teacherName} started your live lesson. Join Classroom now.`,
+              href: `/live-classes/${lmsRoom.id}`,
+            });
+          }
+          appendAuditLog(state, {
+            actorUserId: user.id,
+            actorEmail: user.email,
+            actorRole: user.role,
+            action: "START_LIVE_CLASSROOM",
+            entityType: "classroom",
+            entityId: lmsRoom.id,
+          });
+        }
       });
       room.version++;
       break;
@@ -388,14 +395,51 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
         text: `Class ended by ${room.teacherName}.`,
         timestamp: nowStr,
       });
+      await mutateLmsState((state) => {
+        const lmsRoom = state.classrooms.find((c) => c.id === classId);
+        if (lmsRoom) {
+          lmsRoom.status = "ENDED";
+          lmsRoom.endedAt = new Date().toISOString();
+          if (lmsRoom.startedAt) {
+            lmsRoom.durationSeconds = Math.max(
+              0,
+              Math.floor((Date.now() - new Date(lmsRoom.startedAt).getTime()) / 1000)
+            );
+          }
+          for (const sid of lmsRoom.studentUserIds) {
+            const hasRec = state.attendanceRecords.find(
+              (a) => a.classroomId === lmsRoom.id && a.studentUserId === sid
+            );
+            if (!hasRec) {
+              state.attendanceRecords.push({
+                id: `att-${lmsRoom.id}-${sid}`,
+                classroomId: lmsRoom.id,
+                studentUserId: sid,
+                studentName: sid,
+                status: "ABSENT",
+                recordedBy: user.fullName,
+                updatedAt: new Date().toISOString(),
+              });
+            }
+          }
+          appendAuditLog(state, {
+            actorUserId: user.id,
+            actorEmail: user.email,
+            actorRole: user.role,
+            action: "END_LIVE_CLASSROOM",
+            entityType: "classroom",
+            entityId: lmsRoom.id,
+            metadata: { durationSeconds: lmsRoom.durationSeconds },
+          });
+        }
+      });
       room.version++;
       break;
     }
 
     case "RAISE_HAND": {
-      const userId = String(body.userId || "");
       room.participants = room.participants.map((p) =>
-        p.id === userId
+        p.id === user.id
           ? {
               ...p,
               handRaised: true,
@@ -409,9 +453,8 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
     }
 
     case "LOWER_HAND": {
-      const userId = String(body.userId || "");
       room.participants = room.participants.map((p) =>
-        p.id === userId
+        p.id === user.id
           ? {
               ...p,
               handRaised: false,
@@ -485,9 +528,8 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
     }
 
     case "ACCEPT_INVITE": {
-      const userId = String(body.userId || "");
       room.participants = room.participants.map((p) =>
-        p.id === userId && p.stageStatus === "invited"
+        p.id === user.id && p.stageStatus === "invited"
           ? {
               ...p,
               stageStatus: "approved",
@@ -542,9 +584,8 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
     }
 
     case "TOGGLE_STUDENT_MEDIA": {
-      const userId = String(body.userId || "");
       room.participants = room.participants.map((p) => {
-        if (p.id !== userId) return p;
+        if (p.id !== user.id) return p;
         const canSpeakOrShowCam = p.stageStatus === "approved";
         return {
           ...p,
@@ -602,8 +643,8 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
         ...room.messages.slice(-80),
         {
           id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-          senderId: String(body.userId || "anon"),
-          sender: String(body.sender || "Participant"),
+          senderId: user.id,
+          sender: user.fullName,
           role: isTeacherActor ? "teacher" : "student",
           text,
           timestamp: nowStr,
@@ -637,8 +678,8 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
       room.questions = [
         {
           id: `q-${Date.now()}`,
-          authorId: String(body.userId || "anon"),
-          authorName: String(body.authorName || "Student"),
+          authorId: user.id,
+          authorName: user.fullName,
           question,
           timestamp: nowStr,
           resolved: false,
@@ -682,13 +723,12 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
 
     case "VOTE_POLL": {
       const optionId = String(body.optionId || "");
-      const userId = String(body.userId || "");
-      if (!room.poll || !optionId || !userId) break;
-      if (room.poll.votedUserIds.includes(userId)) break;
+      if (!room.poll || !optionId) break;
+      if (room.poll.votedUserIds.includes(user.id)) break;
       room.poll = {
         ...room.poll,
         totalVotes: room.poll.totalVotes + 1,
-        votedUserIds: [...room.poll.votedUserIds, userId],
+        votedUserIds: [...room.poll.votedUserIds, user.id],
         options: room.poll.options.map((opt) =>
           opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt
         ),
@@ -701,26 +741,39 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
       if (!isTeacherActor) break;
       const title = String(body.title || "").trim();
       if (!title) break;
+      const matId = `mat-${Date.now()}`;
       room.resources = [
         {
-          id: `res-${Date.now()}`,
+          id: matId,
           title,
           type: "pdf",
-          size: String(body.size || "820 KB"),
-          url: "#resource",
+          size: String(body.size || "PDF"),
+          url: String(body.url || "#resource"),
         },
         ...room.resources,
       ];
+      await mutateLmsState((state) => {
+        const lmsRoom = state.classrooms.find((c) => c.id === classId);
+        if (lmsRoom) {
+          lmsRoom.materials.unshift({
+            id: matId,
+            title,
+            type: "PDF",
+            url: typeof body.url === "string" ? body.url : undefined,
+            uploadedBy: user.fullName,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      });
       room.version++;
       break;
     }
 
     case "SUBMIT_ASSIGNMENT": {
-      const userId = String(body.userId || "");
-      if (userId && !room.assignment.submittedUserIds.includes(userId)) {
+      if (!room.assignment.submittedUserIds.includes(user.id)) {
         room.assignment = {
           ...room.assignment,
-          submittedUserIds: [...room.assignment.submittedUserIds, userId],
+          submittedUserIds: [...room.assignment.submittedUserIds, user.id],
         };
         room.version++;
       }
@@ -728,8 +781,12 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
     }
 
     case "UPDATE_NOTES": {
-      if (typeof body.notes === "string") {
+      if (isTeacherActor && typeof body.notes === "string") {
         room.classNotes = body.notes;
+        await mutateLmsState((state) => {
+          const lmsRoom = state.classrooms.find((c) => c.id === classId);
+          if (lmsRoom) lmsRoom.lessonNotes = body.notes;
+        });
         room.version++;
       }
       break;
@@ -741,8 +798,8 @@ export function applyRoomAction(classId: string, body: Record<string, any>): Cla
       list.push({
         seq: store.seqCounter,
         classId,
-        fromPeerId: String(body.fromPeerId || ""),
-        fromRole: body.fromRole === "TEACHER" ? "TEACHER" : "STUDENT",
+        fromPeerId: user.id,
+        fromRole: isTeacherActor ? "TEACHER" : "STUDENT",
         toPeerId: String(body.toPeerId || "broadcast"),
         kind: body.kind,
         payload: body.payload,

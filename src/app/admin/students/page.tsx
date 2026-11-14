@@ -1,276 +1,194 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import { Search, UserCheck, UserX, X } from "lucide-react";
-
-interface StudentRecord {
-  id: number;
-  name: string;
-  email: string;
-  classLevel: string;
-  attendance: string;
-  status: "ACTIVE" | "SUSPENDED";
-}
-
-const INITIAL_STUDENTS: StudentRecord[] = [
-  {
-    id: 1,
-    name: "Chukwudi Ubani",
-    email: "chukwudi.ubani@learnova.ng",
-    classLevel: "SSS 2 Science",
-    attendance: "96%",
-    status: "ACTIVE",
-  },
-  {
-    id: 2,
-    name: "Amina Yusuf",
-    email: "amina.yusuf@learnova.ng",
-    classLevel: "SSS 2 Science",
-    attendance: "98%",
-    status: "ACTIVE",
-  },
-  {
-    id: 3,
-    name: "Toluwani Adeyemi",
-    email: "toluwani.a@learnova.ng",
-    classLevel: "SSS 1 Science",
-    attendance: "89%",
-    status: "ACTIVE",
-  },
-  {
-    id: 4,
-    name: "Grace Emmanuel",
-    email: "grace.emmanuel@learnova.ng",
-    classLevel: "SSS 1 Arts",
-    attendance: "74%",
-    status: "SUSPENDED",
-  },
-  {
-    id: 5,
-    name: "Zainab Musa",
-    email: "zainab.musa@learnova.ng",
-    classLevel: "SSS 3 Intensive",
-    attendance: "95%",
-    status: "ACTIVE",
-  },
-];
+import Link from "next/link";
+import { Users, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function AdminStudentsPage() {
-  return (
-    <ProtectedRoute roles={["ADMIN"]}>
-      <StudentsDirectory />
-    </ProtectedRoute>
-  );
-}
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-function StudentsDirectory() {
-  const [students, setStudents] = useState<StudentRecord[]>(INITIAL_STUDENTS);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "SUSPENDED">("ALL");
-  const [selectedStudent, setSelectedStudent] = useState<StudentRecord | null>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const [enrolments, setEnrolments] = useState<any[]>([]);
+  const [entitlements, setEntitlements] = useState<any[]>([]);
+  const [classLevels, setClassLevels] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<any[]>([]);
 
-  const toggleStatus = (id: number) => {
-    setStudents((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, status: s.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" }
-          : s
-      )
-    );
+  const loadData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/lms/subscriptions", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setStudents(json.students || []);
+      setEnrolments(json.enrolments || []);
+      setEntitlements(json.entitlements || []);
+      setClassLevels(json.classLevels || []);
+      setSubjects(json.subjects || []);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleAssignLevel = async (student: any, classLevelId: string) => {
+    setSaving(true);
+    setFeedback(null);
+    try {
+      const levelSubjects = subjects
+        .filter((s) => s.classLevelIds.includes(classLevelId))
+        .map((s) => s.id);
+      const res = await fetch("/api/lms/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_ENROLMENT",
+          studentUserId: student.id,
+          studentName: student.fullName,
+          studentEmail: student.email,
+          classLevelId,
+          subjectIds: levelSubjects.length > 0 ? levelSubjects : subjects.map((s) => s.id),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Update failed.");
+      setFeedback({ type: "ok", text: `Updated class level for ${student.fullName}.` });
+      await loadData();
+    } catch (err: any) {
+      setFeedback({ type: "err", text: err?.message || "Failed to update student." });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const filtered = students.filter((s) => {
-    const matchesQuery =
-      s.name.toLowerCase().includes(query.toLowerCase()) ||
-      s.email.toLowerCase().includes(query.toLowerCase()) ||
-      s.classLevel.toLowerCase().includes(query.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || s.status === statusFilter;
-    return matchesQuery && matchesStatus;
-  });
-
-  const activeCount = students.filter((s) => s.status === "ACTIVE").length;
-  const suspendedCount = students.filter((s) => s.status === "SUSPENDED").length;
-
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
-            Registry · Student Cohorts
-          </p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
-            Student Management
-          </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Search enrolled students, inspect attendance records, and update account access.
-          </p>
-        </div>
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <p className="text-xs font-semibold text-slate-500">Roster Sample</p>
-            <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
-              {students.length}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <p className="text-xs font-semibold text-slate-500">Active Accounts</p>
-            <p className="text-3xl font-extrabold text-[#0D9488] mt-2 tabular-nums">
-              {activeCount}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <p className="text-xs font-semibold text-slate-500">Suspended Accounts</p>
-            <p className="text-3xl font-extrabold text-rose-600 mt-2 tabular-nums">
-              {suspendedCount}
-            </p>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="relative w-full sm:w-80">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search student, email or class..."
-              className="w-full h-10 pl-9 pr-4 rounded-xl border border-slate-200 bg-white text-xs text-[#0B1F3A] focus:outline-none focus:border-[#0D9488]"
-            />
+    <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+      <AppLayout>
+        <div className="space-y-6">
+          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+                Student Enrolment Registry
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+                Students & Class Level Placement
+              </h1>
+              <p className="text-sm text-slate-300 mt-1 max-w-2xl">
+                View all registered students, verify their assigned class levels (JSS1–SS3), and
+                inspect subscription entitlement status.
+              </p>
+            </div>
+            <Link
+              href="/admin/payments"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-semibold transition shrink-0"
+            >
+              Manage Payments & Scholarships
+            </Link>
           </div>
 
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-white border border-slate-200">
-            {(["ALL", "ACTIVE", "SUSPENDED"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setStatusFilter(tab)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                  statusFilter === tab
-                    ? "bg-[#0B1F3A] text-white"
-                    : "text-slate-600 hover:text-[#0B1F3A]"
-                }`}
-              >
-                {tab === "ALL" ? "All" : tab === "ACTIVE" ? "Active" : "Suspended"}
-              </button>
-            ))}
-          </div>
-        </div>
+          {feedback && (
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
+                feedback.type === "ok"
+                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
+                  : "bg-red-50 text-red-700 border-red-200"
+              }`}
+            >
+              {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+              {feedback.text}
+            </div>
+          )}
 
-        {/* Table */}
-        <div className="rounded-2xl border border-slate-200 bg-white overflow-x-auto shadow-xs">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-[#F7F8FA] text-xs font-bold text-slate-600">
-                <th className="p-4">Student Name</th>
-                <th className="p-4">Email</th>
-                <th className="p-4">Class Level</th>
-                <th className="p-4">Attendance</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {filtered.map((student) => (
-                <tr key={student.id} className="hover:bg-slate-50/80 transition">
-                  <td className="p-4 font-bold text-[#0B1F3A]">{student.name}</td>
-                  <td className="p-4 text-xs text-slate-600">{student.email}</td>
-                  <td className="p-4 text-xs font-semibold text-slate-700">
-                    {student.classLevel}
-                  </td>
-                  <td className="p-4 text-xs font-bold text-[#0B1F3A] tabular-nums">
-                    {student.attendance}
-                  </td>
-                  <td className="p-4 text-xs font-bold">
-                    <span
-                      className={
-                        student.status === "ACTIVE" ? "text-emerald-700" : "text-rose-700"
-                      }
-                    >
-                      {student.status === "ACTIVE" ? "Active" : "Suspended"}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => setSelectedStudent(student)}
-                        className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-[#0B1F3A] whitespace-nowrap"
-                      >
-                        Inspect
-                      </button>
-                      <button
-                        onClick={() => toggleStatus(student.id)}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                          student.status === "ACTIVE"
-                            ? "bg-rose-50 text-rose-700 hover:bg-rose-100"
-                            : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                        }`}
-                      >
-                        {student.status === "ACTIVE" ? (
-                          <>
-                            <UserX size={13} />
-                            Suspend
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck size={13} />
-                            Activate
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {loading ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+              Loading students...
+            </div>
+          ) : students.length === 0 ? (
+            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center space-y-2">
+              <Users size={30} className="mx-auto text-slate-400" />
+              <p className="font-bold text-[#0F1F38]">No Registered Students Yet</p>
+              <p className="text-xs text-slate-500">
+                Students who create accounts will appear here automatically for enrolment and
+                classroom placement.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+                    <tr>
+                      <th className="px-4 py-3">Student</th>
+                      <th className="px-4 py-3">Enrolled Class Level</th>
+                      <th className="px-4 py-3">Access Status</th>
+                      <th className="px-4 py-3 text-right">Place / Reassign Level</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {students.map((st) => {
+                      const enr = enrolments.find((e) => e.studentUserId === st.id);
+                      const ent = entitlements.find((e) => e.studentUserId === st.id);
+                      const activeStatus = ent?.accessStatus || enr?.status || "REGISTERED";
+                      const currentLevelId = enr?.classLevelId || ent?.classLevelId || "";
+                      const lvlCode =
+                        classLevels.find((c) => c.id === currentLevelId)?.code ||
+                        st.classLevel ||
+                        "Unassigned";
 
-          {filtered.length === 0 && (
-            <div className="p-10 text-center text-sm text-slate-500">
-              No students match your current search filter.
+                      return (
+                        <tr key={st.id}>
+                          <td className="px-4 py-3">
+                            <p className="font-semibold text-[#0F1F38]">{st.fullName}</p>
+                            <p className="text-xs text-slate-500">{st.email}</p>
+                          </td>
+                          <td className="px-4 py-3 font-bold text-[#0B1F3A]">{lvlCode}</td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                                activeStatus === "ACTIVE_PAID" ||
+                                activeStatus === "SCHOLARSHIP_GRANTED"
+                                  ? "bg-teal-50 text-[#0D9488]"
+                                  : activeStatus === "AWAITING_CONFIRMATION"
+                                  ? "bg-amber-50 text-amber-800"
+                                  : "bg-slate-100 text-slate-600"
+                              }`}
+                            >
+                              {activeStatus.replace(/_/g, " ")}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <select
+                              aria-label={`Class level for ${st.email}`}
+                              value={currentLevelId}
+                              disabled={saving}
+                              onChange={(e) => {
+                                if (e.target.value) handleAssignLevel(st, e.target.value);
+                              }}
+                              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold bg-white"
+                            >
+                              <option value="">Select Class Level...</option>
+                              {classLevels.map((lvl) => (
+                                <option key={lvl.id} value={lvl.id}>
+                                  {lvl.code} · {lvl.name}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>
-
-        {/* Inspect Modal */}
-        {selectedStudent && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-bold text-[#0D9488]">Student Dossier</p>
-                  <h3 className="text-lg font-extrabold text-[#0B1F3A] mt-0.5">
-                    {selectedStudent.name}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="space-y-2 text-xs text-slate-600 border-t border-b border-slate-100 py-4">
-                <p><strong className="text-[#0B1F3A]">Email:</strong> {selectedStudent.email}</p>
-                <p><strong className="text-[#0B1F3A]">Class:</strong> {selectedStudent.classLevel}</p>
-                <p><strong className="text-[#0B1F3A]">Attendance Rate:</strong> {selectedStudent.attendance}</p>
-                <p><strong className="text-[#0B1F3A]">Account Status:</strong> {selectedStudent.status}</p>
-              </div>
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="px-4 py-2 rounded-xl bg-[#0B1F3A] text-white text-xs font-bold"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </AppLayout>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }

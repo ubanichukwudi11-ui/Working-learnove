@@ -5,20 +5,24 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   LayoutDashboard,
+  BookOpenCheck,
   GraduationCap,
   Users,
+  CreditCard,
   CalendarDays,
-  Video,
+  MonitorCheck,
   Shield,
   LogOut,
 } from "lucide-react";
 
 const links = [
   { name: "Overview", href: "/admin", icon: LayoutDashboard, exact: true },
-  { name: "Teachers", href: "/admin/teachers", icon: GraduationCap },
+  { name: "Academics", href: "/admin/academics", icon: BookOpenCheck },
+  { name: "Teacher Approvals", href: "/admin/teachers", icon: GraduationCap },
   { name: "Students", href: "/admin/students", icon: Users },
+  { name: "Payments & Access", href: "/admin/payments", icon: CreditCard },
   { name: "Timetable", href: "/admin/timetable", icon: CalendarDays },
-  { name: "Live Classes", href: "/live-classes", icon: Video },
+  { name: "Classroom Control", href: "/admin/classrooms", icon: MonitorCheck },
 ];
 
 export default function AdminSidebar() {

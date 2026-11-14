@@ -217,7 +217,14 @@ class ClassroomSyncService {
     classId: string,
     peerId?: string,
     sinceSeq: number = 0
-  ): Promise<{ snapshot: ClassroomSnapshot; signals: SignalingEnvelope[]; latestSeq: number } | null> {
+  ): Promise<{
+    snapshot?: ClassroomSnapshot;
+    signals?: SignalingEnvelope[];
+    latestSeq?: number;
+    error?: string;
+    code?: string;
+    httpStatus?: number;
+  } | null> {
     try {
       const qs = new URLSearchParams();
       if (peerId) qs.set("peerId", peerId);
@@ -225,8 +232,15 @@ class ClassroomSyncService {
       const res = await fetch(`/api/live-classes/${encodeURIComponent(classId)}?${qs.toString()}`, {
         cache: "no-store",
       });
-      if (!res.ok) return null;
-      return await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return {
+          error: data.error || "Access denied for this classroom.",
+          code: data.code || "FORBIDDEN",
+          httpStatus: res.status,
+        };
+      }
+      return data;
     } catch {
       return null;
     }

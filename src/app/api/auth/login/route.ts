@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient, isSupabaseServerConfigured } from "@/lib/supabaseServer";
+import { loadLmsState } from "@/lib/lmsDb";
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
         {
           success: false,
           error:
-            "Supabase Auth is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your Supabase project settings.",
+            "Supabase Auth is not configured. Please check your Supabase URL and keys.",
         },
         { status: 400 }
       );
@@ -40,18 +41,25 @@ export async function POST(req: Request) {
 
     const authUser = data.user;
 
-    // Fetch user profile from database
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", authUser.id)
-      .maybeSingle();
+    const [{ data: profile }, state] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
+      loadLmsState(),
+    ]);
 
     let teacherData: any = null;
     let studentData: any = null;
     let parentData: any = null;
 
-    const role = profile?.role || authUser.user_metadata?.role || "STUDENT";
+    let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
+    const cleanEmail = (authUser.email || email).toLowerCase();
+    if (
+      role === "ADMIN" &&
+      (state.platformSettings.superAdminEmails || [])
+        .map((e) => e.toLowerCase())
+        .includes(cleanEmail)
+    ) {
+      role = "SUPER_ADMIN";
+    }
 
     if (role === "TEACHER") {
       const { data: t } = await supabase
@@ -117,6 +125,14 @@ export async function POST(req: Request) {
         maxAge: 60 * 60 * 24 * 7,
         sameSite: "lax",
       });
+      if (data.session?.access_token) {
+        response.cookies.set("learnova_access_token", data.session.access_token, {
+          httpOnly: true,
+          path: "/",
+          maxAge: 60 * 60 * 24 * 7,
+          sameSite: "lax",
+        });
+      }
     } catch {}
 
     return response;

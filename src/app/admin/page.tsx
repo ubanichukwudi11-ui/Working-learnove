@@ -1,300 +1,340 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import { CURRENT_ACADEMIC_TERM } from "@/lib/nigerianCurriculum";
+import Link from "next/link";
 import {
   Users,
   GraduationCap,
-  BookOpen,
   CalendarDays,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  Plus,
+  CreditCard,
+  MonitorCheck,
+  BookOpenCheck,
+  AlertTriangle,
   ArrowRight,
-  Video,
+  Radio,
 } from "lucide-react";
 
-export default function AdminPage() {
-  return (
-    <ProtectedRoute roles={["ADMIN"]}>
-      <AdminContent />
-    </ProtectedRoute>
-  );
-}
+export default function AdminDashboardPage() {
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState({
+    studentsCount: 0,
+    activePaidCount: 0,
+    pendingPaymentsCount: 0,
+    teachersCount: 0,
+    pendingAppsCount: 0,
+    approvedPairsCount: 0,
+    publishedLessonsCount: 0,
+    shortfallLessonsCount: 0,
+    liveRoomsCount: 0,
+    totalRoomsCount: 0,
+    subjectsCount: 0,
+    levelsCount: 0,
+    pendingApps: [] as any[],
+    shortfallEntries: [] as any[],
+    pendingPayments: [] as any[],
+  });
 
-interface PendingTeacherItem {
-  id: string;
-  name: string;
-  subject: string;
-  qualification: string;
-  status: "Pending" | "Approved" | "Rejected";
-}
+  const loadDashboard = useCallback(async () => {
+    try {
+      const [appRes, subRes, ttRes, acadRes] = await Promise.all([
+        fetch("/api/lms/teacher-applications", { cache: "no-store" }),
+        fetch("/api/lms/subscriptions", { cache: "no-store" }),
+        fetch("/api/lms/timetable", { cache: "no-store" }),
+        fetch("/api/lms/academics", { cache: "no-store" }),
+      ]);
 
-function AdminContent() {
-  const [pendingTeachers, setPendingTeachers] = useState<PendingTeacherItem[]>([
-    {
-      id: "t-james-okafor",
-      name: "Mr. Chinedu Emeka",
-      subject: "Physics (SSS 1 – SSS 3)",
-      qualification: "B.Sc Physics Ed., TRCN Certified",
-      status: "Pending",
-    },
-    {
-      id: "t-sarah-adewale",
-      name: "Mrs. Funke Adewale",
-      subject: "Mathematics & Further Maths",
-      qualification: "M.Ed Mathematics, 9 yrs WAEC Examiner",
-      status: "Pending",
-    },
-    {
-      id: "t-ibrahim-bello",
-      name: "Dr. Ibrahim Bello",
-      subject: "Chemistry (SSS 2 – SSS 3)",
-      qualification: "Ph.D Industrial Chemistry",
-      status: "Pending",
-    },
-  ]);
-  const [notice, setNotice] = useState<string | null>(null);
+      const appJson = appRes.ok ? await appRes.json() : {};
+      const subJson = subRes.ok ? await subRes.json() : {};
+      const ttJson = ttRes.ok ? await ttRes.json() : {};
+      const acadJson = acadRes.ok ? await acadRes.json() : {};
 
-  const handleDecision = (id: string, nextStatus: "Approved" | "Rejected") => {
-    const teacher = pendingTeachers.find((t) => t.id === id);
-    setPendingTeachers((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: nextStatus } : t))
-    );
-    if (teacher) {
-      setNotice(`${teacher.name} marked as ${nextStatus}.`);
-      setTimeout(() => setNotice(null), 3500);
+      const apps = appJson.applications || [];
+      const pendingApps = apps.filter(
+        (a: any) => a.status === "PENDING_REVIEW" || a.status === "RESUBMISSION_REQUIRED"
+      );
+      const approvals = (appJson.approvals || []).filter((a: any) => a.status === "APPROVED");
+
+      const entitlements = subJson.entitlements || [];
+      const activePaidCount = entitlements.filter(
+        (e: any) =>
+          e.accessStatus === "ACTIVE_PAID" || e.accessStatus === "SCHOLARSHIP_GRANTED"
+      ).length;
+      const pendingPayments = (subJson.payments || []).filter(
+        (p: any) => p.status === "AWAITING_CONFIRMATION"
+      );
+
+      const entries = ttJson.entries || [];
+      const classrooms = ttJson.classrooms || [];
+      const shortfallEntries = entries.filter((e: any) => e.allocationStatus === "SHORTFALL");
+
+      setSummary({
+        studentsCount: (subJson.students || []).length,
+        activePaidCount,
+        pendingPaymentsCount: pendingPayments.length,
+        teachersCount: (appJson.teachers || []).length,
+        pendingAppsCount: pendingApps.length,
+        approvedPairsCount: approvals.length,
+        publishedLessonsCount: entries.filter((e: any) => e.publicationStatus === "PUBLISHED")
+          .length,
+        shortfallLessonsCount: shortfallEntries.length,
+        liveRoomsCount: classrooms.filter((c: any) => c.status === "LIVE").length,
+        totalRoomsCount: classrooms.length,
+        subjectsCount: (acadJson.subjects || []).length,
+        levelsCount: (acadJson.classLevels || []).length,
+        pendingApps: pendingApps.slice(0, 5),
+        shortfallEntries: shortfallEntries.slice(0, 5),
+        pendingPayments: pendingPayments.slice(0, 5),
+      });
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const pendingCount = pendingTeachers.filter((t) => t.status === "Pending").length;
-
-  const stats = [
-    { label: "Enrolled Students", value: "2,451", detail: "JSS 1 – SSS 3 active", icon: Users },
-    { label: "Verified Teachers", value: "56", detail: "Across 18 NERDC subjects", icon: GraduationCap },
-    { label: "Active Subjects", value: "18", detail: "WAEC, NECO & JAMB tracks", icon: BookOpen },
-    { label: "Classes Today (WAT)", value: "12", detail: "3 broadcasting live", icon: CalendarDays },
-  ];
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   return (
-    <AppLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
-              {CURRENT_ACADEMIC_TERM} · School Administration
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
-              Academic Operations Console
-            </h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Review educator credentials, oversee student cohorts, and manage school timetables.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2.5">
-            <Link
-              href="/admin/timetable"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold transition whitespace-nowrap"
-            >
-              <Plus size={15} />
-              Update Timetable
-            </Link>
-            <Link
-              href="/live-classes"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition whitespace-nowrap"
-            >
-              <Video size={15} />
-              Monitor Live Rooms
-            </Link>
-          </div>
-        </div>
-
-        {notice && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800">
-            {notice}
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((s) => {
-            const Icon = s.icon;
-            return (
-              <div
-                key={s.label}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs"
+    <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+      <AppLayout>
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+                School Operations & Governance
+              </p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+                School Administration Overview
+              </h1>
+              <p className="text-sm text-slate-300 mt-1 max-w-2xl">
+                Coordinate Nigerian academic terms, approve qualified educators per subject &
+                class level, verify student subscriptions, publish conflict-free timetables, and
+                supervise parallel classroom allocations.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5 shrink-0">
+              <Link
+                href="/admin/teachers"
+                className="px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-xs sm:text-sm font-semibold transition"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500">{s.label}</span>
-                  <Icon size={17} className="text-[#0D9488]" />
-                </div>
-                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
-                  {s.value}
-                </p>
-                <p className="text-xs text-slate-500 mt-1">{s.detail}</p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Quick Actions — Real Links */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
-            href="/admin/timetable"
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#0D9488] transition flex flex-col justify-between gap-2"
-          >
-            <CalendarDays size={20} className="text-[#0D9488]" />
-            <div>
-              <p className="text-sm font-bold text-[#0B1F3A]">Manage Timetable</p>
-              <p className="text-xs text-slate-500 mt-0.5">Edit WAT class slots</p>
+                Review Teachers
+              </Link>
+              <Link
+                href="/admin/timetable"
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold transition"
+              >
+                Timetable Builder
+              </Link>
             </div>
-          </Link>
+          </div>
 
-          <Link
-            href="/admin/students"
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#0D9488] transition flex flex-col justify-between gap-2"
-          >
-            <Users size={20} className="text-[#0B1F3A]" />
-            <div>
-              <p className="text-sm font-bold text-[#0B1F3A]">Manage Students</p>
-              <p className="text-xs text-slate-500 mt-0.5">Enrollment &amp; status</p>
+          {loading ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+              Loading school administration records...
             </div>
-          </Link>
-
-          <Link
-            href="/admin/teachers"
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#0D9488] transition flex flex-col justify-between gap-2"
-          >
-            <GraduationCap size={20} className="text-[#D97706]" />
-            <div>
-              <p className="text-sm font-bold text-[#0B1F3A]">Review Teachers</p>
-              <p className="text-xs text-slate-500 mt-0.5">TRCN &amp; credentials</p>
-            </div>
-          </Link>
-
-          <Link
-            href="/subjects"
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-[#0D9488] transition flex flex-col justify-between gap-2"
-          >
-            <BookOpen size={20} className="text-[#0D9488]" />
-            <div>
-              <p className="text-sm font-bold text-[#0B1F3A]">Curriculum Subjects</p>
-              <p className="text-xs text-slate-500 mt-0.5">Inspect NERDC modules</p>
-            </div>
-          </Link>
-        </div>
-
-        {/* Two-column queue & recent logs */}
-        <div className="grid lg:grid-cols-[1.35fr_1fr] gap-6 items-start">
-          {/* Pending Teachers */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-[#0B1F3A]">
-                Teacher Verification Queue
-              </h2>
-              <span className="text-xs font-semibold text-slate-500 tabular-nums">
-                {pendingCount} pending review
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {pendingTeachers.map((teacher) => (
-                <div
-                  key={teacher.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 bg-[#F7F8FA]"
+          ) : (
+            <>
+              {/* Real KPI Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Link
+                  href="/admin/students"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
                 >
-                  <div>
-                    <h3 className="text-sm font-bold text-[#0B1F3A]">{teacher.name}</h3>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      {teacher.subject} · {teacher.qualification}
-                    </p>
-                    <p
-                      className={`text-[11px] font-bold mt-1 ${
-                        teacher.status === "Approved"
-                          ? "text-emerald-700"
-                          : teacher.status === "Rejected"
-                          ? "text-rose-700"
-                          : "text-amber-700"
-                      }`}
-                    >
-                      Status: {teacher.status}
-                    </p>
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-xs font-semibold uppercase">Students</span>
+                    <Users size={17} className="text-[#0D9488]" />
                   </div>
+                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                    {summary.studentsCount}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {summary.activePaidCount} with active access
+                  </p>
+                </Link>
 
-                  {teacher.status === "Pending" ? (
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => handleDecision(teacher.id, "Approved")}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold transition whitespace-nowrap"
-                      >
-                        <CheckCircle2 size={14} />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleDecision(teacher.id, "Rejected")}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition whitespace-nowrap"
-                      >
-                        <XCircle size={14} />
-                        Decline
-                      </button>
+                <Link
+                  href="/admin/teachers"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                >
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-xs font-semibold uppercase">Educators</span>
+                    <GraduationCap size={17} className="text-[#0D9488]" />
+                  </div>
+                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                    {summary.teachersCount}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {summary.pendingAppsCount} pending review · {summary.approvedPairsCount} approved slots
+                  </p>
+                </Link>
+
+                <Link
+                  href="/admin/timetable"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                >
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-xs font-semibold uppercase">Published Lessons</span>
+                    <CalendarDays size={17} className="text-[#0D9488]" />
+                  </div>
+                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                    {summary.publishedLessonsCount}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Across {summary.levelsCount} class levels & {summary.subjectsCount} subjects
+                  </p>
+                </Link>
+
+                <Link
+                  href="/admin/classrooms"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                >
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span className="text-xs font-semibold uppercase">Live Classrooms</span>
+                    <Radio size={17} className="text-emerald-600" />
+                  </div>
+                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                    {summary.liveRoomsCount}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {summary.totalRoomsCount} total allocated group rooms
+                  </p>
+                </Link>
+              </div>
+
+              {/* Operational Queues */}
+              <div className="grid lg:grid-cols-3 gap-6">
+                {/* Pending Teacher Approvals */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                        <GraduationCap size={16} className="text-[#0D9488]" />
+                        Teacher Approval Queue
+                      </h2>
+                      <span className="text-xs font-bold text-amber-700 tabular-nums">
+                        {summary.pendingAppsCount}
+                      </span>
                     </div>
-                  ) : (
-                    <Link
-                      href="/admin/teachers"
-                      className="text-xs font-bold text-[#0D9488] hover:underline inline-flex items-center gap-1 shrink-0"
-                    >
-                      View Directory
-                      <ArrowRight size={13} />
-                    </Link>
-                  )}
+                    {summary.pendingApps.length === 0 ? (
+                      <p className="text-xs text-slate-500 py-6 text-center">
+                        No pending teacher subject applications right now.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-slate-100">
+                        {summary.pendingApps.map((app) => (
+                          <li key={app.id} className="py-2.5">
+                            <p className="text-sm font-semibold text-[#0B1F3A]">
+                              {app.teacherName}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {app.subjectName} · {app.status.replace(/_/g, " ")}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <Link
+                    href="/admin/teachers"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#0D9488] hover:underline"
+                  >
+                    Open Teacher Approval Centre <ArrowRight size={13} />
+                  </Link>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Operational Log */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-bold text-[#0B1F3A]">
-              Recent School Activity
-            </h2>
-            <div className="space-y-3 text-xs">
-              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
-                <Clock size={15} className="text-[#0D9488] mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-[#0B1F3A]">
-                    SSS 2 Mathematics Live Class broadcasting
-                  </p>
-                  <p className="text-slate-500 mt-0.5">24 students joined · 08:30 AM WAT</p>
+                {/* Pending Payment Verifications */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                        <CreditCard size={16} className="text-[#0D9488]" />
+                        Pending Payment Checks
+                      </h2>
+                      <span className="text-xs font-bold text-amber-700 tabular-nums">
+                        {summary.pendingPaymentsCount}
+                      </span>
+                    </div>
+                    {summary.pendingPayments.length === 0 ? (
+                      <p className="text-xs text-slate-500 py-6 text-center">
+                        No bank transfers awaiting confirmation.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-slate-100">
+                        {summary.pendingPayments.map((pay) => (
+                          <li key={pay.id} className="py-2.5">
+                            <p className="text-sm font-semibold text-[#0B1F3A]">
+                              {pay.studentName} · ₦{Number(pay.amountNgn).toLocaleString()}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              Ref: {pay.reference}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <Link
+                    href="/admin/payments"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#0D9488] hover:underline"
+                  >
+                    Open Payments & Access <ArrowRight size={13} />
+                  </Link>
+                </div>
+
+                {/* Capacity Shortfalls & Shortcuts */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                        <AlertTriangle size={16} className="text-[#D97706]" />
+                        Allocation Shortfalls
+                      </h2>
+                      <span className="text-xs font-bold text-red-700 tabular-nums">
+                        {summary.shortfallLessonsCount}
+                      </span>
+                    </div>
+                    {summary.shortfallEntries.length === 0 ? (
+                      <p className="text-xs text-slate-500 py-6 text-center">
+                        All scheduled classes have sufficient approved teachers for enrolled students.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-slate-100">
+                        {summary.shortfallEntries.map((entry) => (
+                          <li key={entry.id} className="py-2.5">
+                            <p className="text-sm font-semibold text-red-700">
+                              Shortfall: {entry.shortfallCount} unplaced students
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              {entry.dayOfWeek} {entry.startTime} WAT · Assign another approved teacher
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-3">
+                    <Link
+                      href="/admin/academics"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0B1F3A] hover:underline"
+                    >
+                      <BookOpenCheck size={13} /> Academics
+                    </Link>
+                    <Link
+                      href="/admin/classrooms"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0D9488] hover:underline"
+                    >
+                      <MonitorCheck size={13} /> Classroom Control
+                    </Link>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
-                <Clock size={15} className="text-[#D97706] mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-[#0B1F3A]">
-                    Second Term Science timetable published
-                  </p>
-                  <p className="text-slate-500 mt-0.5">Synced to JSS &amp; SSS cohorts</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Clock size={15} className="text-[#0B1F3A] mt-0.5 shrink-0" />
-                <div>
-                  <p className="font-semibold text-[#0B1F3A]">
-                    3 TRCN educator verification packets queued
-                  </p>
-                  <p className="text-slate-500 mt-0.5">Awaiting Admin sign-off</p>
-                </div>
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      </div>
-    </AppLayout>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }

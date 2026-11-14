@@ -1,291 +1,233 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import {
-  getTeacherById,
-  approveTeacher,
-  rejectTeacher,
-} from "@/lib/auth";
-import TeacherProfileCard from "@/components/admin/teacher-review/TeacherProfileCard";
-import VerificationScore from "@/components/admin/teacher-review/VerificationScore";
-import PersonalInfoCard from "@/components/admin/teacher-review/PersonalInfoCard";
-import AcademicInfoCard from "@/components/admin/teacher-review/AcademicInfoCard";
-import DocumentsGrid from "@/components/admin/teacher-review/DocumentsGrid";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 
-const FALLBACK_PACKET: Record<string, any> = {
-  "teacher-funke": {
-    id: "teacher-funke",
-    fullName: "Mrs. Funke Adewale",
-    email: "funke.adewale@learnova.ng",
-    role: "TEACHER",
-    status: "ACTIVE",
-    subject: "Mathematics",
-    qualification: "M.Ed Mathematics",
-    institution: "University of Ibadan",
-    experience: "9 Years",
-    phone: "+234 803 412 8821",
-    country: "Nigeria",
-    state: "Lagos",
-    licenseNumber: "TRCN/LAG/2018/04921",
-  },
-  "teacher-chinedu": {
-    id: "teacher-chinedu",
-    fullName: "Mr. Chinedu Emeka",
-    email: "chinedu.emeka@learnova.ng",
-    role: "TEACHER",
-    status: "PENDING",
-    subject: "Physics",
-    qualification: "B.Sc Physics Education",
-    institution: "University of Nigeria, Nsukka",
-    experience: "6 Years",
-    phone: "+234 805 901 4412",
-    country: "Nigeria",
-    state: "Enugu",
-    licenseNumber: "TRCN/ENU/2020/11842",
-  },
-  "teacher-ibrahim": {
-    id: "teacher-ibrahim",
-    fullName: "Dr. Ibrahim Bello",
-    email: "ibrahim.bello@learnova.ng",
-    role: "TEACHER",
-    status: "ACTIVE",
-    subject: "Chemistry",
-    qualification: "Ph.D Industrial Chemistry",
-    institution: "Ahmadu Bello University, Zaria",
-    experience: "11 Years",
-    phone: "+234 809 321 7740",
-    country: "Nigeria",
-    state: "FCT Abuja",
-    licenseNumber: "TRCN/FCT/2016/00781",
-  },
-};
-
-export default function TeacherReviewPage() {
-  return (
-    <ProtectedRoute roles={["ADMIN"]}>
-      <TeacherReviewWorkspace />
-    </ProtectedRoute>
-  );
-}
-
-function TeacherReviewWorkspace() {
+export default function AdminTeacherDetailPage() {
   const params = useParams();
-  const router = useRouter();
-  const id = String(params.id || "");
-  const [teacher, setTeacher] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const teacherId = String(params?.id || "");
 
-  const [identityChecked, setIdentityChecked] = useState(false);
-  const [qualificationChecked, setQualificationChecked] = useState(false);
-  const [documentsChecked, setDocumentsChecked] = useState(false);
-  const [experienceChecked, setExperienceChecked] = useState(false);
-  const [interviewChecked, setInterviewChecked] = useState(false);
-  const [adminNote, setAdminNote] = useState("");
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const [confirmReject, setConfirmReject] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+  const [teacher, setTeacher] = useState<any>(null);
+  const [apps, setApps] = useState<any[]>([]);
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [classLevels, setClassLevels] = useState<any[]>([]);
+
+  const loadTeacher = useCallback(async () => {
+    try {
+      const res = await fetch("/api/lms/teacher-applications", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setTeacher((json.teachers || []).find((t: any) => t.id === teacherId) || null);
+      setApps((json.applications || []).filter((a: any) => a.teacherUserId === teacherId));
+      setApprovals((json.approvals || []).filter((a: any) => a.teacherUserId === teacherId));
+      setClassLevels(json.classLevels || []);
+    } finally {
+      setLoading(false);
+    }
+  }, [teacherId]);
 
   useEffect(() => {
-    async function loadTeacher() {
-      try {
-        const data = await getTeacherById(id);
-        setTeacher(data || FALLBACK_PACKET[id] || null);
-      } catch {
-        setTeacher(FALLBACK_PACKET[id] || null);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadTeacher();
-  }, [id]);
+  }, [loadTeacher]);
 
-  const score = useMemo(() => {
-    let value = 0;
-    if (identityChecked) value += 20;
-    if (qualificationChecked) value += 20;
-    if (documentsChecked) value += 20;
-    if (experienceChecked) value += 20;
-    if (interviewChecked) value += 20;
-    return value;
-  }, [
-    identityChecked,
-    qualificationChecked,
-    documentsChecked,
-    experienceChecked,
-    interviewChecked,
-  ]);
-
-  if (loading) {
-    return (
-      <AppLayout>
-        <div className="py-12 text-center text-sm text-slate-500">
-          Loading verification packet...
-        </div>
-      </AppLayout>
-    );
-  }
-
-  if (!teacher) {
-    return (
-      <AppLayout>
-        <div className="max-w-3xl mx-auto py-10">
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center space-y-3">
-            <h1 className="text-2xl font-extrabold text-[#0B1F3A]">
-              Teacher Packet Not Found
-            </h1>
-            <p className="text-sm text-slate-600">
-              The requested educator verification record could not be located.
-            </p>
-            <Link
-              href="/admin/teachers"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B1F3A] text-white text-xs font-bold"
-            >
-              <ArrowLeft size={14} />
-              Back to Teachers
-            </Link>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
-
-  const canApprove = score === 100;
-
-  const handleApprove = async () => {
-    if (!canApprove) {
-      setFeedback("Please complete all 5 checklist verifications before approving.");
-      return;
+  const reviewApp = async (
+    applicationId: string,
+    decision: "APPROVED" | "REJECTED" | "RESUBMISSION_REQUIRED",
+    approvedClassLevelIds: string[]
+  ) => {
+    setSaving(true);
+    setFeedback(null);
+    try {
+      const res = await fetch("/api/lms/teacher-applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "REVIEW_APPLICATION",
+          applicationId,
+          decision,
+          approvedClassLevelIds,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update.");
+      setFeedback({ type: "ok", text: `Application marked ${decision.replace(/_/g, " ")}.` });
+      await loadTeacher();
+    } catch (err: any) {
+      setFeedback({ type: "err", text: err?.message || "Action failed." });
+    } finally {
+      setSaving(false);
     }
-    await approveTeacher(teacher.id);
-    setFeedback("Educator approved successfully. Redirecting to directory...");
-    setTimeout(() => router.push("/admin/teachers"), 1200);
   };
 
-  const handleReject = async () => {
-    await rejectTeacher(teacher.id);
-    setConfirmReject(false);
-    setFeedback("Application declined. Redirecting...");
-    setTimeout(() => router.push("/admin/teachers"), 1200);
-  };
+  const levelCode = (id: string) => classLevels.find((c) => c.id === id)?.code || id;
 
   return (
-    <AppLayout>
-      <div className="space-y-6 pb-8">
-        <div>
+    <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
+      <AppLayout>
+        <div className="space-y-6">
           <Link
             href="/admin/teachers"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0D9488] hover:underline mb-2"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#0D9488] hover:underline"
           >
             <ArrowLeft size={14} />
-            Back to Teacher Management
+            Back to Teacher Approval Centre
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A]">
-            Educator Verification Packet
-          </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Inspect identity, TRCN licensing, degrees, and academic credentials before granting live classroom access.
-          </p>
-        </div>
 
-        {feedback && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-800">
-            {feedback}
-          </div>
-        )}
-
-        <TeacherProfileCard teacher={teacher} />
-        <VerificationScore score={score} />
-        <PersonalInfoCard teacher={teacher} />
-        <AcademicInfoCard teacher={teacher} />
-        <DocumentsGrid teacher={teacher} />
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-          <h2 className="text-lg font-bold text-[#0B1F3A]">Verification Checklist</h2>
-          <div className="grid md:grid-cols-2 gap-3">
-            <CheckItem label="Identity Verified" checked={identityChecked} onChange={setIdentityChecked} />
-            <CheckItem label="Qualification & Degree Verified" checked={qualificationChecked} onChange={setQualificationChecked} />
-            <CheckItem label="TRCN & Supporting Documents Checked" checked={documentsChecked} onChange={setDocumentsChecked} />
-            <CheckItem label="Teaching Experience Confirmed" checked={experienceChecked} onChange={setExperienceChecked} />
-            <CheckItem label="Demo Lesson & Interview Passed" checked={interviewChecked} onChange={setInterviewChecked} />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
-          <h2 className="text-lg font-bold text-[#0B1F3A]">Reviewer Notes</h2>
-          <textarea
-            value={adminNote}
-            onChange={(e) => setAdminNote(e.target.value)}
-            placeholder="Record TRCN check details or interview remarks..."
-            className="w-full h-32 rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 text-sm text-[#0B1F3A] outline-none focus:border-[#0D9488] resize-none"
-          />
-        </div>
-
-        {teacher.status === "PENDING" && (
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleApprove}
-              className={`px-6 py-3 rounded-xl text-xs font-bold transition ${
-                canApprove
-                  ? "bg-[#0D9488] hover:bg-[#0F766E] text-white"
-                  : "bg-slate-200 text-slate-600 cursor-not-allowed"
+          {feedback && (
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
+                feedback.type === "ok"
+                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
+                  : "bg-red-50 text-red-700 border-red-200"
               }`}
             >
-              Approve Teacher (Requires 100%)
-            </button>
+              {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+              {feedback.text}
+            </div>
+          )}
 
-            {!confirmReject ? (
-              <button
-                onClick={() => setConfirmReject(true)}
-                className="px-6 py-3 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition"
-              >
-                Decline Application
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2">
-                <span className="text-xs font-semibold text-rose-800">Confirm rejection?</span>
-                <button
-                  onClick={handleReject}
-                  className="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold"
-                >
-                  Confirm
-                </button>
-                <button
-                  onClick={() => setConfirmReject(false)}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-bold"
-                >
-                  Cancel
-                </button>
+          {loading ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+              Loading educator credentials...
+            </div>
+          ) : !teacher ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+              Educator record not found.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase text-[#F59E0B]">
+                    Educator Dossier
+                  </p>
+                  <h1 className="text-2xl font-extrabold mt-1">{teacher.fullName}</h1>
+                  <p className="text-sm text-slate-300">{teacher.email}</p>
+                  <p className="text-xs text-slate-300 mt-2">
+                    Qualification: {teacher.qualification || "—"} · Institution:{" "}
+                    {teacher.institution || "—"} · TRCN: {teacher.licenseNumber || "—"}
+                  </p>
+                </div>
+                <span className="px-3 py-1.5 rounded-xl bg-white/10 text-xs font-bold shrink-0">
+                  Account Status: {teacher.status}
+                </span>
               </div>
-            )}
-          </div>
-        )}
-      </div>
-    </AppLayout>
-  );
-}
 
-function CheckItem({
-  label,
-  checked,
-  onChange,
-}: {
-  label: string;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-[#F7F8FA] px-4 py-3 cursor-pointer hover:border-[#0D9488] transition">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4 accent-[#0D9488]"
-      />
-      <span className="text-xs font-bold text-[#0B1F3A]">{label}</span>
-    </label>
+              {/* Uploaded Credentials */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5">
+                <h2 className="text-base font-bold text-[#0F1F38] mb-3">
+                  Submitted Documents
+                </h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                  {[
+                    { label: "Teaching Certificate", url: teacher.teachingCertificate },
+                    { label: "Degree Certificate", url: teacher.degreeCertificate },
+                    { label: "Government ID", url: teacher.governmentId },
+                    { label: "Curriculum Vitae (CV)", url: teacher.cv },
+                  ].map((doc) => (
+                    <div
+                      key={doc.label}
+                      className="border border-slate-200 rounded-xl p-3 flex items-center justify-between"
+                    >
+                      <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                        <FileText size={14} className="text-[#0D9488]" />
+                        {doc.label}
+                      </span>
+                      {doc.url ? (
+                        <span className="text-[#0D9488] font-bold">On File</span>
+                      ) : (
+                        <span className="text-slate-400">Not uploaded</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subject Applications */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4">
+                <h2 className="text-base font-bold text-[#0F1F38]">
+                  Subject Applications ({apps.length})
+                </h2>
+                {apps.length === 0 ? (
+                  <p className="text-xs text-slate-500">No applications submitted yet.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {apps.map((app) => (
+                      <div
+                        key={app.id}
+                        className="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      >
+                        <div>
+                          <p className="font-bold text-[#0B1F3A]">{app.subjectName}</p>
+                          <p className="text-xs text-slate-500">
+                            Levels requested: {(app.classLevelIds || []).map(levelCode).join(", ")} ·
+                            Status: <strong>{app.status}</strong>
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            disabled={saving}
+                            onClick={() => reviewApp(app.id, "APPROVED", app.classLevelIds)}
+                            className="px-3 py-1.5 rounded-lg bg-[#0D9488] text-white text-xs font-semibold"
+                          >
+                            Approve All Levels
+                          </button>
+                          <button
+                            disabled={saving}
+                            onClick={() => reviewApp(app.id, "RESUBMISSION_REQUIRED", [])}
+                            className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 text-xs font-semibold"
+                          >
+                            Request Info
+                          </button>
+                          <button
+                            disabled={saving}
+                            onClick={() => reviewApp(app.id, "REJECTED", [])}
+                            className="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 text-xs font-semibold"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Active Authorizations */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-5">
+                <h2 className="text-base font-bold text-[#0F1F38] mb-3">
+                  Authorized Teaching Assignments ({approvals.length})
+                </h2>
+                {approvals.length === 0 ? (
+                  <p className="text-xs text-slate-500">No approved subject-level slots yet.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {approvals.map((ap) => (
+                      <span
+                        key={ap.id}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border ${
+                          ap.status === "APPROVED"
+                            ? "bg-teal-50 text-[#0D9488] border-teal-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                        }`}
+                      >
+                        {ap.subjectName} — {ap.classLevelName} ({ap.status})
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }

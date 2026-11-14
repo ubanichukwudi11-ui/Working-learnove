@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-
 import { supabase } from "@/lib/supabase";
 
 export default function AuthCallbackPage() {
@@ -10,7 +9,6 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     async function handleCallback() {
-      // Wait for Supabase to finish restoring the session
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -20,38 +18,65 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      const user = session.user;
+      // Exchange OAuth access token for authoritative server profile & httpOnly cookie
+      const sessionRes = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken: session.access_token }),
+      });
 
-      // Check if profile exists
+      if (sessionRes.ok) {
+        const data = await sessionRes.json();
+        const role = data?.user?.role;
+        if (role === "SUPER_ADMIN") {
+          router.replace("/super-admin");
+          return;
+        }
+        if (role === "ADMIN") {
+          router.replace("/admin");
+          return;
+        }
+        if (role === "TEACHER") {
+          router.replace("/teacher");
+          return;
+        }
+        if (role === "PARENT") {
+          router.replace("/parent");
+          return;
+        }
+        if (role === "STUDENT") {
+          router.replace("/dashboard");
+          return;
+        }
+      }
+
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
-        .eq("id", user.id)
+        .eq("id", session.user.id)
         .maybeSingle();
 
-      // No profile yet → choose a role
       if (!profile || !profile.role) {
-          router.replace("/select-role");
-          return;
+        router.replace("/select-role");
+        return;
       }
 
       switch (profile.role) {
+        case "SUPER_ADMIN":
+          router.replace("/super-admin");
+          break;
         case "ADMIN":
           router.replace("/admin");
           break;
-
         case "TEACHER":
           router.replace("/teacher");
           break;
-
         case "PARENT":
           router.replace("/parent");
           break;
-
         case "STUDENT":
           router.replace("/dashboard");
           break;
-
         default:
           router.replace("/select-role");
       }
@@ -61,12 +86,11 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0F172A] text-white">
+    <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA] text-[#0B1F3A]">
       <div className="text-center">
-        <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" />
-
-        <p className="mt-6 text-slate-400">
-          Signing you in...
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#0D9488] border-t-transparent" />
+        <p className="mt-4 text-sm font-semibold text-slate-600">
+          Completing sign in...
         </p>
       </div>
     </div>

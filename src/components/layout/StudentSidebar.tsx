@@ -6,12 +6,12 @@ import { useAuth } from "@/context/AuthContext";
 import {
   LayoutDashboard,
   BookOpen,
+  CreditCard,
+  CalendarDays,
   Video,
   ClipboardList,
-  CalendarDays,
   NotebookPen,
   Sparkles,
-  BarChart3,
   User,
   LogOut,
   GraduationCap,
@@ -20,12 +20,12 @@ import {
 const links = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Subjects", href: "/subjects", icon: BookOpen },
+  { name: "Subscriptions", href: "/subscriptions", icon: CreditCard },
+  { name: "Timetable", href: "/timetable", icon: CalendarDays },
   { name: "Live Classes", href: "/live-classes", icon: Video },
   { name: "Assignments", href: "/assignments", icon: ClipboardList },
-  { name: "Timetable", href: "/timetable", icon: CalendarDays },
   { name: "Notebook", href: "/notebook", icon: NotebookPen },
   { name: "Nova AI", href: "/nova", icon: Sparkles },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Profile", href: "/profile", icon: User },
 ];
 
@@ -41,7 +41,6 @@ export default function StudentSidebar() {
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 h-screen md:w-20 lg:w-60 z-50 bg-[#0B1F3A] text-white flex-col border-r border-white/10">
-      {/* Brand */}
       <Link
         href="/dashboard"
         className="h-16 flex items-center justify-center lg:justify-start gap-3 px-4 border-b border-white/10 shrink-0"
@@ -59,7 +58,6 @@ export default function StudentSidebar() {
         </div>
       </Link>
 
-      {/* Navigation */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto sidebar-scroll">
         {links.map((item) => {
           const Icon = item.icon;
@@ -84,7 +82,6 @@ export default function StudentSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="border-t border-white/10 p-3 shrink-0">
         <button
           onClick={handleLogout}

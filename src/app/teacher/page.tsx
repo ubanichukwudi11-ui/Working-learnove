@@ -1,25 +1,19 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import {
-  CURRENT_ACADEMIC_TERM,
-  TEACHER_CLASSES,
-  TEACHER_STUDENTS,
-  WEEKLY_TIMETABLE,
-} from "@/lib/nigerianCurriculum";
-import {
   Video,
-  ClipboardList,
-  FileText,
+  FileBadge2,
   CalendarCheck,
-  Users,
   BookOpen,
   ArrowRight,
   Clock,
-  AlertCircle,
+  Award,
+  Users,
 } from "lucide-react";
 
 export default function TeacherDashboard() {
@@ -34,216 +28,236 @@ function TeacherWorkspace() {
   const { user } = useAuth();
   const displayName = user?.fullName || "Educator";
 
-  const metrics = [
-    { label: "Assigned Cohorts", value: "3", detail: "117 total students", icon: BookOpen },
-    { label: "Pending Scripts", value: "19", detail: "Needs grading", icon: ClipboardList },
-    { label: "Weekly Attendance", value: "94%", detail: "Across SSS 2 & 3", icon: CalendarCheck },
-    { label: "Students Flagged", value: "2", detail: "Below 80% attendance", icon: AlertCircle },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [approvals, setApprovals] = useState<any[]>([]);
+  const [attendanceCount, setAttendanceCount] = useState(0);
+
+  const loadWorkspace = useCallback(async () => {
+    try {
+      const [roomRes, appRes] = await Promise.all([
+        fetch("/api/lms/classrooms", { cache: "no-store" }),
+        fetch("/api/lms/teacher-applications", { cache: "no-store" }),
+      ]);
+      const roomJson = roomRes.ok ? await roomRes.json() : {};
+      const appJson = appRes.ok ? await appRes.json() : {};
+
+      setClassrooms(roomJson.classrooms || []);
+      setAttendanceCount((roomJson.attendanceRecords || []).length);
+      setApplications(appJson.applications || []);
+      setApprovals((appJson.approvals || []).filter((a: any) => a.status === "APPROVED"));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadWorkspace();
+  }, [loadWorkspace]);
+
+  const totalStudents = classrooms.reduce(
+    (sum, c) => sum + (c.studentUserIds?.length || 0),
+    0
+  );
+  const liveRooms = classrooms.filter((c) => c.status === "LIVE");
+  const pendingApps = applications.filter(
+    (a) => a.status === "PENDING_REVIEW" || a.status === "RESUBMISSION_REQUIRED"
+  );
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        {/* Header + Primary Classroom Launch Action */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        {/* Header */}
+        <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
-              {CURRENT_ACADEMIC_TERM} · Educator Workspace
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+              Educator Workspace · Africa/Lagos (WAT)
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
               Good day, {displayName}
             </h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Manage your cohorts, launch live classes, mark scripts, and monitor student attendance.
+            <p className="text-sm text-slate-300 mt-1 max-w-2xl">
+              Manage your subject authorizations, prepare allocated classroom groups before
+              going live, conduct lessons, and save official attendance.
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2.5 shrink-0">
             <Link
-              href="/teacher/live-class/math-001"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold shadow-xs transition whitespace-nowrap"
+              href="/teacher/classes"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
             >
               <Video size={15} />
-              Launch Live Classroom
+              My Classrooms ({classrooms.length})
             </Link>
             <Link
-              href="/teacher/assignments"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition whitespace-nowrap"
+              href="/teacher/applications"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
             >
-              <ClipboardList size={15} />
-              Grade Submissions
+              <FileBadge2 size={15} />
+              Subject Applications
             </Link>
           </div>
         </div>
 
-        {/* Key Teaching KPIs */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {metrics.map((m) => {
-            const Icon = m.icon;
-            return (
-              <div
-                key={m.label}
-                className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-500">{m.label}</span>
-                  <Icon size={17} className="text-[#0D9488]" />
+        {/* Pending Approval Banner */}
+        {pendingApps.length > 0 && approvals.length === 0 && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-amber-900">
+                Application Pending School Admin Review
+              </p>
+              <p className="text-xs text-amber-800 mt-0.5">
+                You have {pendingApps.length} subject application(s) under review. Once approved,
+                School Admin can allocate you to official timetable classrooms.
+              </p>
+            </div>
+            <Link
+              href="/teacher/applications"
+              className="text-xs font-bold text-amber-900 underline shrink-0"
+            >
+              Inspect Status →
+            </Link>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            Loading your teaching workspace...
+          </div>
+        ) : (
+          <>
+            {/* Real KPIs */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-semibold">Approved Subjects</span>
+                  <Award size={17} className="text-[#0D9488]" />
                 </div>
                 <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
-                  {m.value}
+                  {approvals.length}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">{m.detail}</p>
+                <p className="text-xs text-slate-500 mt-1">Subject-level authorizations</p>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Operational Task Strip */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
-            href="/teacher/live-class/math-001"
-            className="rounded-2xl border border-slate-200 bg-[#0B1F3A] text-white p-4 hover:bg-[#143258] transition"
-          >
-            <Video size={18} className="text-[#F59E0B] mb-2" />
-            <p className="text-sm font-bold">Start Live Class</p>
-            <p className="text-xs text-slate-300 mt-0.5">Open Teacher Control Room</p>
-          </Link>
-
-          <Link
-            href="/teacher/notes"
-            className="rounded-2xl border border-slate-200 bg-white p-4 hover:border-[#0D9488] transition"
-          >
-            <FileText size={18} className="text-[#0D9488] mb-2" />
-            <p className="text-sm font-bold text-[#0B1F3A]">Publish Lesson Notes</p>
-            <p className="text-xs text-slate-500 mt-0.5">Share term guides &amp; PDFs</p>
-          </Link>
-
-          <Link
-            href="/teacher/assignments"
-            className="rounded-2xl border border-slate-200 bg-white p-4 hover:border-[#0D9488] transition"
-          >
-            <ClipboardList size={18} className="text-[#D97706] mb-2" />
-            <p className="text-sm font-bold text-[#0B1F3A]">Create Assignment</p>
-            <p className="text-xs text-slate-500 mt-0.5">Set homework or CBT drill</p>
-          </Link>
-
-          <Link
-            href="/teacher/attendance"
-            className="rounded-2xl border border-slate-200 bg-white p-4 hover:border-[#0D9488] transition"
-          >
-            <CalendarCheck size={18} className="text-[#0B1F3A] mb-2" />
-            <p className="text-sm font-bold text-[#0B1F3A]">Take Attendance</p>
-            <p className="text-xs text-slate-500 mt-0.5">Update Term 2 register</p>
-          </Link>
-        </div>
-
-        {/* Two-column Classroom Management Workspace */}
-        <div className="grid lg:grid-cols-[1.3fr_1fr] gap-6 items-start">
-          {/* Assigned Classes */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-bold text-[#0B1F3A]">Your Active Classes</h2>
-              <Link
-                href="/teacher/classes"
-                className="text-xs font-bold text-[#0D9488] hover:underline inline-flex items-center gap-1"
-              >
-                All cohorts
-                <ArrowRight size={13} />
-              </Link>
-            </div>
-
-            <div className="space-y-3">
-              {TEACHER_CLASSES.map((cls) => (
-                <div
-                  key={cls.id}
-                  className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  <div>
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#0D9488]">
-                      <span>{cls.subject}</span>
-                      <span>·</span>
-                      <span className="tabular-nums">{cls.studentsCount} students</span>
-                    </div>
-                    <h3 className="text-sm font-bold text-[#0B1F3A] mt-0.5">
-                      {cls.className}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Next Topic: {cls.nextTopic}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1 tabular-nums">
-                      <Clock size={12} />
-                      {cls.schedule} · {cls.pendingSubmissions} ungraded
-                    </p>
-                  </div>
-
-                  <Link
-                    href={`/teacher/live-class/${cls.id}`}
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition whitespace-nowrap shrink-0"
-                  >
-                    <Video size={13} />
-                    Open Control Room
-                  </Link>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-semibold">Assigned Classrooms</span>
+                  <BookOpen size={17} className="text-[#0D9488]" />
                 </div>
-              ))}
-            </div>
-          </div>
+                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  {classrooms.length}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {liveRooms.length} live now
+                </p>
+              </div>
 
-          {/* Teaching Timetable & Student Attention */}
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
-              <h2 className="text-base font-bold text-[#0B1F3A]">Teaching Timetable (WAT)</h2>
-              {WEEKLY_TIMETABLE.slice(0, 4).map((slot) => (
-                <div
-                  key={slot.id}
-                  className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0 text-xs"
-                >
-                  <div>
-                    <p className="font-bold text-[#0B1F3A]">{slot.subject}</p>
-                    <p className="text-slate-500">{slot.day} · {slot.classLevel}</p>
-                  </div>
-                  <span className="font-semibold text-[#0D9488] tabular-nums">
-                    {slot.timeWat}
-                  </span>
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-semibold">Allocated Students</span>
+                  <Users size={17} className="text-[#0D9488]" />
                 </div>
-              ))}
+                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  {totalStudents}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Across assigned groups</p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span className="text-xs font-semibold">Attendance Entries</span>
+                  <CalendarCheck size={17} className="text-[#0D9488]" />
+                </div>
+                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  {attendanceCount}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Recorded session logs</p>
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-3">
+            {/* Assigned Classroom Groups */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                  <Users size={16} className="text-[#D97706]" />
-                  Student Progress Snapshot
+                <h2 className="text-base font-bold text-[#0B1F3A]">
+                  Your Assigned Classroom Groups
                 </h2>
-                <Link href="/teacher/students" className="text-xs font-bold text-[#0D9488] hover:underline">
-                  Roster
+                <Link
+                  href="/teacher/classes"
+                  className="text-xs font-bold text-[#0D9488] hover:underline inline-flex items-center gap-1"
+                >
+                  Prepare & Launch
+                  <ArrowRight size={13} />
                 </Link>
               </div>
-              {TEACHER_STUDENTS.slice(0, 4).map((st) => (
-                <div
-                  key={st.id}
-                  className="flex items-center justify-between text-xs py-2 border-b border-slate-100 last:border-0"
-                >
-                  <div>
-                    <p className="font-bold text-[#0B1F3A]">{st.name}</p>
-                    <p className="text-slate-500">{st.classLevel}</p>
-                  </div>
-                  <div className="text-right tabular-nums">
-                    <p className="font-bold text-[#0B1F3A]">{st.avgScore}</p>
-                    <p
-                      className={
-                        st.status === "Needs Attention"
-                          ? "text-[#D97706] font-semibold"
-                          : "text-[#0D9488] font-semibold"
-                      }
-                    >
-                      {st.status}
-                    </p>
-                  </div>
+
+              {classrooms.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center space-y-2">
+                  <BookOpen size={28} className="mx-auto text-slate-400" />
+                  <p className="text-sm font-bold text-[#0F1F38]">
+                    No Assigned Classrooms Yet
+                  </p>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    {approvals.length === 0
+                      ? "Submit a subject teaching application so School Admin can approve you and place you on the official timetable."
+                      : "You are approved! Once School Admin schedules and publishes your lessons on the official timetable, your classroom groups will appear here."}
+                  </p>
+                  <Link
+                    href="/teacher/applications"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B1F3A] text-white text-xs font-semibold"
+                  >
+                    Manage Subject Applications
+                  </Link>
                 </div>
-              ))}
+              ) : (
+                <div className="grid md:grid-cols-2 gap-4">
+                  {classrooms.map((rm) => (
+                    <div
+                      key={rm.id}
+                      className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 flex flex-col justify-between gap-3"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-[#0D9488]">
+                            {rm.classLevelName} · {rm.subjectName}
+                          </span>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-[#0B1F3A]">
+                            {rm.groupName} · {rm.status}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-bold text-[#0B1F3A] mt-1">
+                          {rm.lessonTitle}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1 tabular-nums">
+                          <Clock size={12} />
+                          {rm.dayOfWeek} · {rm.startTime}–{rm.endTime} WAT ·{" "}
+                          {rm.studentUserIds?.length || 0}/{rm.maxCapacity} students
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/teacher/classes?prepare=${rm.id}`}
+                          className="flex-1 py-2 rounded-xl border border-slate-300 bg-white text-[#0B1F3A] text-xs font-bold text-center hover:bg-slate-50"
+                        >
+                          Prepare Room
+                        </Link>
+                        <Link
+                          href={`/teacher/live-class/${rm.id}`}
+                          className="flex-1 py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold text-center inline-flex items-center justify-center gap-1.5"
+                        >
+                          <Video size={13} />
+                          Open Classroom
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </AppLayout>
   );

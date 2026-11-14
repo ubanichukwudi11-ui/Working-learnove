@@ -89,6 +89,10 @@ export default function LoginForm() {
 
       let targetPath = "/dashboard";
       switch (user.role) {
+        case "SUPER_ADMIN":
+          targetPath = "/super-admin";
+          break;
+
         case "ADMIN":
           targetPath = "/admin";
           break;

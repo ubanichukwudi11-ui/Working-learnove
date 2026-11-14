@@ -34,17 +34,15 @@ import PresentationStage from "./PresentationStage";
 import ClassroomTools from "./ClassroomTools";
 import NovaClassAssistantModal from "./NovaClassAssistantModal";
 
-export default function StudentLiveClassroom({ classId = "math-001" }: { classId?: string }) {
+export default function StudentLiveClassroom({ classId = "" }: { classId?: string }) {
   const { user } = useAuth();
   const router = useRouter();
 
-  const studentId = useMemo(
-    () => `student-${user?.id || "guest-" + classId}`,
-    [user?.id, classId]
-  );
-  const studentName = user?.fullName || "Chukwudi Ubani";
+  const studentId = useMemo(() => user?.id || "guest-" + classId, [user?.id, classId]);
+  const studentName = user?.fullName || "Learner";
 
   const [snapshot, setSnapshot] = useState<ClassroomSnapshot | null>(null);
+  const [accessError, setAccessError] = useState<{ message: string; code: string } | null>(null);
   const [teacherStream, setTeacherStream] = useState<MediaStream | null>(null);
   const [localStageStream, setLocalStageStream] = useState<MediaStream | null>(null);
   const [audioOnly, setAudioOnly] = useState(false);
@@ -69,11 +67,17 @@ export default function StudentLiveClassroom({ classId = "math-001" }: { classId
   const syncFromServer = useCallback(async () => {
     const res = await classroomSync.fetchSnapshot(classId, studentId, seqRef.current);
     if (!res) return;
+    if (res.error) {
+      setAccessError({ message: res.error, code: res.code || "FORBIDDEN" });
+      return;
+    }
+    if (!res.snapshot) return;
+    setAccessError(null);
     setConnectionState("connected");
-    seqRef.current = res.latestSeq;
+    seqRef.current = res.latestSeq ?? seqRef.current;
     setSnapshot(res.snapshot);
 
-    for (const sig of res.signals) {
+    for (const sig of res.signals || []) {
       await webrtcManager.handleSignal(
         classId,
         studentId,
@@ -234,6 +238,37 @@ export default function StudentLiveClassroom({ classId = "math-001" }: { classId
   const audiencePeers = (snapshot?.participants || []).filter(
     (p) => p.stageStatus !== "approved"
   );
+
+  if (accessError) {
+    const needsSub = accessError.code === "SUBSCRIPTION_REQUIRED";
+    return (
+      <div className="min-h-screen bg-[#060E1B] text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/15 bg-[#0B1F3A] p-8 text-center space-y-4">
+          <Lock size={34} className="mx-auto text-[#F59E0B]" />
+          <h1 className="text-xl font-extrabold">
+            {needsSub ? "Subscription / Authorization Required" : "Classroom Access Denied"}
+          </h1>
+          <p className="text-xs text-slate-300 leading-relaxed">{accessError.message}</p>
+          <div className="flex flex-col gap-2.5 pt-2">
+            {needsSub && (
+              <Link
+                href="/subscriptions"
+                className="w-full py-3 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold"
+              >
+                Activate Subscription Plan (₦)
+              </Link>
+            )}
+            <Link
+              href="/live-classes"
+              className="w-full py-2.5 rounded-xl border border-white/15 text-xs font-bold text-slate-200"
+            >
+              Return to My Live Classrooms
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Ended Class State
   if (snapshot?.sessionStatus === "ended") {

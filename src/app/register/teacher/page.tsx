@@ -229,12 +229,27 @@ export default function TeacherRegisterPage() {
 
             <Section title="Academic Information">
 
-              <Input
-                label="Subject"
-                name="subject"
-                value={form.subject}
-                onChange={handleChange}
-              />
+              <div>
+                <label className="block mb-2">Primary Subject</label>
+                <select
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleChange}
+                  required
+                  className="w-full rounded-xl bg-slate-900 border border-slate-700 p-3"
+                >
+                  <option value="">Select Subject</option>
+                  <option value="Mathematics">Mathematics</option>
+                  <option value="English Language">English Language</option>
+                  <option value="Biology">Biology</option>
+                  <option value="Chemistry">Chemistry</option>
+                  <option value="Physics">Physics</option>
+                  <option value="Economics">Economics</option>
+                  <option value="Government">Government</option>
+                  <option value="Literature in English">Literature in English</option>
+                  <option value="Further Mathematics">Further Mathematics</option>
+                </select>
+              </div>
 
               <Input
                 label="Qualification"

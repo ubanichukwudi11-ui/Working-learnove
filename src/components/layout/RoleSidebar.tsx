@@ -4,8 +4,10 @@ import StudentSidebar from "./StudentSidebar";
 import TeacherSidebar from "./TeacherSidebar";
 import ParentSidebar from "./ParentSidebar";
 import AdminSidebar from "./AdminSidebar";
+import SuperAdminSidebar from "./SuperAdminSidebar";
 
 export type UserRole =
+  | "SUPER_ADMIN"
   | "STUDENT"
   | "TEACHER"
   | "PARENT"
@@ -15,10 +17,11 @@ type Props = {
   role: UserRole;
 };
 
-export default function RoleSidebar({
-  role,
-}: Props) {
+export default function RoleSidebar({ role }: Props) {
   switch (role) {
+    case "SUPER_ADMIN":
+      return <SuperAdminSidebar />;
+
     case "ADMIN":
       return <AdminSidebar />;
 

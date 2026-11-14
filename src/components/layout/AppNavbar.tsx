@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,14 +11,7 @@ import {
   CheckCheck,
   GraduationCap,
 } from "lucide-react";
-import {
-  NIGERIAN_NOTIFICATIONS,
-  NIGERIAN_SUBJECTS,
-  NIGERIAN_ASSIGNMENTS,
-  formatLagosTime,
-  TIMEZONE_LABEL,
-} from "@/lib/nigerianCurriculum";
-import { liveClasses } from "@/lib/liveClasses";
+import { formatLagosTime, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
 
 type User = {
   id: string;
@@ -26,6 +19,21 @@ type User = {
   fullName: string;
   role: string;
   status: string;
+};
+
+type PersistentNotif = {
+  id: string;
+  title: string;
+  message: string;
+  href?: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+type SearchCandidate = {
+  label: string;
+  category: string;
+  href: string;
 };
 
 type Props = {
@@ -38,11 +46,73 @@ export default function AppNavbar({ user, onLogout }: Props) {
   const [query, setQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState(NIGERIAN_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<PersistentNotif[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [searchIndex, setSearchIndex] = useState<SearchCandidate[]>([]);
   const [lagosTime, setLagosTime] = useState(() => formatLagosTime());
 
   const searchRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/lms/notifications", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+      setUnreadCount(Number(data.unreadCount || 0));
+    } catch {
+      // ignore transient network errors
+    }
+  }, []);
+
+  const fetchSearchCandidates = useCallback(async () => {
+    try {
+      const items: SearchCandidate[] = [];
+      const [acadRes, roomsRes] = await Promise.all([
+        fetch("/api/lms/academics", { cache: "no-store" }),
+        fetch("/api/lms/classrooms", { cache: "no-store" }),
+      ]);
+      if (acadRes.ok) {
+        const acad = await acadRes.json();
+        for (const s of acad.subjects || []) {
+          items.push({
+            label: `${s.name} (${s.code})`,
+            category: "Subject",
+            href:
+              user.role === "ADMIN" || user.role === "SUPER_ADMIN"
+                ? "/admin/academics"
+                : "/subjects",
+          });
+        }
+      }
+      if (roomsRes.ok) {
+        const rm = await roomsRes.json();
+        for (const c of rm.classrooms || []) {
+          items.push({
+            label: `${c.subjectName} · ${c.classLevelName} (${c.groupName})`,
+            category: c.status === "LIVE" ? "Live Classroom" : "Classroom",
+            href:
+              user.role === "ADMIN" || user.role === "SUPER_ADMIN"
+                ? "/admin/classrooms"
+                : user.role === "TEACHER"
+                ? `/teacher/live-class/${c.id}`
+                : `/live-classes/${c.id}`,
+          });
+        }
+      }
+      setSearchIndex(items);
+    } catch {
+      // ignore
+    }
+  }, [user.role]);
+
+  useEffect(() => {
+    fetchNotifications();
+    fetchSearchCandidates();
+    const timer = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(timer);
+  }, [fetchNotifications, fetchSearchCandidates]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -67,50 +137,32 @@ export default function AppNavbar({ user, onLogout }: Props) {
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
+    return searchIndex
+      .filter((item) => item.label.toLowerCase().includes(q) || item.category.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [query, searchIndex]);
 
-    const items: { label: string; category: string; href: string }[] = [];
+  const markAllRead = async () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+    await fetch("/api/lms/notifications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "MARK_ALL_READ" }),
+    }).catch(() => {});
+  };
 
-    NIGERIAN_SUBJECTS.forEach((s) => {
-      if (s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)) {
-        items.push({
-          label: `${s.name} (${s.level})`,
-          category: "Subject",
-          href: `/subjects/${s.id}`,
-        });
-      }
-    });
-
-    liveClasses.forEach((c) => {
-      if (
-        c.title.toLowerCase().includes(q) ||
-        c.subject.toLowerCase().includes(q) ||
-        c.teacher.toLowerCase().includes(q)
-      ) {
-        items.push({
-          label: c.title,
-          category: "Live Class",
-          href:
-            user.role === "TEACHER"
-              ? `/teacher/live-class/${c.id}`
-              : `/live-classes/${c.id}`,
-        });
-      }
-    });
-
-    NIGERIAN_ASSIGNMENTS.forEach((a) => {
-      if (a.title.toLowerCase().includes(q) || a.subject.toLowerCase().includes(q)) {
-        items.push({
-          label: a.title,
-          category: "Assignment",
-          href: user.role === "TEACHER" ? "/teacher/assignments" : "/assignments",
-        });
-      }
-    });
-
-    return items.slice(0, 6);
-  }, [query, user.role]);
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
+  const markOneRead = async (notificationId: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
+    );
+    setUnreadCount((c) => Math.max(0, c - 1));
+    await fetch("/api/lms/notifications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "MARK_READ", notificationId }),
+    }).catch(() => {});
+  };
 
   const initials = user.fullName
     .split(" ")
@@ -121,18 +173,18 @@ export default function AppNavbar({ user, onLogout }: Props) {
 
   const roleBadgeLabel = () => {
     switch (user.role) {
-      case "TEACHER":
-        return { label: "Educator", cls: "bg-teal-50 text-[#0D9488] border-teal-200" };
+      case "SUPER_ADMIN":
+        return "Super Admin";
       case "ADMIN":
-        return { label: "School Admin", cls: "bg-amber-50 text-[#B45309] border-amber-200" };
+        return "School Admin";
+      case "TEACHER":
+        return "Educator";
       case "PARENT":
-        return { label: "Parent", cls: "bg-slate-100 text-[#0B1F3A] border-slate-300" };
+        return "Parent";
       default:
-        return { label: "Student", cls: "bg-sky-50 text-[#0B1F3A] border-sky-200" };
+        return "Student";
     }
   };
-
-  const roleInfo = roleBadgeLabel();
 
   return (
     <header className="fixed top-0 right-0 left-0 md:left-20 lg:left-60 h-16 z-40 bg-white/95 backdrop-blur border-b border-slate-200 flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -155,7 +207,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
               setQuery(e.target.value);
               setShowSearch(true);
             }}
-            placeholder="Search subjects, live classes, assignments..."
+            placeholder="Search subjects or your allocated classrooms..."
             className="bg-transparent outline-none text-sm text-[#0F1F38] w-full placeholder:text-slate-400"
           />
         </div>
@@ -183,7 +235,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
               ))
             ) : (
               <p className="px-4 py-3 text-xs text-slate-500">
-                No matches for &ldquo;{query}&rdquo;. Try Mathematics, Physics, or Live Class.
+                No matches for &ldquo;{query}&rdquo;.
               </p>
             )}
           </div>
@@ -202,14 +254,17 @@ export default function AppNavbar({ user, onLogout }: Props) {
         {/* Notifications */}
         <div ref={notifRef} className="relative">
           <button
-            onClick={() => setShowNotifications((prev) => !prev)}
+            onClick={() => {
+              setShowNotifications((prev) => !prev);
+              fetchNotifications();
+            }}
             aria-label="Notifications"
             className="relative p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:text-[#0B1F3A] hover:bg-slate-50 transition"
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#D97706] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
-                {unreadCount}
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#D97706] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </button>
@@ -218,40 +273,60 @@ export default function AppNavbar({ user, onLogout }: Props) {
             <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                 <span className="text-sm font-bold text-[#0F1F38]">Notifications</span>
-                <button
-                  onClick={() =>
-                    setNotifications((prev) =>
-                      prev.map((n) => ({ ...n, unread: false }))
-                    )
-                  }
-                  className="text-xs font-semibold text-[#0D9488] hover:underline inline-flex items-center gap-1"
-                >
-                  <CheckCheck size={13} />
-                  Mark all read
-                </button>
+                {notifications.length > 0 && (
+                  <button
+                    onClick={markAllRead}
+                    className="text-xs font-semibold text-[#0D9488] hover:underline inline-flex items-center gap-1"
+                  >
+                    <CheckCheck size={13} />
+                    Mark all read
+                  </button>
+                )}
               </div>
               <div className="divide-y divide-slate-100 max-h-80 overflow-y-auto">
-                {notifications.map((n) => (
-                  <Link
-                    key={n.id}
-                    href={n.href}
-                    onClick={() => setShowNotifications(false)}
-                    className={`block px-4 py-3 hover:bg-slate-50 transition ${
-                      n.unread ? "bg-teal-50/40" : ""
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-xs font-semibold text-[#0F1F38]">{n.title}</p>
-                      {n.unread && (
-                        <span className="w-2 h-2 rounded-full bg-[#0D9488] mt-1 shrink-0" />
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                      {n.detail}
+                {notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-xs font-semibold text-slate-600">
+                      No notifications yet
                     </p>
-                    <span className="text-[11px] text-slate-400 mt-1 block">{n.time}</span>
-                  </Link>
-                ))}
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Timetable updates, classroom alerts, and approvals will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  notifications.slice(0, 20).map((n) => (
+                    <Link
+                      key={n.id}
+                      href={n.href || "#"}
+                      onClick={() => {
+                        markOneRead(n.id);
+                        setShowNotifications(false);
+                      }}
+                      className={`block px-4 py-3 hover:bg-slate-50 transition ${
+                        !n.isRead ? "bg-teal-50/40" : ""
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-xs font-semibold text-[#0F1F38]">{n.title}</p>
+                        {!n.isRead && (
+                          <span className="w-2 h-2 rounded-full bg-[#0D9488] mt-1 shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                        {n.message}
+                      </p>
+                      <span className="text-[11px] text-slate-400 mt-1 block">
+                        {new Date(n.createdAt).toLocaleString("en-NG", {
+                          timeZone: "Africa/Lagos",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </Link>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -267,7 +342,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
               {user.fullName}
             </p>
             <p className="text-[11px] font-semibold text-[#0D9488]">
-              {roleInfo.label} · Term 2
+              {roleBadgeLabel()}
             </p>
           </div>
         </div>

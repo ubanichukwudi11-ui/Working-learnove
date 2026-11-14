@@ -57,12 +57,13 @@ function RemoteVideoTile({ stream, label }: { stream: MediaStream; label: string
   );
 }
 
-export default function TeacherLiveClassroom({ classId = "math-001" }: { classId?: string }) {
+export default function TeacherLiveClassroom({ classId = "" }: { classId?: string }) {
   const { user } = useAuth();
   const router = useRouter();
-  const hostPeerId = useMemo(() => `teacher-${user?.id || "host"}`, [user?.id]);
+  const hostPeerId = useMemo(() => user?.id || "host", [user?.id]);
 
   const [snapshot, setSnapshot] = useState<ClassroomSnapshot | null>(null);
+  const [accessError, setAccessError] = useState<{ message: string; code: string } | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
@@ -88,10 +89,16 @@ export default function TeacherLiveClassroom({ classId = "math-001" }: { classId
   const syncFromServer = useCallback(async () => {
     const res = await classroomSync.fetchSnapshot(classId, hostPeerId, seqRef.current);
     if (!res) return;
-    seqRef.current = res.latestSeq;
+    if (res.error) {
+      setAccessError({ message: res.error, code: res.code || "FORBIDDEN" });
+      return;
+    }
+    if (!res.snapshot) return;
+    setAccessError(null);
+    seqRef.current = res.latestSeq ?? seqRef.current;
     setSnapshot(res.snapshot);
 
-    for (const sig of res.signals) {
+    for (const sig of res.signals || []) {
       await webrtcManager.handleSignal(
         classId,
         hostPeerId,
@@ -246,7 +253,7 @@ export default function TeacherLiveClassroom({ classId = "math-001" }: { classId
     await act("END_CLASS");
     webrtcManager.closeAll();
     setIsEndModalOpen(false);
-    router.push("/live-classes");
+    router.push("/teacher/classes");
   };
 
   const formatDuration = (sec: number) => {
@@ -260,6 +267,23 @@ export default function TeacherLiveClassroom({ classId = "math-001" }: { classId
   const raisedHands = participants.filter((p) => p.handRaised || p.stageStatus === "pending");
   const stageStudents = participants.filter((p) => p.stageStatus === "approved");
   const hostVideoActive = Boolean(snapshot?.hostVideoOn && !snapshot?.hostAudioOnly && localStream);
+
+  if (accessError) {
+    return (
+      <div className="min-h-screen bg-[#060E1B] text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/15 bg-[#0B1F3A] p-8 text-center space-y-4">
+          <h1 className="text-xl font-extrabold">Classroom Access Restricted</h1>
+          <p className="text-xs text-slate-300 leading-relaxed">{accessError.message}</p>
+          <Link
+            href="/teacher/classes"
+            className="inline-block w-full py-3 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold"
+          >
+            Return to My Assigned Classrooms
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#060E1B] text-white flex flex-col">

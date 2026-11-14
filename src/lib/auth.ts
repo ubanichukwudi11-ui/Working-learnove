@@ -6,6 +6,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 =========================================== */
 
 export type UserRole =
+  | "SUPER_ADMIN"
   | "ADMIN"
   | "TEACHER"
   | "STUDENT"
@@ -161,7 +162,13 @@ export async function loginWithGoogle(): Promise<void> {
 export async function logout(): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.removeItem("learnova_user");
+    localStorage.removeItem("learnova-user");
+    sessionStorage.removeItem("learnova_user");
   }
+
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch {}
 
   if (isSupabaseConfigured) {
     try {
@@ -326,46 +333,39 @@ export async function registerParent(data: {
 =========================================== */
 
 export async function getCurrentUser(): Promise<User | null> {
-  if (typeof window !== "undefined") {
-    try {
-      const stored = localStorage.getItem("learnova_user");
-      if (stored) {
-        return JSON.parse(stored);
+  try {
+    const res = await fetch("/api/auth/me", { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.user) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem("learnova_user", JSON.stringify(data.user));
+        }
+        return data.user;
       }
-    } catch {}
-  }
+    }
+  } catch {}
 
   if (isSupabaseConfigured) {
     try {
-      const authUser = await getAuthUser();
-      if (!authUser) return null;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", authUser.id)
-        .maybeSingle();
-
-      if (profile) {
-        const role = profile.role || "STUDENT";
-        const user: User = {
-          id: authUser.id,
-          email: authUser.email || profile.email,
-          fullName: profile.full_name || "User",
-          role,
-          status: profile.status || "ACTIVE",
-          avatarUrl: profile.avatar_url,
-          phone: profile.phone,
-          gender: profile.gender,
-          country: profile.country,
-          state: profile.state,
-          address: profile.address,
-          dob: profile.dob,
-        };
-        if (typeof window !== "undefined") {
-          localStorage.setItem("learnova_user", JSON.stringify(user));
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        const res = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: session.access_token }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user) {
+            if (typeof window !== "undefined") {
+              localStorage.setItem("learnova_user", JSON.stringify(data.user));
+            }
+            return data.user;
+          }
         }
-        return user;
       }
     } catch {}
   }
@@ -561,8 +561,12 @@ export async function updateTeacherProfile(userId: string, values: Partial<User>
    ROLE & STATUS HELPERS
 =========================================== */
 
+export function isSuperAdmin(user?: User | null) {
+  return user?.role === "SUPER_ADMIN";
+}
+
 export function isAdmin(user?: User | null) {
-  return user?.role === "ADMIN";
+  return user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 }
 
 export function isTeacher(user?: User | null) {

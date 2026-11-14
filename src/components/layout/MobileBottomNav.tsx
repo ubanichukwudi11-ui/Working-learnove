@@ -6,10 +6,13 @@ import {
   LayoutDashboard,
   BookOpen,
   Video,
-  ClipboardList,
+  CreditCard,
   Sparkles,
   Users,
   CalendarCheck,
+  MonitorCheck,
+  FileBadge2,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function MobileBottomNav({ role = "STUDENT" }: { role?: string }) {
@@ -19,24 +22,32 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
     role === "TEACHER"
       ? [
           { name: "Desk", href: "/teacher", icon: LayoutDashboard },
+          { name: "Apply", href: "/teacher/applications", icon: FileBadge2 },
           { name: "Classes", href: "/teacher/classes", icon: BookOpen },
-          { name: "Live", href: "/live-classes", icon: Video },
-          { name: "Tasks", href: "/teacher/assignments", icon: ClipboardList },
+          { name: "Attendance", href: "/teacher/attendance", icon: CalendarCheck },
           { name: "Students", href: "/teacher/students", icon: Users },
+        ]
+      : role === "SUPER_ADMIN"
+      ? [
+          { name: "Console", href: "/super-admin", icon: ShieldCheck },
+          { name: "Admin", href: "/admin", icon: LayoutDashboard },
+          { name: "Teachers", href: "/admin/teachers", icon: Users },
+          { name: "Payments", href: "/admin/payments", icon: CreditCard },
+          { name: "Rooms", href: "/admin/classrooms", icon: MonitorCheck },
         ]
       : role === "ADMIN"
       ? [
           { name: "Admin", href: "/admin", icon: LayoutDashboard },
           { name: "Teachers", href: "/admin/teachers", icon: Users },
-          { name: "Students", href: "/admin/students", icon: BookOpen },
-          { name: "Live", href: "/live-classes", icon: Video },
+          { name: "Payments", href: "/admin/payments", icon: CreditCard },
+          { name: "Rooms", href: "/admin/classrooms", icon: MonitorCheck },
           { name: "Schedule", href: "/admin/timetable", icon: CalendarCheck },
         ]
       : [
           { name: "Home", href: "/dashboard", icon: LayoutDashboard },
-          { name: "Subjects", href: "/subjects", icon: BookOpen },
+          { name: "Plans", href: "/subscriptions", icon: CreditCard },
           { name: "Live", href: "/live-classes", icon: Video },
-          { name: "Tasks", href: "/assignments", icon: ClipboardList },
+          { name: "Subjects", href: "/subjects", icon: BookOpen },
           { name: "Nova AI", href: "/nova", icon: Sparkles },
         ];
 
@@ -48,6 +59,7 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
           pathname === item.href ||
           (item.href !== "/teacher" &&
             item.href !== "/admin" &&
+            item.href !== "/super-admin" &&
             pathname.startsWith(item.href + "/"));
 
         return (

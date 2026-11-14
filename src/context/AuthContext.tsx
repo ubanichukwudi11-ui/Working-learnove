@@ -8,7 +8,7 @@ import {
 } from "react";
 
 import { supabase } from "@/lib/supabase";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, UserRole } from "@/lib/auth";
 
 export type UserStatus =
   | "ACTIVE"
@@ -20,39 +20,23 @@ export type User = {
   id: string;
   email: string;
   fullName: string;
-  role: "STUDENT" | "TEACHER" | "PARENT" | "ADMIN";
+  role: UserRole;
   status: UserStatus;
+  classLevel?: string;
 };
 
 type AuthContextType = {
   user: User | null;
-
   loading: boolean;
-
   login: (user: User) => void;
-
   logout: () => Promise<void>;
-
   refreshUser: () => Promise<void>;
-
   isAuthenticated: boolean;
 };
 
-const DEFAULT_STUDENT: User = {
-  id: "1a7dbd11-f2b4-458e-b7d6-a8c6558b3831",
-  email: "ubanichukwudi20@gmail.com",
-  fullName: "Ubani Elizabeth",
-  role: "STUDENT",
-  status: "ACTIVE",
-};
-
 function getStoredUser(): User | null {
-  if (typeof window === "undefined") return DEFAULT_STUDENT;
+  if (typeof window === "undefined") return null;
   try {
-    if (sessionStorage.getItem("learnova_logged_out") === "true") {
-      return null;
-    }
-
     const raw =
       localStorage.getItem("learnova_user") ||
       localStorage.getItem("learnova-user") ||
@@ -61,11 +45,8 @@ function getStoredUser(): User | null {
 
     const match = document.cookie.match(/(?:^|;\s*)learnova_user=([^;]+)/);
     if (match) return JSON.parse(decodeURIComponent(match[1]));
-
-    persistUser(DEFAULT_STUDENT);
-    return DEFAULT_STUDENT;
   } catch {}
-  return DEFAULT_STUDENT;
+  return null;
 }
 
 function persistUser(user: User | null) {
@@ -86,28 +67,14 @@ function persistUser(user: User | null) {
   } catch {}
 }
 
-const AuthContext =
-  createContext<AuthContextType | null>(
-    null
-  );
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [user, setUser] = useState<User | null>(() => getStoredUser());
-  const [loading, setLoading] = useState<boolean>(() => !getStoredUser());
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   async function loadUser() {
     try {
-      const cached = getStoredUser();
-      if (cached) {
-        setUser(cached);
-        setLoading(false);
-      }
-
-      // Try fetching current authenticated profile
       const currentUser = await getCurrentUser();
       if (currentUser) {
         const mappedUser: User = {
@@ -116,16 +83,20 @@ export function AuthProvider({
           fullName: currentUser.fullName,
           role: currentUser.role,
           status: currentUser.status,
+          classLevel: currentUser.classLevel,
         };
         setUser(mappedUser);
         persistUser(mappedUser);
-      } else if (!cached) {
+      } else {
+        persistUser(null);
         setUser(null);
       }
     } catch {
       const cached = getStoredUser();
       if (cached) {
         setUser(cached);
+      } else {
+        setUser(null);
       }
     } finally {
       setLoading(false);
@@ -133,42 +104,37 @@ export function AuthProvider({
   }
 
   useEffect(() => {
+    const cached = getStoredUser();
+    if (cached) {
+      setUser(cached);
+    }
     loadUser();
 
-    const {
-      data: listener,
-    } =
-      supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          if (event === "SIGNED_OUT") {
-            persistUser(null);
-            setUser(null);
-          } else if (event === "SIGNED_IN" || session) {
-            await loadUser();
-          }
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_OUT") {
+          persistUser(null);
+          setUser(null);
+        } else if (event === "SIGNED_IN" || session) {
+          await loadUser();
         }
-      );
+      }
+    );
     return () => {
       listener.subscription.unsubscribe();
     };
   }, []);
 
   async function logout() {
-    try {
-      sessionStorage.setItem("learnova_logged_out", "true");
-    } catch {}
     persistUser(null);
     setUser(null);
-
     try {
+      await fetch("/api/auth/logout", { method: "POST" });
       await supabase.auth.signOut();
     } catch {}
   }
 
   function login(newUser: User) {
-    try {
-      sessionStorage.removeItem("learnova_logged_out");
-    } catch {}
     persistUser(newUser);
     setUser(newUser);
     setLoading(false);
@@ -195,14 +161,9 @@ export function AuthProvider({
 }
 
 export function useAuth() {
-  const context =
-    useContext(AuthContext);
-
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error(
-      "useAuth must be used inside AuthProvider."
-    );
+    throw new Error("useAuth must be used inside AuthProvider.");
   }
-
   return context;
 }

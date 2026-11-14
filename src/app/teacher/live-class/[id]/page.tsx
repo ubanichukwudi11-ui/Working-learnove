@@ -12,7 +12,7 @@ export default function TeacherLiveClassPage({
   const { id } = use(params);
 
   return (
-    <ProtectedRoute roles={["TEACHER", "ADMIN"]}>
+    <ProtectedRoute roles={["TEACHER"]}>
       <TeacherLiveClassroom classId={id} />
     </ProtectedRoute>
   );

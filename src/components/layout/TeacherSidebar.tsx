@@ -5,11 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   LayoutDashboard,
+  FileBadge2,
   BookOpen,
-  Video,
-  ClipboardList,
-  FileText,
   CalendarCheck,
+  FileText,
+  ClipboardList,
   Users,
   User,
   LogOut,
@@ -18,11 +18,11 @@ import {
 
 const links = [
   { name: "Teacher Desk", href: "/teacher", icon: LayoutDashboard, exact: true },
-  { name: "My Classes", href: "/teacher/classes", icon: BookOpen },
-  { name: "Live Classes", href: "/live-classes", icon: Video },
-  { name: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
-  { name: "Lesson Notes", href: "/teacher/notes", icon: FileText },
+  { name: "My Applications", href: "/teacher/applications", icon: FileBadge2 },
+  { name: "Classes & Timetable", href: "/teacher/classes", icon: BookOpen },
   { name: "Attendance", href: "/teacher/attendance", icon: CalendarCheck },
+  { name: "Lesson Notes", href: "/teacher/notes", icon: FileText },
+  { name: "Assignments", href: "/teacher/assignments", icon: ClipboardList },
   { name: "Students", href: "/teacher/students", icon: Users },
   { name: "Profile", href: "/teacher/profile", icon: User },
 ];
