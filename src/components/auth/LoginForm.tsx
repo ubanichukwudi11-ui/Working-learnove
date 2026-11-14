@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Eye,
@@ -42,6 +42,13 @@ export default function LoginForm() {
 
   const [googleOauthUrl, setGoogleOauthUrl] =
     useState<string | null>(null);
+
+  const [hydrated, setHydrated] =
+    useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   function validate() {
     const newErrors: Record<
@@ -271,7 +278,7 @@ export default function LoginForm() {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !hydrated}
         className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] py-3 text-sm font-semibold text-white shadow-md shadow-[#4F46E5]/20 transition disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (

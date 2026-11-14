@@ -1,150 +1,75 @@
-import { NextResponse } from "next/server";
-import { getSupabaseServerClient, isSupabaseServerConfigured } from "@/lib/supabaseServer";
-import { loadLmsState } from "@/lib/lmsDb";
+import { NextRequest, NextResponse } from "next/server";
+import {
+  applyAuthCookies,
+  authenticateWithPassword,
+  AuthServiceError,
+  checkAuthRateLimit,
+  loginInputSchema,
+} from "@backend/services/authService";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email, password } = body;
-
-    if (!email || !password) {
+    let rawBody: unknown;
+    try {
+      rawBody = await req.json();
+    } catch {
       return NextResponse.json(
-        { success: false, error: "Email and password are required." },
+        { success: false, error: "Invalid JSON request body." },
         { status: 400 }
       );
     }
 
-    if (!isSupabaseServerConfigured) {
+    const parsed = loginInputSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      const firstError =
+        parsed.error.issues[0]?.message || "Email and password are required.";
+      return NextResponse.json(
+        { success: false, error: firstError },
+        { status: 400 }
+      );
+    }
+
+    const { email, password } = parsed.data;
+
+    const rate = checkAuthRateLimit(req, "login", email, 20, 10 * 60 * 1000);
+    if (!rate.allowed) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Supabase Auth is not configured. Please check your Supabase URL and keys.",
+          error: `Too many login attempts. Please wait ${rate.retryAfterSeconds} seconds and try again.`,
         },
-        { status: 400 }
+        {
+          status: 429,
+          headers: { "Retry-After": String(rate.retryAfterSeconds) },
+        }
       );
     }
 
-    const supabase = getSupabaseServerClient();
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim().toLowerCase(),
-      password,
-    });
-
-    if (error || !data.user) {
-      return NextResponse.json(
-        { success: false, error: error?.message || "Invalid login credentials." },
-        { status: 401 }
-      );
-    }
-
-    const authUser = data.user;
-
-    const [{ data: profile }, state] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
-      loadLmsState(),
-    ]);
-
-    let teacherData: any = null;
-    let studentData: any = null;
-    let parentData: any = null;
-
-    let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
-    const cleanEmail = (authUser.email || email).toLowerCase();
-    if (
-      role === "ADMIN" &&
-      (state.platformSettings.superAdminEmails || [])
-        .map((e) => e.toLowerCase())
-        .includes(cleanEmail)
-    ) {
-      role = "SUPER_ADMIN";
-    }
-
-    if (role === "TEACHER") {
-      const { data: t } = await supabase
-        .from("teacher_profiles")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-      teacherData = t;
-    } else if (role === "STUDENT") {
-      const { data: s } = await supabase
-        .from("student_profiles")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-      studentData = s;
-    } else if (role === "PARENT") {
-      const { data: p } = await supabase
-        .from("parent_profiles")
-        .select("*")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
-      parentData = p;
-    }
-
-    const user = {
-      id: authUser.id,
-      email: authUser.email || email,
-      fullName:
-        profile?.full_name ||
-        authUser.user_metadata?.full_name ||
-        authUser.user_metadata?.name ||
-        email.split("@")[0],
-      role,
-      status: profile?.status || (role === "TEACHER" ? "PENDING" : "ACTIVE"),
-      avatarUrl: profile?.avatar_url || authUser.user_metadata?.avatar_url,
-      phone: profile?.phone,
-      gender: profile?.gender,
-      country: profile?.country,
-      state: profile?.state,
-      address: profile?.address,
-      dob: profile?.dob,
-      subject: teacherData?.subject,
-      qualification: teacherData?.qualification,
-      institution: teacherData?.institution,
-      experience: teacherData?.experience,
-      licenseNumber: teacherData?.license_number,
-      classLevel: studentData?.class_level,
-      age: studentData?.age,
-      studentName: parentData?.student_name,
-      childIdNumber: parentData?.child_id_number,
-      relationship: parentData?.relationship,
-    };
+    const { user, session } = await authenticateWithPassword(email, password);
 
     const response = NextResponse.json({
       success: true,
-      session: data.session,
+      session,
       user,
     });
 
-    const proto =
-      req.headers.get("x-forwarded-proto") ||
-      (req.url.startsWith("https:") ? "https" : "http");
-    const isHttps = proto.includes("https");
-    const cookieBase = {
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
-      secure: isHttps,
-    };
-
-    try {
-      response.cookies.set("learnova_user", JSON.stringify(user), cookieBase);
-      if (data.session?.access_token) {
-        response.cookies.set("learnova_access_token", data.session.access_token, {
-          ...cookieBase,
-          httpOnly: true,
-        });
-      }
-    } catch {}
+    applyAuthCookies(req, response, {
+      user,
+      accessToken: session?.access_token,
+      refreshToken: session?.refresh_token,
+    });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
+    if (err instanceof AuthServiceError) {
+      return NextResponse.json(
+        { success: false, error: err.message },
+        { status: err.statusCode }
+      );
+    }
     console.error("Login API error:", err);
     return NextResponse.json(
-      { success: false, error: err?.message || "An unexpected error occurred during login." },
+      { success: false, error: "An unexpected error occurred during login." },
       { status: 500 }
     );
   }

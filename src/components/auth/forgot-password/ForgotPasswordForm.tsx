@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { resetPassword } from "@/lib/auth";
 
 type Props = {
@@ -12,6 +12,11 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   const validateEmail = () => {
     if (!email.trim()) {
@@ -77,7 +82,7 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !hydrated}
           className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] shadow-md shadow-[#4F46E5]/20 transition disabled:opacity-50"
         >
           {loading ? "Sending..." : "Send Reset Link"}

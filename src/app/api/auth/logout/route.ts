@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  clearAuthCookies,
+  extractBearerOrCookieToken,
+} from "@backend/services/authService";
+import { getSupabaseServerClient } from "@backend/services/supabaseServer";
 
 export async function POST(req: NextRequest) {
-  const proto =
-    req.headers.get("x-forwarded-proto") ||
-    (req.url.startsWith("https:") ? "https" : "http");
-  const isHttps = proto.includes("https");
-  const cookieBase = {
-    path: "/",
-    expires: new Date(0),
-    sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
-    secure: isHttps,
-  };
+  const token = extractBearerOrCookieToken(req);
+  if (token) {
+    try {
+      const sb = getSupabaseServerClient();
+      await sb.auth.admin.signOut(token);
+    } catch {
+      // Non-fatal: always clear cookies regardless
+    }
+  }
 
   const response = NextResponse.json({ success: true });
-  response.cookies.set("learnova_access_token", "", {
-    ...cookieBase,
-    httpOnly: true,
-  });
-  response.cookies.set("learnova_user", "", cookieBase);
+  clearAuthCookies(req, response);
   return response;
 }
