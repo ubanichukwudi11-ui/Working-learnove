@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Radio,
+  Sparkles,
 } from "lucide-react";
 
 export default function AdminDashboardPage() {
@@ -116,6 +117,12 @@ export default function AdminDashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-2.5 shrink-0">
+              <Link
+                href="/admin/ai-assistant"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-amber-600 text-[#0B1F3A] text-xs sm:text-sm font-bold transition"
+              >
+                <Sparkles size={15} /> Admin AI Copilot
+              </Link>
               <Link
                 href="/admin/teachers"
                 className="px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-xs sm:text-sm font-semibold transition"

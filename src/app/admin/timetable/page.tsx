@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import Link from "next/link";
+import AdminAiCopilot, { type AiTimetableSuggestion } from "@/components/admin/AdminAiCopilot";
 import {
   CalendarDays,
   Plus,
@@ -13,6 +14,7 @@ import {
   RefreshCw,
   Ban,
   Send,
+  Sparkles,
 } from "lucide-react";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"] as const;
@@ -20,6 +22,7 @@ const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 export default function AdminTimetablePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showAiPlanner, setShowAiPlanner] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   const [entries, setEntries] = useState<any[]>([]);
@@ -154,13 +157,45 @@ export default function AdminTimetablePage() {
                 teachers, and automatically splits large classes into capacity-bounded groups.
               </p>
             </div>
-            <Link
-              href="/admin/classrooms"
-              className="px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-semibold transition shrink-0"
-            >
-              Classroom Control Centre
-            </Link>
+            <div className="flex flex-wrap gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowAiPlanner((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-amber-600 text-[#0B1F3A] text-sm font-bold transition"
+              >
+                <Sparkles size={15} />
+                {showAiPlanner ? "Hide AI Assistant" : "AI Timetable Assistant"}
+              </button>
+              <Link
+                href="/admin/classrooms"
+                className="px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-semibold transition"
+              >
+                Classroom Control Centre
+              </Link>
+            </div>
           </div>
+
+          {showAiPlanner && (
+            <AdminAiCopilot
+              defaultTab="timetable"
+              compact
+              onTimetablePublished={loadTimetable}
+              onLoadSuggestionIntoForm={(s: AiTimetableSuggestion) => {
+                setClassLevelId(s.classLevelId);
+                setSubjectId(s.subjectId);
+                setSelectedTeacherIds(s.assignedTeacherIds);
+                setDayOfWeek(s.dayOfWeek);
+                setStartTime(s.startTime);
+                setEndTime(s.endTime);
+                setMode(s.mode);
+                setMaxCapacity(String(s.maxCapacityPerRoom));
+                setFeedback({
+                  type: "ok",
+                  text: `Loaded AI proposal (${s.classLevelCode} ${s.subjectName} · ${s.dayOfWeek} ${s.startTime} WAT) into the form below. Review and click Publish & Allocate.`,
+                });
+              }}
+            />
+          )}
 
           {feedback && (
             <div

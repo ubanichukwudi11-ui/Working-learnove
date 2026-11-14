@@ -13,6 +13,7 @@ import {
   CalendarDays,
   MonitorCheck,
   LogOut,
+  Sparkles,
 } from "lucide-react";
 
 const links = [
@@ -24,6 +25,7 @@ const links = [
   { name: "Payments & Access", href: "/admin/payments", icon: CreditCard },
   { name: "Timetable", href: "/admin/timetable", icon: CalendarDays },
   { name: "Classroom Control", href: "/admin/classrooms", icon: MonitorCheck },
+  { name: "Admin AI Copilot", href: "/admin/ai-assistant", icon: Sparkles },
 ];
 
 export default function SuperAdminSidebar() {

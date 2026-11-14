@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ai } from "@/lib/gemini";
+import { ai, GEMINI_TEXT_MODEL } from "@/lib/gemini";
 
 export async function POST(req: Request) {
   try {
@@ -38,7 +38,7 @@ ${message}
 `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: GEMINI_TEXT_MODEL,
       contents: prompt,
     });
 
