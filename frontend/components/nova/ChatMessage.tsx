@@ -21,6 +21,7 @@ export interface GroundingSource {
 type Props = {
   role: "user" | "assistant";
   content: string;
+  imageUrl?: string;
   modeLabel?: string;
   sources?: GroundingSource[];
   onSaveToNotebook?: (content: string) => void;
@@ -29,6 +30,7 @@ type Props = {
 export default function ChatMessage({
   role,
   content,
+  imageUrl,
   modeLabel,
   sources,
   onSaveToNotebook,
@@ -67,8 +69,15 @@ export default function ChatMessage({
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[82%] sm:max-w-[72%] rounded-2xl bg-[#0B1F3A] text-white px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap">
-          {content}
+        <div className="max-w-[82%] sm:max-w-[72%] rounded-2xl bg-[#0B1F3A] text-white px-4 py-3 text-sm leading-relaxed space-y-2.5">
+          {imageUrl && (
+            <img
+              src={imageUrl}
+              alt="Attached homework"
+              className="max-h-56 w-auto rounded-xl border border-white/20 object-contain bg-white/5"
+            />
+          )}
+          {content && <p className="whitespace-pre-wrap">{content}</p>}
         </div>
       </div>
     );

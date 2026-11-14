@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import ChatMessage, { type GroundingSource } from "./ChatMessage";
-import ChatInput from "./ChatInput";
+import ChatInput, { type AttachedImagePayload } from "./ChatInput";
 import SuggestedPrompts from "./SuggestedPrompts";
 import NovaLiveVoicePanel from "./NovaLiveVoicePanel";
 import type { NovaChatMode, NovaPersona } from "@backend/ai/geminiClient";
@@ -30,6 +30,7 @@ import { saveNoteToNotebook } from "@frontend/lib/notebookStorage";
 type Message = {
   role: "user" | "assistant";
   content: string;
+  imageUrl?: string;
   modeLabel?: string;
   sources?: GroundingSource[];
 };
@@ -232,10 +233,11 @@ export default function NovaChat() {
   async function sendMessage(
     text: string,
     overrideMode?: NovaChatMode,
-    overridePersona?: NovaPersona
+    overridePersona?: NovaPersona,
+    image?: AttachedImagePayload
   ) {
     const trimmed = text.trim();
-    if (!trimmed || loading || !activeThread) return;
+    if ((!trimmed && !image) || loading || !activeThread) return;
 
     const effectiveMode = overrideMode || mode;
     if (overrideMode && overrideMode !== mode) setMode(overrideMode);
@@ -245,7 +247,14 @@ export default function NovaChat() {
       updateActiveThread((t) => ({ ...t, persona: overridePersona }));
     }
 
-    const userMessage: Message = { role: "user", content: trimmed };
+    const displayPrompt =
+      trimmed || "Please inspect this attached homework photo and solve step-by-step.";
+
+    const userMessage: Message = {
+      role: "user",
+      content: displayPrompt,
+      imageUrl: image?.previewUrl,
+    };
     const priorHistory = activeThread.messages.map((m) => ({
       role: m.role,
       content: m.content,
@@ -253,7 +262,7 @@ export default function NovaChat() {
 
     const isFirstUserMsg = !activeThread.messages.some((m) => m.role === "user");
     const derivedTitle = isFirstUserMsg
-      ? trimmed.slice(0, 44) + (trimmed.length > 44 ? "..." : "")
+      ? displayPrompt.slice(0, 44) + (displayPrompt.length > 44 ? "..." : "")
       : activeThread.title;
 
     updateActiveThread((t) => ({
@@ -276,7 +285,9 @@ export default function NovaChat() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: trimmed,
+          message: displayPrompt,
+          imageBase64: image?.base64,
+          imageMimeType: image?.mimeType,
           history: priorHistory,
           mode: effectiveMode,
           persona: effectivePersona,
@@ -617,6 +628,7 @@ export default function NovaChat() {
                       key={index}
                       role={message.role}
                       content={message.content}
+                      imageUrl={message.imageUrl}
                       modeLabel={message.modeLabel}
                       sources={message.sources}
                       onSaveToNotebook={(textContent) => {
@@ -664,7 +676,7 @@ export default function NovaChat() {
                       ? activeThread?.subject
                       : undefined
                   }
-                  onSend={(txt) => sendMessage(txt)}
+                  onSend={(txt, img) => sendMessage(txt, undefined, undefined, img)}
                 />
               </div>
             </div>

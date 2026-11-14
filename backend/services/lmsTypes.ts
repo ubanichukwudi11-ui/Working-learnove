@@ -381,6 +381,67 @@ export interface PlatformSettingsRecord {
   superAdminEmails: string[];
 }
 
+export interface TopicQuizQuestion {
+  id: string;
+  subjectId: string;
+  topicId?: string;
+  examTag: string;
+  prompt: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface QuizAttemptRecord {
+  id: string;
+  studentUserId: string;
+  studentName: string;
+  subjectId: string;
+  subjectName: string;
+  topicId?: string;
+  topicTitle?: string;
+  quizType: "TOPIC_QUIZ" | "TIMED_CBT";
+  title: string;
+  score: number;
+  total: number;
+  percentage: number;
+  durationSeconds: number;
+  createdAt: string;
+}
+
+export interface VideoQuestionReply {
+  id: string;
+  authorUserId: string;
+  authorName: string;
+  authorRole: LmsUserRole;
+  body: string;
+  isAiAssisted?: boolean;
+  createdAt: string;
+}
+
+export interface VideoQuestionRecord {
+  id: string;
+  videoId: string;
+  topicId: string;
+  timestampLabel?: string;
+  authorUserId: string;
+  authorName: string;
+  authorRole: LmsUserRole;
+  question: string;
+  replies: VideoQuestionReply[];
+  createdAt: string;
+}
+
+export interface ParentStudentLinkRecord {
+  id: string;
+  parentUserId: string;
+  parentEmail: string;
+  studentUserId: string;
+  studentEmail: string;
+  relationship: string;
+  linkedAt: string;
+}
+
 export interface LmsStateData {
   schools: SchoolRecord[];
   classLevels: ClassLevelRecord[];
@@ -401,6 +462,9 @@ export interface LmsStateData {
   curriculumTopics: CurriculumTopicRecord[];
   videoLessons: VideoLessonRecord[];
   videoUploadRequests: VideoUploadRequestRecord[];
+  quizAttempts: QuizAttemptRecord[];
+  videoQuestions: VideoQuestionRecord[];
+  parentStudentLinks: ParentStudentLinkRecord[];
   notifications: PersistentNotification[];
   auditLogs: AuditLogRecord[];
 }

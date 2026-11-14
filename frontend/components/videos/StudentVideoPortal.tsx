@@ -22,9 +22,13 @@ import {
   Download,
   Check,
   Loader2,
+  Layers,
+  ClipboardCheck,
 } from "lucide-react";
 import VideoLessonPlayer, { type VideoLessonItem } from "./VideoLessonPlayer";
-import VideoLessonStudyCompanion from "./VideoLessonStudyCompanion";
+import VideoLessonStudyCompanion, { type CompanionTab } from "./VideoLessonStudyCompanion";
+import VideoTimestampQA from "./VideoTimestampQA";
+import FlashcardDeckModal, { type FlashcardItem } from "@frontend/components/common/FlashcardDeckModal";
 import { saveNoteToNotebook } from "@frontend/lib/notebookStorage";
 
 interface ClassLevelItem {
@@ -83,15 +87,17 @@ export default function StudentVideoPortal() {
   const [watchedIds, setWatchedIds] = useState<string[]>([]);
   const [nowMs, setNowMs] = useState(0);
 
-  // Stage 4 Study Companion & Notebook Drawer state
-  const [companionTab, setCompanionTab] = useState<"playlist" | "nova" | "materials">(
-    "playlist"
-  );
+  // Stage 4 Study Companion, Flashcards & Notebook Drawer state
+  const [companionTab, setCompanionTab] = useState<CompanionTab>("playlist");
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteTitle, setNoteTitle] = useState("");
   const [noteBody, setNoteBody] = useState("");
   const [noteSaved, setNoteSaved] = useState(false);
   const [draftingNote, setDraftingNote] = useState(false);
+  const [flashcardOpen, setFlashcardOpen] = useState(false);
+  const [flashcardLoading, setFlashcardLoading] = useState(false);
+  const [flashcards, setFlashcards] = useState<FlashcardItem[]>([]);
+  const [flashcardsAi, setFlashcardsAi] = useState(false);
 
   useEffect(() => {
     try {
@@ -755,7 +761,8 @@ export default function StudentVideoPortal() {
               </div>
             </div>
           ) : (
-            <div className="grid lg:grid-cols-3 gap-6 items-start">
+            <div className="space-y-6">
+              <div className="grid lg:grid-cols-3 gap-6 items-start">
               {/* Left 2/3 Interactive Video Stage */}
               <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 space-y-4">
                 <VideoLessonPlayer video={activeVideo} />
@@ -865,8 +872,50 @@ export default function StudentVideoPortal() {
                         }`}
                       >
                         <Download size={13} />
-                        Download Materials (
-                        {(activeVideo.materials?.length || 0) + 1})
+                        Materials ({(activeVideo.materials?.length || 0) + 1})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setCompanionTab("quiz")}
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                          companionTab === "quiz"
+                            ? "bg-[#0B1F3A] text-white"
+                            : "bg-slate-100 hover:bg-slate-200 text-[#0B1F3A]"
+                        }`}
+                      >
+                        <ClipboardCheck size={13} />
+                        Topic Quiz
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setFlashcardOpen(true);
+                          setFlashcardLoading(true);
+                          try {
+                            const res = await fetch("/api/nova/flashcards", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                title: `${selectedTopic.title}: ${activeVideo.title}`,
+                                subject: selectedSubject.name,
+                                content: `${selectedTopic.description}\n${activeVideo.description}`,
+                              }),
+                            });
+                            if (res.ok) {
+                              const data = await res.json();
+                              setFlashcards(data.flashcards || []);
+                              setFlashcardsAi(Boolean(data.generatedByAi));
+                            }
+                          } finally {
+                            setFlashcardLoading(false);
+                          }
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-[#0B1F3A] transition"
+                      >
+                        <Layers size={13} className="text-[#0D9488]" />
+                        Flashcards
                       </button>
                     </div>
 
@@ -983,8 +1032,9 @@ export default function StudentVideoPortal() {
                 </div>
               </div>
 
-              {/* Right 1/3 Integrated Playlist, Nova AI & Downloadable Materials */}
+              {/* Right 1/3 Integrated Playlist, Nova AI, Materials & Topic Quiz */}
               <VideoLessonStudyCompanion
+                subjectId={selectedSubject.id}
                 subjectName={selectedSubject.name}
                 termName={selectedTerm.name}
                 topic={selectedTopic}
@@ -1022,9 +1072,33 @@ export default function StudentVideoPortal() {
                 }}
               />
             </div>
+
+            {/* Timestamped Topic Q&A Feed */}
+            {activeVideo && selectedTopic && selectedSubject && (
+              <VideoTimestampQA
+                videoId={activeVideo.id}
+                topicId={selectedTopic.id}
+                videoTitle={activeVideo.title}
+                subjectName={selectedSubject.name}
+                userRole={role}
+              />
+            )}
+            </div>
           )}
         </div>
       ) : null}
+
+      {selectedTopic && selectedSubject && activeVideo && (
+        <FlashcardDeckModal
+          open={flashcardOpen}
+          onClose={() => setFlashcardOpen(false)}
+          title={`${selectedTopic.title}: ${activeVideo.title}`}
+          subject={selectedSubject.name}
+          cards={flashcards}
+          loading={flashcardLoading}
+          generatedByAi={flashcardsAi}
+        />
+      )}
     </div>
   );
 }

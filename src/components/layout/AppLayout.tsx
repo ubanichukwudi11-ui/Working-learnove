@@ -7,6 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 import RoleSidebar from "./RoleSidebar";
 import AppNavbar from "./AppNavbar";
 import MobileBottomNav from "./MobileBottomNav";
+import {
+  OfflineIndicator,
+  ServiceWorkerRegistrar,
+} from "@frontend/components/pwa/PwaSupport";
 
 export default function AppLayout({
   children,
@@ -44,6 +48,7 @@ export default function AppLayout({
 
   return (
     <div className="min-h-screen bg-[#F7F8FA] text-[#0F1F38]">
+      <ServiceWorkerRegistrar />
       <RoleSidebar role={user.role} />
 
       <div className="md:pl-20 lg:pl-60 transition-all duration-200 min-h-screen flex flex-col">
@@ -54,6 +59,7 @@ export default function AppLayout({
         </main>
       </div>
 
+      <OfflineIndicator />
       <MobileBottomNav role={user.role} />
     </div>
   );

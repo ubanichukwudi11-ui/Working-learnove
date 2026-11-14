@@ -12,6 +12,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import { formatLagosTime, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
+import { PWAInstallButton } from "@frontend/components/pwa/PwaSupport";
 
 type User = {
   id: string;
@@ -250,6 +251,8 @@ export default function AppNavbar({ user, onLogout }: Props) {
           <span>·</span>
           <span>{TIMEZONE_LABEL}</span>
         </div>
+
+        <PWAInstallButton />
 
         {/* Notifications */}
         <div ref={notifRef} className="relative">

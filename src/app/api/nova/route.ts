@@ -7,6 +7,13 @@ import {
   type NovaPersona,
 } from "@backend/ai/geminiClient";
 
+const ALLOWED_IMAGE_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+]);
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -14,13 +21,25 @@ export async function POST(req: NextRequest) {
     const mode = (body.mode || "general") as NovaChatMode;
     const persona = (body.persona || "tutor") as NovaPersona;
     const subjectHint = typeof body.subjectHint === "string" ? body.subjectHint.trim() : "";
+    const imageBase64 =
+      typeof body.imageBase64 === "string" ? body.imageBase64.trim() : "";
+    const imageMimeType =
+      typeof body.imageMimeType === "string" ? body.imageMimeType.trim().toLowerCase() : "";
+
     const rawHistory: Array<{ role: string; content: string }> = Array.isArray(body.history)
       ? body.history
       : [];
 
-    if (!message) {
+    if (!message && !imageBase64) {
       return NextResponse.json(
-        { error: "Please enter a question or prompt." },
+        { error: "Please enter a question or attach a homework photo." },
+        { status: 400 }
+      );
+    }
+
+    if (imageBase64 && !ALLOWED_IMAGE_MIME.has(imageMimeType)) {
+      return NextResponse.json(
+        { error: "Unsupported image format. Upload a PNG, JPG, or WEBP photo." },
         { status: 400 }
       );
     }
@@ -69,33 +88,63 @@ export async function POST(req: NextRequest) {
     let effectiveLabel = cfg.label;
     let searchFallback = false;
 
-    try {
-      const chat = ai.chats.create({
+    const effectivePrompt =
+      message ||
+      "Inspect this homework / textbook photo carefully, read every question visible, and explain the solution step by step.";
+
+    if (imageBase64) {
+      // Multimodal Snap & Solve path using generateContent with full conversation context
+      const cleanBase64 = imageBase64.replace(/^data:[^;]+;base64,/, "");
+      const contents = [
+        ...sdkHistory,
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType: imageMimeType === "image/jpg" ? "image/jpeg" : imageMimeType,
+                data: cleanBase64,
+              },
+            },
+            { text: effectivePrompt },
+          ],
+        },
+      ];
+      effectiveLabel = `${cfg.label} · Snap & Solve Vision`;
+      response = await ai.models.generateContent({
         model: cfg.model,
-        history: sdkHistory,
+        contents,
         config: chatConfig,
       });
-      response = await chat.sendMessage({ message });
-    } catch (err: any) {
-      const errText = String(err?.message || "");
-      const isQuotaError =
-        err?.status === 429 ||
-        errText.includes("429") ||
-        errText.includes("RESOURCE_EXHAUSTED");
-
-      if (cfg.useSearch && isQuotaError) {
-        searchFallback = true;
-        effectiveLabel = "Gemini 4 Hydrogen (Live Web Search quota unavailable)";
-        const fallbackConfig = { ...chatConfig };
-        delete fallbackConfig.tools;
-        const fallbackChat = ai.chats.create({
+    } else {
+      try {
+        const chat = ai.chats.create({
           model: cfg.model,
           history: sdkHistory,
-          config: fallbackConfig,
+          config: chatConfig,
         });
-        response = await fallbackChat.sendMessage({ message });
-      } else {
-        throw err;
+        response = await chat.sendMessage({ message: effectivePrompt });
+      } catch (err: any) {
+        const errText = String(err?.message || "");
+        const isQuotaError =
+          err?.status === 429 ||
+          errText.includes("429") ||
+          errText.includes("RESOURCE_EXHAUSTED");
+
+        if (cfg.useSearch && isQuotaError) {
+          searchFallback = true;
+          effectiveLabel = "Gemini 4 Hydrogen (Live Web Search quota unavailable)";
+          const fallbackConfig = { ...chatConfig };
+          delete fallbackConfig.tools;
+          const fallbackChat = ai.chats.create({
+            model: cfg.model,
+            history: sdkHistory,
+            config: fallbackConfig,
+          });
+          response = await fallbackChat.sendMessage({ message: effectivePrompt });
+        } else {
+          throw err;
+        }
       }
     }
 
@@ -128,6 +177,7 @@ export async function POST(req: NextRequest) {
       mode,
       sources,
       searchFallback,
+      hadImage: Boolean(imageBase64),
     });
   } catch (error: any) {
     console.error("NOVA API ERROR:", error);

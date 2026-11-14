@@ -170,6 +170,9 @@ function createInitialLmsState(): LmsStateData {
     curriculumTopics: videoSeed.curriculumTopics,
     videoLessons: videoSeed.videoLessons,
     videoUploadRequests: [],
+    quizAttempts: [],
+    videoQuestions: [],
+    parentStudentLinks: [],
     notifications: [],
     auditLogs: [],
   };
@@ -210,6 +213,13 @@ export async function loadLmsState(): Promise<LmsStateData> {
         videoLessons: mergedVideos,
         videoUploadRequests: Array.isArray(parsed.videoUploadRequests)
           ? parsed.videoUploadRequests
+          : [],
+        quizAttempts: Array.isArray(parsed.quizAttempts) ? parsed.quizAttempts : [],
+        videoQuestions: Array.isArray(parsed.videoQuestions)
+          ? parsed.videoQuestions
+          : [],
+        parentStudentLinks: Array.isArray(parsed.parentStudentLinks)
+          ? parsed.parentStudentLinks
           : [],
       };
       g.__learnovaLmsCache = merged;

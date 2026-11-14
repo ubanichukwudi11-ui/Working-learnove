@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppLayout from "@/components/layout/AppLayout";
-import { NotebookPen, Plus, Search, Trash2, Sparkles } from "lucide-react";
+import { NotebookPen, Plus, Search, Trash2, Sparkles, Layers } from "lucide-react";
 import {
   loadNotebookNotes,
   NOTEBOOK_FOLDERS,
   NOTEBOOK_STORAGE_KEY,
   type NotebookNoteItem,
 } from "@frontend/lib/notebookStorage";
+import FlashcardDeckModal, {
+  type FlashcardItem,
+} from "@frontend/components/common/FlashcardDeckModal";
 
 export default function NotebookPage() {
   const [notes, setNotes] = useState<NotebookNoteItem[]>([]);
@@ -19,6 +22,12 @@ export default function NotebookPage() {
   const [title, setTitle] = useState("");
   const [folder, setFolder] = useState("Mathematics");
   const [content, setContent] = useState("");
+  const [deckOpen, setDeckOpen] = useState(false);
+  const [deckLoading, setDeckLoading] = useState(false);
+  const [deckTitle, setDeckTitle] = useState("");
+  const [deckSubject, setDeckSubject] = useState("");
+  const [deckCards, setDeckCards] = useState<FlashcardItem[]>([]);
+  const [deckAi, setDeckAi] = useState(false);
 
   useEffect(() => {
     setNotes(loadNotebookNotes());
@@ -204,15 +213,58 @@ export default function NotebookPage() {
                     {note.content}
                   </p>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
-                  {note.date}
-                  {note.sourceLabel ? ` · ${note.sourceLabel}` : ""}
-                </p>
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-slate-400 truncate">
+                    {note.date}
+                    {note.sourceLabel ? ` · ${note.sourceLabel}` : ""}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setDeckTitle(note.title);
+                      setDeckSubject(note.folder);
+                      setDeckOpen(true);
+                      setDeckLoading(true);
+                      try {
+                        const res = await fetch("/api/nova/flashcards", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            title: note.title,
+                            subject: note.folder,
+                            content: note.content,
+                          }),
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setDeckCards(data.flashcards || []);
+                          setDeckAi(Boolean(data.generatedByAi));
+                        }
+                      } finally {
+                        setDeckLoading(false);
+                      }
+                    }}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0D9488] hover:underline shrink-0"
+                  >
+                    <Layers size={12} />
+                    Flashcards
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <FlashcardDeckModal
+        open={deckOpen}
+        onClose={() => setDeckOpen(false)}
+        title={deckTitle}
+        subject={deckSubject}
+        cards={deckCards}
+        loading={deckLoading}
+        generatedByAi={deckAi}
+      />
     </AppLayout>
   );
 }

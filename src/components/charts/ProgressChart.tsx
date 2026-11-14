@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-const data = [
+const DEFAULT_DATA = [
   { week: "Wk 1", score: 68 },
   { week: "Wk 2", score: 71 },
   { week: "Wk 3", score: 74 },
@@ -20,25 +20,34 @@ const data = [
   { week: "Wk 7", score: 84 },
 ];
 
-export default function ProgressChart() {
+export default function ProgressChart({
+  data,
+}: {
+  data?: Array<{ week: string; score: number }>;
+}) {
+  const chartData = data && data.length > 0 ? data : DEFAULT_DATA;
+  const latestScore = chartData[chartData.length - 1]?.score ?? 0;
+
   return (
     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-bold text-base text-[#0B1F3A]">Term Assessment Trend</h3>
           <p className="text-xs text-slate-500 mt-0.5">
-            Weekly average across CBT &amp; classwork (%)
+            Progression across topic quizzes, CBT &amp; classwork (%)
           </p>
         </div>
-        <span className="text-sm font-extrabold text-[#0D9488] tabular-nums">84%</span>
+        <span className="text-sm font-extrabold text-[#0D9488] tabular-nums">
+          {latestScore}%
+        </span>
       </div>
 
       <div className="h-[240px] mt-5">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
             <XAxis dataKey="week" stroke="#64748B" fontSize={12} />
-            <YAxis domain={[50, 100]} stroke="#64748B" fontSize={12} />
+            <YAxis domain={[0, 100]} stroke="#64748B" fontSize={12} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "#FFFFFF",
