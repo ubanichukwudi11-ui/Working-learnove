@@ -14,12 +14,14 @@ import {
   MonitorCheck,
   LogOut,
   Sparkles,
+  PlaySquare,
 } from "lucide-react";
 
 const links = [
   { name: "Platform Console", href: "/super-admin", icon: ShieldCheck, exact: true },
   { name: "School Admin", href: "/admin", icon: LayoutDashboard, exact: true },
   { name: "Academics", href: "/admin/academics", icon: BookOpenCheck },
+  { name: "Video Lessons", href: "/admin/videos", icon: PlaySquare },
   { name: "Teacher Approvals", href: "/admin/teachers", icon: GraduationCap },
   { name: "Students", href: "/admin/students", icon: Users },
   { name: "Payments & Access", href: "/admin/payments", icon: CreditCard },

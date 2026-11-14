@@ -14,12 +14,14 @@ import {
   User,
   LogOut,
   GraduationCap,
+  PlaySquare,
 } from "lucide-react";
 
 const links = [
   { name: "Teacher Desk", href: "/teacher", icon: LayoutDashboard, exact: true },
   { name: "My Applications", href: "/teacher/applications", icon: FileBadge2 },
   { name: "Classes & Timetable", href: "/teacher/classes", icon: BookOpen },
+  { name: "Video Lessons", href: "/teacher/videos", icon: PlaySquare },
   { name: "Attendance", href: "/teacher/attendance", icon: CalendarCheck },
   { name: "Lesson Notes", href: "/teacher/notes", icon: FileText },
   { name: "Assignments", href: "/teacher/assignments", icon: ClipboardList },

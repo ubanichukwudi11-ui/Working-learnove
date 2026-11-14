@@ -158,13 +158,22 @@ export default function SubjectsPage() {
                     </div>
 
                     {unlocked ? (
-                      <Link
-                        href="/timetable"
-                        className="w-full py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 transition"
-                      >
-                        View Scheduled Classrooms
-                        <ArrowRight size={14} />
-                      </Link>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Link
+                          href={`/videos?subjectId=${encodeURIComponent(subject.id)}`}
+                          className="py-2.5 px-3 rounded-xl bg-[#0D9488] hover:bg-teal-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1 transition"
+                        >
+                          Video Lessons
+                          <ArrowRight size={13} />
+                        </Link>
+                        <Link
+                          href="/timetable"
+                          className="py-2.5 px-3 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold inline-flex items-center justify-center gap-1 transition"
+                        >
+                          Timetable
+                          <ArrowRight size={13} />
+                        </Link>
+                      </div>
                     ) : (
                       <Link
                         href="/subscriptions"

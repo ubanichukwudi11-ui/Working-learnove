@@ -130,6 +130,12 @@ export default function AdminDashboardPage() {
                 Review Teachers
               </Link>
               <Link
+                href="/admin/videos"
+                className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold transition"
+              >
+                Video Lessons
+              </Link>
+              <Link
                 href="/admin/timetable"
                 className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold transition"
               >

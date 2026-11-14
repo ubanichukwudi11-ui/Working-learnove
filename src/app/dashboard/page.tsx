@@ -15,6 +15,7 @@ import {
   Clock,
   Lock,
   ArrowRight,
+  PlaySquare,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -84,11 +85,18 @@ export default function DashboardPage() {
               </h1>
               <p className="text-sm text-slate-300 mt-1 max-w-2xl">
                 Access your official class timetable, allocated live classroom groups,
-                subject modules, and Nova AI tutor support.
+                topic video lessons, and Nova AI tutor support.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2.5 shrink-0">
+              <Link
+                href="/videos"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold transition"
+              >
+                <PlaySquare size={15} />
+                Video Lessons
+              </Link>
               <Link
                 href="/subscriptions"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold transition"

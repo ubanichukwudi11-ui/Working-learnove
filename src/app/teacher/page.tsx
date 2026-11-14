@@ -14,6 +14,7 @@ import {
   Clock,
   Award,
   Users,
+  PlaySquare,
 } from "lucide-react";
 
 export default function TeacherDashboard() {
@@ -79,7 +80,7 @@ function TeacherWorkspace() {
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
               Manage your subject authorizations, prepare allocated classroom groups before
-              going live, conduct lessons, and save official attendance.
+              going live, upload topic video lessons, and save official attendance.
             </p>
           </div>
 
@@ -90,6 +91,13 @@ function TeacherWorkspace() {
             >
               <Video size={15} />
               My Classrooms ({classrooms.length})
+            </Link>
+            <Link
+              href="/teacher/videos"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
+            >
+              <PlaySquare size={15} />
+              Video Lessons
             </Link>
             <Link
               href="/teacher/applications"

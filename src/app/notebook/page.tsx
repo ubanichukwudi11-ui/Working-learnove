@@ -4,36 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppLayout from "@/components/layout/AppLayout";
 import { NotebookPen, Plus, Search, Trash2, Sparkles } from "lucide-react";
-
-type Note = {
-  id: string;
-  title: string;
-  folder: string;
-  content: string;
-  date: string;
-};
-
-const DEFAULT_NOTES: Note[] = [
-  {
-    id: "note-math-1",
-    title: "Quadratic Equations & Discriminant Rules",
-    folder: "Mathematics",
-    content:
-      "Standard form: ax² + bx + c = 0. Discriminant D = b² - 4ac. When D > 0, two distinct real roots exist. Vertex x = -b / (2a).",
-    date: "Term 2 · Week 7",
-  },
-  {
-    id: "note-phy-1",
-    title: "Newton's Second Law & Impulse",
-    folder: "Physics",
-    content:
-      "F = ma = (mv - mu) / t. Impulse I = F × t = change in momentum (kg·m/s).",
-    date: "Term 2 · Week 6",
-  },
-];
+import {
+  loadNotebookNotes,
+  NOTEBOOK_FOLDERS,
+  NOTEBOOK_STORAGE_KEY,
+  type NotebookNoteItem,
+} from "@frontend/lib/notebookStorage";
 
 export default function NotebookPage() {
-  const [notes, setNotes] = useState<Note[]>(DEFAULT_NOTES);
+  const [notes, setNotes] = useState<NotebookNoteItem[]>([]);
   const [activeFolder, setActiveFolder] = useState("All");
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
@@ -42,18 +21,10 @@ export default function NotebookPage() {
   const [content, setContent] = useState("");
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("learnova_notes");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setNotes([...parsed, ...DEFAULT_NOTES]);
-        }
-      }
-    } catch {}
+    setNotes(loadNotebookNotes());
   }, []);
 
-  const folders = ["All", "Mathematics", "Physics", "Chemistry", "Biology", "English"];
+  const folders = ["All", ...NOTEBOOK_FOLDERS];
 
   const filteredNotes = notes.filter((n) => {
     const folderOk = activeFolder === "All" || n.folder === activeFolder;
@@ -66,8 +37,8 @@ export default function NotebookPage() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
-    const item: Note = {
-      id: Date.now().toString(),
+    const item: NotebookNoteItem = {
+      id: `note-${Date.now()}`,
       title: title.trim(),
       folder,
       content: content.trim(),
@@ -76,7 +47,7 @@ export default function NotebookPage() {
     const next = [item, ...notes];
     setNotes(next);
     try {
-      localStorage.setItem("learnova_notes", JSON.stringify(next));
+      localStorage.setItem(NOTEBOOK_STORAGE_KEY, JSON.stringify(next));
     } catch {}
     setTitle("");
     setContent("");
@@ -87,7 +58,7 @@ export default function NotebookPage() {
     const next = notes.filter((n) => n.id !== id);
     setNotes(next);
     try {
-      localStorage.setItem("learnova_notes", JSON.stringify(next));
+      localStorage.setItem(NOTEBOOK_STORAGE_KEY, JSON.stringify(next));
     } catch {}
   };
 
@@ -110,7 +81,7 @@ export default function NotebookPage() {
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-[#0B1F3A] text-xs font-bold hover:bg-slate-50"
             >
               <Sparkles size={14} className="text-[#D97706]" />
-              Summarize with Nova
+              Open Nova Classroom AI
             </Link>
             <button
               onClick={() => setIsCreating(true)}
@@ -169,7 +140,7 @@ export default function NotebookPage() {
                 onChange={(e) => setFolder(e.target.value)}
                 className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm text-[#0F1F38]"
               >
-                {folders.filter((f) => f !== "All").map((f) => (
+                {NOTEBOOK_FOLDERS.map((f) => (
                   <option key={f}>{f}</option>
                 ))}
               </select>
@@ -200,39 +171,47 @@ export default function NotebookPage() {
           </form>
         )}
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredNotes.map((note) => (
-            <div
-              key={note.id}
-              className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between shadow-xs"
-            >
-              <div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#0D9488] inline-flex items-center gap-1">
-                    <NotebookPen size={13} />
-                    {note.folder}
-                  </span>
-                  <button
-                    onClick={() => handleDelete(note.id)}
-                    aria-label="Delete note"
-                    className="text-slate-400 hover:text-red-600 transition"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+        {filteredNotes.length === 0 ? (
+          <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center text-sm text-slate-500">
+            No study notes found in this subject folder yet. Save notes directly from Video
+            Lessons, Nova AI, or click New Note above.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredNotes.map((note) => (
+              <div
+                key={note.id}
+                className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between shadow-xs"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#0D9488] inline-flex items-center gap-1">
+                      <NotebookPen size={13} />
+                      {note.folder}
+                    </span>
+                    <button
+                      onClick={() => handleDelete(note.id)}
+                      aria-label="Delete note"
+                      className="text-slate-400 hover:text-red-600 transition"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <h3 className="text-base font-bold text-[#0B1F3A] mt-2">
+                    {note.title}
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-2 leading-relaxed whitespace-pre-wrap line-clamp-6">
+                    {note.content}
+                  </p>
                 </div>
-                <h3 className="text-base font-bold text-[#0B1F3A] mt-2">
-                  {note.title}
-                </h3>
-                <p className="text-sm text-slate-600 mt-2 leading-relaxed line-clamp-4">
-                  {note.content}
+                <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
+                  {note.date}
+                  {note.sourceLabel ? ` · ${note.sourceLabel}` : ""}
                 </p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100">
-                {note.date}
-              </p>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </AppLayout>
   );

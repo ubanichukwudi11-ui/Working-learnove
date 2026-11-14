@@ -9,6 +9,7 @@ import {
   CreditCard,
   CalendarDays,
   Video,
+  PlaySquare,
   ClipboardList,
   NotebookPen,
   Sparkles,
@@ -20,6 +21,7 @@ import {
 const links = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Subjects", href: "/subjects", icon: BookOpen },
+  { name: "Video Lessons", href: "/videos", icon: PlaySquare },
   { name: "Subscriptions", href: "/subscriptions", icon: CreditCard },
   { name: "Timetable", href: "/timetable", icon: CalendarDays },
   { name: "Live Classes", href: "/live-classes", icon: Video },
