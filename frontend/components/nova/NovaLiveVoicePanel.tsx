@@ -255,17 +255,15 @@ export default function NovaLiveVoicePanel() {
   }
 
   return (
-    <div className="p-2 sm:p-4 space-y-5 max-w-4xl mx-auto">
-      <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark rounded-3xl text-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-            <Radio size={14} className={status === "live" ? "text-emerald-400" : "text-[#22D3EE]"} />
-            Real-Time Voice Tutor · Conversational Audio
+    <div className="p-5 sm:p-6 space-y-5">
+      <div className="rounded-2xl bg-[#0B1F3A] text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#F59E0B]">
+            <Radio size={14} className={status === "live" ? "animate-pulse" : ""} />
+            Gemini 3.8 Live · Real-Time Voice Conversation
           </div>
-          <h2 className="landing-display text-lg sm:text-xl font-extrabold">
-            Speak Directly with Nova Tutor
-          </h2>
-          <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+          <h2 className="text-lg font-extrabold">Speak Directly with Nova Tutor</h2>
+          <p className="text-xs text-slate-300 max-w-xl">
             Ask questions aloud, interrupt naturally mid-explanation, and practice WAEC/JAMB oral
             and conceptual revision in real time.
           </p>
@@ -277,9 +275,9 @@ export default function NovaLiveVoicePanel() {
               <button
                 type="button"
                 onClick={() => setMuted((m) => !m)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${
                   muted
-                    ? "bg-[#F59E0B] text-[#070D24]"
+                    ? "bg-amber-500 text-[#0B1F3A]"
                     : "bg-white/10 hover:bg-white/20 text-white"
                 }`}
               >
@@ -289,7 +287,7 @@ export default function NovaLiveVoicePanel() {
               <button
                 type="button"
                 onClick={stopLiveSession}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold transition"
               >
                 <PhoneOff size={15} /> End Voice Call
               </button>
@@ -298,7 +296,7 @@ export default function NovaLiveVoicePanel() {
             <button
               type="button"
               onClick={startLiveSession}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white text-sm font-bold transition shadow-[0_8px_22px_rgba(79,70,229,0.4)] whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-bold transition"
             >
               <PhoneCall size={16} /> Start Live Voice Call
             </button>
@@ -307,9 +305,9 @@ export default function NovaLiveVoicePanel() {
       </div>
 
       {/* Voice & Subject Controls */}
-      <div className="grid sm:grid-cols-2 gap-3.5">
+      <div className="grid sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-[#4A5073] mb-1.5">
+          <label className="block text-xs font-semibold text-slate-600 mb-1">
             Practice Subject Focus
           </label>
           <input
@@ -318,18 +316,18 @@ export default function NovaLiveVoicePanel() {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Further Mathematics, Oral English, Organic Chemistry"
-            className="learnova-input w-full px-3.5 py-2.5 text-sm disabled:opacity-60"
+            className="w-full rounded-xl border border-slate-200 px-3.5 py-2 text-sm bg-white disabled:opacity-60"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-[#4A5073] mb-1.5">
+          <label className="block text-xs font-semibold text-slate-600 mb-1">
             Tutor Voice Persona
           </label>
           <select
             disabled={status === "live" || status === "connecting"}
             value={voice}
             onChange={(e) => setVoice(e.target.value as any)}
-            className="learnova-input w-full px-3.5 py-2.5 text-sm disabled:opacity-60"
+            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white disabled:opacity-60"
           >
             {VOICES.map((v) => (
               <option key={v} value={v}>
@@ -348,24 +346,22 @@ export default function NovaLiveVoicePanel() {
       )}
 
       {/* Live Status & Caption Feed */}
-      <div className="rounded-2xl border border-[#E4E1F5] bg-[#FAF8FF] p-5 h-72 overflow-y-auto space-y-3">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 h-72 overflow-y-auto space-y-3">
         {transcripts.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center text-[#4A5073] space-y-2.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#F5F3FF] border border-[#DCD7F5] flex items-center justify-center">
-              <Volume2
-                size={24}
-                className={status === "live" ? "text-[#4F46E5]" : "text-[#6D28D9]"}
-              />
-            </div>
-            <p className="text-sm font-bold text-[#0B1230]">
+          <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 space-y-2">
+            <Volume2
+              size={28}
+              className={status === "live" ? "text-[#0D9488] animate-pulse" : "text-slate-400"}
+            />
+            <p className="text-sm font-semibold text-[#0B1F3A]">
               {status === "live"
                 ? "Connected! Start speaking aloud — Nova is listening."
                 : status === "connecting"
-                ? "Connecting to Nova Live voice channel..."
+                ? "Connecting to Gemini 3.8 Live voice channel..."
                 : "Press Start Live Voice Call to begin a real-time spoken tutorial."}
             </p>
-            <p className="text-xs text-[#7C82A1] max-w-sm">
-              16kHz microphone capture &amp; 24kHz HD voice playback with live captions.
+            <p className="text-xs text-slate-400 max-w-sm">
+              16kHz microphone capture & 24kHz HD voice playback with live captions.
             </p>
           </div>
         ) : (
@@ -375,13 +371,13 @@ export default function NovaLiveVoicePanel() {
               className={`flex ${t.speaker === "You" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs sm:text-sm ${
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm ${
                   t.speaker === "You"
-                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
-                    : "bg-white border border-[#E4E1F5] text-[#0B1230]"
+                    ? "bg-[#0B1F3A] text-white"
+                    : "bg-white border border-slate-200 text-[#0F1F38]"
                 }`}
               >
-                <span className="block text-[10px] font-bold uppercase tracking-wider opacity-75 mb-0.5">
+                <span className="block text-[10px] font-bold uppercase tracking-wider opacity-70 mb-0.5">
                   {t.speaker}
                 </span>
                 {t.text}

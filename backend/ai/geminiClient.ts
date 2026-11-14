@@ -9,31 +9,13 @@ export const GEMINI_MODELS = {
 
 export const GEMINI_TEXT_MODEL = GEMINI_MODELS.GENERAL;
 
-let cachedAi: GoogleGenAI | null = null;
-let cachedKey = "";
-
-export function getAiClient(): GoogleGenAI {
-  const key = process.env.GEMINI_API_KEY || "";
-  if (!cachedAi || cachedKey !== key) {
-    cachedKey = key;
-    cachedAi = new GoogleGenAI({
-      apiKey: key,
-      httpOptions: {
-        apiVersion: "v1beta",
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
-  }
-  return cachedAi;
-}
-
-export const ai: GoogleGenAI = new Proxy({} as GoogleGenAI, {
-  get(_target, prop) {
-    const client = getAiClient() as unknown as Record<PropertyKey, unknown>;
-    const value = client[prop];
-    return typeof value === "function" ? value.bind(client) : value;
+export const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || "",
+  httpOptions: {
+    apiVersion: "v1beta",
+    headers: {
+      "User-Agent": "aistudio-build",
+    },
   },
 });
 

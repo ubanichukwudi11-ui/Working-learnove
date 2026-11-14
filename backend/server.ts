@@ -13,7 +13,6 @@ const handle = app.getRequestHandler();
 
 async function startServer() {
   await app.prepare();
-  const handleUpgrade = app.getUpgradeHandler();
 
   const server = createServer((req, res) => {
     const parsedUrl = parse(req.url || "/", true);
@@ -33,7 +32,7 @@ async function startServer() {
         wss.emit("connection", ws, req);
       });
     } else {
-      handleUpgrade(req, socket, head);
+      socket.destroy();
     }
   });
 

@@ -89,14 +89,14 @@ export default function AdminAcademicsPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-              Curriculum &amp; School Structure
+          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+              Curriculum & School Structure
             </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-              Class Levels, Subjects &amp; Academic Terms
+            <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+              Class Levels, Subjects & Academic Terms
             </h1>
-            <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
+            <p className="text-sm text-slate-300 mt-1 max-w-2xl">
               Configure Nigerian secondary/primary class levels (JSS1–SS3 or custom), map
               subjects to eligible class levels, and manage active academic sessions and terms.
             </p>
@@ -106,8 +106,8 @@ export default function AdminAcademicsPage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
+                  : "bg-red-50 text-red-700 border-red-200"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -116,7 +116,7 @@ export default function AdminAcademicsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
               Loading academic structure...
             </div>
           ) : (
@@ -140,15 +140,15 @@ export default function AdminAcademicsPage() {
                       setLvlName("");
                     }
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <Layers size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                    <Layers size={16} className="text-[#0D9488]" />
                     Add Class Level
                   </h2>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Code
                       </label>
                       <input
@@ -156,17 +156,17 @@ export default function AdminAcademicsPage() {
                         value={lvlCode}
                         onChange={(e) => setLvlCode(e.target.value)}
                         placeholder="e.g. PRY6"
-                        className="learnova-input text-sm uppercase"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm uppercase"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Category
                       </label>
                       <select
                         value={lvlCat}
                         onChange={(e) => setLvlCat(e.target.value as any)}
-                        className="learnova-input text-sm"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
                       >
                         <option value="JSS">JSS</option>
                         <option value="SSS">SSS</option>
@@ -176,7 +176,7 @@ export default function AdminAcademicsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Full Display Name
                     </label>
                     <input
@@ -184,37 +184,39 @@ export default function AdminAcademicsPage() {
                       value={lvlName}
                       onChange={(e) => setLvlName(e.target.value)}
                       placeholder="e.g. Primary 6 (Common Entrance)"
-                      className="learnova-input text-sm"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                     />
                   </div>
                   <button
                     disabled={saving}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shadow-xs"
+                    className="w-full py-2.5 rounded-xl bg-[#0B1F3A] text-white text-sm font-semibold hover:bg-[#132c52]"
                   >
                     Add Class Level
                   </button>
                 </form>
 
-                <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                    <h2 className="text-base font-bold text-[#0B1230]">
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-100">
+                    <h2 className="text-base font-bold text-[#0F1F38]">
                       Configured Class Levels ({classLevels.length})
                     </h2>
                   </div>
-                  <div className="divide-y divide-[#E4E1F5]">
+                  <div className="divide-y divide-slate-100">
                     {classLevels.map((lvl) => (
                       <div
                         key={lvl.id}
                         className="px-5 py-3 flex items-center justify-between gap-3"
                       >
-                        <div className="min-w-0">
-                          <span className="font-bold text-[#0B1230]">{lvl.code}</span>
-                          <span className="text-sm text-[#43466E] ml-2">{lvl.name}</span>
+                        <div>
+                          <span className="font-bold text-[#0B1F3A]">{lvl.code}</span>
+                          <span className="text-sm text-slate-600 ml-2">{lvl.name}</span>
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
+                        <div className="flex items-center gap-2">
                           <span
-                            className={`text-xs font-bold ${
-                              lvl.isActive ? "text-emerald-700" : "text-[#6B6F94]"
+                            className={`text-xs font-semibold px-2.5 py-0.5 rounded ${
+                              lvl.isActive
+                                ? "bg-teal-50 text-[#0D9488]"
+                                : "bg-slate-100 text-slate-500"
                             }`}
                           >
                             {lvl.isActive ? "Active" : "Disabled"}
@@ -227,7 +229,7 @@ export default function AdminAcademicsPage() {
                                 `Updated ${lvl.code}.`
                               )
                             }
-                            className="px-3 py-1 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+                            className="px-3 py-1 rounded-lg border border-slate-200 text-xs font-semibold hover:bg-slate-50"
                           >
                             {lvl.isActive ? "Disable" : "Enable"}
                           </button>
@@ -261,15 +263,15 @@ export default function AdminAcademicsPage() {
                       setSubLevels([]);
                     }
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <BookOpenCheck size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                    <BookOpenCheck size={16} className="text-[#0D9488]" />
                     Create Subject
                   </h2>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Subject Name
                       </label>
                       <input
@@ -277,11 +279,11 @@ export default function AdminAcademicsPage() {
                         value={subName}
                         onChange={(e) => setSubName(e.target.value)}
                         placeholder="Agricultural Science"
-                        className="learnova-input text-sm"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Code
                       </label>
                       <input
@@ -289,18 +291,18 @@ export default function AdminAcademicsPage() {
                         value={subCode}
                         onChange={(e) => setSubCode(e.target.value)}
                         placeholder="AGR"
-                        className="learnova-input text-sm uppercase"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm uppercase"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Department
                     </label>
                     <select
                       value={subDept}
                       onChange={(e) => setSubDept(e.target.value as any)}
-                      className="learnova-input text-sm"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
                     >
                       <option value="Core">Core</option>
                       <option value="Science">Science</option>
@@ -309,7 +311,7 @@ export default function AdminAcademicsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1.5">
                       Eligible Class Levels
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -320,8 +322,8 @@ export default function AdminAcademicsPage() {
                           onClick={() => toggleSubLevel(lvl.id)}
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
                             subLevels.includes(lvl.id)
-                              ? "bg-[#4F46E5] text-white border-[#4F46E5]"
-                              : "bg-[#FAF8FF] text-[#43466E] border-[#DCD7F5]"
+                              ? "bg-[#0D9488] text-white border-[#0D9488]"
+                              : "bg-slate-50 text-slate-600 border-slate-200"
                           }`}
                         >
                           {lvl.code}
@@ -330,32 +332,32 @@ export default function AdminAcademicsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Syllabus Summary
                     </label>
                     <textarea
                       rows={2}
                       value={subDesc}
                       onChange={(e) => setSubDesc(e.target.value)}
-                      className="learnova-input text-sm"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                     />
                   </div>
                   <button
                     disabled={saving || subLevels.length === 0}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition shadow-xs"
+                    className="w-full py-2.5 rounded-xl bg-[#0D9488] text-white text-sm font-semibold hover:bg-teal-700 disabled:opacity-50"
                   >
                     <Plus size={14} className="inline mr-1" />
                     Add Subject
                   </button>
                 </form>
 
-                <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                    <h2 className="text-base font-bold text-[#0B1230]">
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-100">
+                    <h2 className="text-base font-bold text-[#0F1F38]">
                       Subjects Registry ({subjects.length})
                     </h2>
                   </div>
-                  <div className="divide-y divide-[#E4E1F5]">
+                  <div className="divide-y divide-slate-100">
                     {subjects.map((sub) => {
                       const levelCodes = (sub.classLevelIds || [])
                         .map((id: string) => classLevels.find((c) => c.id === id)?.code)
@@ -366,15 +368,15 @@ export default function AdminAcademicsPage() {
                           key={sub.id}
                           className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-[#0B1230]">{sub.name}</span>
-                              <span className="text-xs font-semibold text-[#6B6F94]">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-[#0B1F3A]">{sub.name}</span>
+                              <span className="text-xs font-semibold text-slate-500">
                                 ({sub.code} · {sub.department})
                               </span>
                             </div>
-                            <p className="text-xs text-[#6B6F94] mt-0.5">{sub.description}</p>
-                            <p className="text-xs font-semibold text-[#4F46E5] mt-1">
+                            <p className="text-xs text-slate-500 mt-0.5">{sub.description}</p>
+                            <p className="text-xs font-semibold text-[#0D9488] mt-1">
                               Levels: {levelCodes || "None"}
                             </p>
                           </div>
@@ -386,7 +388,7 @@ export default function AdminAcademicsPage() {
                                 `Updated ${sub.name}.`
                               )
                             }
-                            className="px-3 py-1.5 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] shrink-0 transition"
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold hover:bg-slate-50 shrink-0"
                           >
                             {sub.isActive ? "Active · Disable" : "Disabled · Enable"}
                           </button>
@@ -418,14 +420,14 @@ export default function AdminAcademicsPage() {
                       setTermEnd("");
                     }
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <CalendarRange size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                    <CalendarRange size={16} className="text-[#0D9488]" />
                     Add Academic Term
                   </h2>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Term Name
                     </label>
                     <input
@@ -433,12 +435,12 @@ export default function AdminAcademicsPage() {
                       value={termName}
                       onChange={(e) => setTermName(e.target.value)}
                       placeholder="e.g. Summer Revision Term"
-                      className="learnova-input text-sm"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Start Date
                       </label>
                       <input
@@ -446,11 +448,11 @@ export default function AdminAcademicsPage() {
                         type="date"
                         value={termStart}
                         onChange={(e) => setTermStart(e.target.value)}
-                        className="learnova-input text-sm"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         End Date
                       </label>
                       <input
@@ -458,38 +460,38 @@ export default function AdminAcademicsPage() {
                         type="date"
                         value={termEnd}
                         onChange={(e) => setTermEnd(e.target.value)}
-                        className="learnova-input text-sm"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                       />
                     </div>
                   </div>
                   <button
                     disabled={saving}
-                    className="w-full py-2.5 rounded-xl bg-[#0B1230] hover:bg-[#151A44] text-white text-sm font-bold transition"
+                    className="w-full py-2.5 rounded-xl bg-[#0B1F3A] text-white text-sm font-semibold hover:bg-[#132c52]"
                   >
                     Create Term
                   </button>
                 </form>
 
-                <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                    <h2 className="text-base font-bold text-[#0B1230]">
-                      Academic Sessions &amp; Terms
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-100">
+                    <h2 className="text-base font-bold text-[#0F1F38]">
+                      Academic Sessions & Terms
                     </h2>
                   </div>
-                  <div className="divide-y divide-[#E4E1F5]">
+                  <div className="divide-y divide-slate-100">
                     {terms.map((t) => (
                       <div
                         key={t.id}
                         className="px-5 py-3 flex items-center justify-between gap-3"
                       >
                         <div>
-                          <p className="font-bold text-[#0B1230]">{t.name}</p>
-                          <p className="text-xs text-[#6B6F94] tabular-nums">
+                          <p className="font-bold text-[#0F1F38]">{t.name}</p>
+                          <p className="text-xs text-slate-500 tabular-nums">
                             {t.startsAt} → {t.endsAt}
                           </p>
                         </div>
                         {t.isCurrent ? (
-                          <span className="text-xs font-bold text-[#4F46E5]">
+                          <span className="text-xs font-bold px-3 py-1 rounded-lg bg-teal-50 text-[#0D9488]">
                             Current Active Term
                           </span>
                         ) : (
@@ -501,7 +503,7 @@ export default function AdminAcademicsPage() {
                                 `${t.name} set as active term.`
                               )
                             }
-                            className="px-3 py-1.5 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold hover:bg-slate-50"
                           >
                             Set Current Term
                           </button>

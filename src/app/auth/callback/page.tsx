@@ -18,13 +18,6 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      if (session.access_token && typeof window !== "undefined") {
-        try {
-          localStorage.setItem("learnova_access_token", session.access_token);
-          sessionStorage.setItem("learnova_access_token", session.access_token);
-        } catch {}
-      }
-
       // Exchange OAuth access token for authoritative server profile & httpOnly cookie
       const sessionRes = await fetch("/api/auth/session", {
         method: "POST",
@@ -93,10 +86,10 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+    <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA] text-[#0B1F3A]">
       <div className="text-center">
-        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#4F46E5] border-t-transparent" />
-        <p className="mt-4 text-sm font-semibold text-[#43466E]">
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#0D9488] border-t-transparent" />
+        <p className="mt-4 text-sm font-semibold text-slate-600">
           Completing sign in...
         </p>
       </div>

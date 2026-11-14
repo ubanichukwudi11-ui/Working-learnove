@@ -1,50 +1,71 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  applyAuthCookies,
-  AuthServiceError,
-  exchangeAccessTokenForUser,
-  sessionExchangeSchema,
-} from "@backend/services/authService";
+import { getSupabaseServerClient } from "@/lib/supabaseServer";
+import { loadLmsState } from "@/lib/lmsDb";
 
+/**
+ * Exchanges a client Supabase access_token (e.g. after OAuth callback) for
+ * an httpOnly learnova_access_token cookie and authoritative user profile.
+ */
 export async function POST(req: NextRequest) {
   try {
-    let rawBody: unknown;
-    try {
-      rawBody = await req.json();
-    } catch {
-      return NextResponse.json(
-        { success: false, error: "Invalid JSON request body." },
-        { status: 400 }
-      );
+    const body = await req.json();
+    const accessToken = String(body.accessToken || "").trim();
+    if (!accessToken) {
+      return NextResponse.json({ error: "Access token required." }, { status: 400 });
     }
 
-    const parsed = sessionExchangeSchema.safeParse(rawBody);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Access token required." },
-        { status: 400 }
-      );
+    const sb = getSupabaseServerClient();
+    const {
+      data: { user: authUser },
+      error,
+    } = await sb.auth.getUser(accessToken);
+    if (error || !authUser) {
+      return NextResponse.json({ error: "Invalid session token." }, { status: 401 });
     }
 
-    const user = await exchangeAccessTokenForUser(parsed.data.accessToken);
+    const [{ data: profile }, state] = await Promise.all([
+      sb.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
+      loadLmsState(),
+    ]);
+
+    let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
+    const email = (authUser.email || profile?.email || "").toLowerCase();
+    if (
+      role === "ADMIN" &&
+      (state.platformSettings.superAdminEmails || [])
+        .map((e) => e.toLowerCase())
+        .includes(email)
+    ) {
+      role = "SUPER_ADMIN";
+    }
+
+    const user = {
+      id: authUser.id,
+      email: authUser.email || "",
+      fullName:
+        profile?.full_name ||
+        authUser.user_metadata?.full_name ||
+        authUser.user_metadata?.name ||
+        "User",
+      role,
+      status: profile?.status || "ACTIVE",
+      avatarUrl: profile?.avatar_url || authUser.user_metadata?.avatar_url,
+    };
 
     const response = NextResponse.json({ success: true, user });
-    applyAuthCookies(req, response, {
-      user,
-      accessToken: parsed.data.accessToken,
-      refreshToken: parsed.data.refreshToken,
+    response.cookies.set("learnova_access_token", accessToken, {
+      httpOnly: true,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+    });
+    response.cookies.set("learnova_user", JSON.stringify(user), {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
     });
     return response;
-  } catch (err: unknown) {
-    if (err instanceof AuthServiceError) {
-      return NextResponse.json(
-        { success: false, error: err.message },
-        { status: err.statusCode }
-      );
-    }
-    return NextResponse.json(
-      { success: false, error: "Could not sync session." },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: "Could not sync session." }, { status: 500 });
   }
 }

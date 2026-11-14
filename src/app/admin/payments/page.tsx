@@ -87,15 +87,15 @@ export default function AdminPaymentsPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-                Student Enrolment, Revenue &amp; Access Governance
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+                Student Enrolment, Revenue & Access Governance
               </p>
-              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-                Payments &amp; Subscription Access Control
+              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+                Payments & Subscription Access Control
               </h1>
-              <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
+              <p className="text-sm text-slate-300 mt-1 max-w-2xl">
                 Verify student bank transfers, inspect confirmed Paystack receipts, grant
                 authorized scholarships, or expire/revoke unpaid access.
               </p>
@@ -105,7 +105,7 @@ export default function AdminPaymentsPage() {
               onClick={() =>
                 postAction({ action: "RUN_EXPIRY_CHECK" }, "Subscription expiry scan complete.")
               }
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition shrink-0"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition shrink-0"
             >
               <RefreshCw size={15} />
               Run Expiry Check
@@ -116,8 +116,8 @@ export default function AdminPaymentsPage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
+                  : "bg-red-50 text-red-700 border-red-200"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -126,7 +126,7 @@ export default function AdminPaymentsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
+            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
               Loading payments and entitlements...
             </div>
           ) : (
@@ -149,21 +149,21 @@ export default function AdminPaymentsPage() {
                       "Scholarship / authorized access activated."
                     );
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <Gift size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                    <Gift size={16} className="text-[#0D9488]" />
                     Grant Scholarship / Access
                   </h2>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Student Account
                     </label>
                     <select
                       required
                       value={schStudentId}
                       onChange={(e) => setSchStudentId(e.target.value)}
-                      className="learnova-input text-sm"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
                     >
                       {students.length === 0 && <option value="">No registered students</option>}
                       {students.map((st) => (
@@ -175,13 +175,13 @@ export default function AdminPaymentsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Class Level
                       </label>
                       <select
                         value={schLevelId}
                         onChange={(e) => setSchLevelId(e.target.value)}
-                        className="learnova-input text-sm"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
                       >
                         {classLevels.map((lvl) => (
                           <option key={lvl.id} value={lvl.id}>
@@ -191,7 +191,7 @@ export default function AdminPaymentsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
                         Validity (Days)
                       </label>
                       <input
@@ -199,16 +199,15 @@ export default function AdminPaymentsPage() {
                         min={1}
                         value={schDays}
                         onChange={(e) => setSchDays(e.target.value)}
-                        className="learnova-input text-sm tabular-nums"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm tabular-nums"
                       />
                     </div>
                   </div>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#43466E]">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700">
                     <input
                       type="checkbox"
                       checked={schAllSubjects}
                       onChange={(e) => setSchAllSubjects(e.target.checked)}
-                      className="accent-[#4F46E5]"
                     />
                     Grant access to all subjects in class level
                   </label>
@@ -225,10 +224,10 @@ export default function AdminPaymentsPage() {
                                 : [...prev, s.id]
                             )
                           }
-                          className={`px-2 py-1 rounded text-xs font-semibold border transition ${
+                          className={`px-2 py-1 rounded text-xs font-semibold border ${
                             schSubjectIds.includes(s.id)
-                              ? "bg-[#4F46E5] text-white border-[#4F46E5]"
-                              : "bg-[#FAF8FF] text-[#43466E] border-[#DCD7F5]"
+                              ? "bg-[#0D9488] text-white border-[#0D9488]"
+                              : "bg-slate-50 text-slate-600 border-slate-200"
                           }`}
                         >
                           {s.name}
@@ -237,66 +236,65 @@ export default function AdminPaymentsPage() {
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Authorization Reason (Required)
                     </label>
                     <input
                       required
                       value={schReason}
                       onChange={(e) => setSchReason(e.target.value)}
-                      className="learnova-input text-sm"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
                     />
                   </div>
                   <button
                     disabled={saving || !schStudentId}
-                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition shadow-xs"
+                    className="w-full py-2.5 rounded-xl bg-[#0D9488] text-white text-sm font-semibold hover:bg-teal-700 disabled:opacity-50"
                   >
                     Activate Authorized Access
                   </button>
                 </form>
 
                 {/* PAYMENT VERIFICATION QUEUE */}
-                <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex items-center justify-between">
-                    <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                      <CreditCard size={16} className="text-[#4F46E5]" />
-                      Payment Records &amp; Bank Transfer Verification ({payments.length})
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                  <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
+                      <CreditCard size={16} className="text-[#0D9488]" />
+                      Payment Records & Bank Transfer Verification ({payments.length})
                     </h2>
                   </div>
                   {payments.length === 0 ? (
-                    <div className="p-10 text-center text-sm text-[#6B6F94]">
+                    <div className="p-10 text-center text-sm text-slate-500">
                       No payment transactions submitted yet. Student Paystack checkouts and bank
                       transfer references will appear here.
                     </div>
                   ) : (
-                    <div className="divide-y divide-[#E4E1F5]">
+                    <div className="divide-y divide-slate-100">
                       {payments.map((pay) => (
                         <div
                           key={pay.id}
                           className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
-                          <div className="min-w-0">
+                          <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-bold text-[#0B1230]">{pay.studentName}</p>
-                              <span className="text-xs font-bold text-[#0B1230] tabular-nums">
+                              <p className="font-bold text-[#0F1F38]">{pay.studentName}</p>
+                              <span className="text-xs font-bold text-[#0B1F3A] tabular-nums">
                                 ₦{Number(pay.amountNgn).toLocaleString()}
                               </span>
-                              <span aria-hidden="true" className="text-[#6B6F94]">·</span>
                               <span
-                                className={`text-xs font-bold ${
+                                className={`text-xs font-bold px-2 py-0.5 rounded ${
                                   pay.status === "VERIFIED"
-                                    ? "text-emerald-700"
+                                    ? "bg-teal-50 text-[#0D9488]"
                                     : pay.status === "AWAITING_CONFIRMATION"
-                                    ? "text-amber-700"
-                                    : "text-rose-700"
+                                    ? "bg-amber-50 text-amber-800"
+                                    : "bg-red-50 text-red-700"
                                 }`}
                               >
                                 {pay.status.replace(/_/g, " ")}
                               </span>
                             </div>
-                            <p className="text-xs text-[#6B6F94] mt-1">
+                            <p className="text-xs text-slate-500 mt-1">
                               {pay.planName} · {levelCode(pay.classLevelId)} · {pay.provider} · Ref:{" "}
-                              <span className="font-mono font-semibold text-[#0B1230]">{pay.reference}</span>
+                              <span className="font-mono font-semibold">{pay.reference}</span>
                             </p>
                           </div>
                           {pay.status === "AWAITING_CONFIRMATION" && (
@@ -309,9 +307,9 @@ export default function AdminPaymentsPage() {
                                     `Verified payment for ${pay.studentName}.`
                                   )
                                 }
-                                className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold hover:from-[#4338CA] hover:to-[#6D28D9] transition"
+                                className="px-3 py-1.5 rounded-lg bg-[#0D9488] text-white text-xs font-semibold hover:bg-teal-700"
                               >
-                                Verify &amp; Activate
+                                Verify & Activate
                               </button>
                               <button
                                 disabled={saving}
@@ -326,7 +324,7 @@ export default function AdminPaymentsPage() {
                                     `Declined payment reference ${pay.reference}.`
                                   )
                                 }
-                                className="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                                className="px-3 py-1.5 rounded-lg border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-50"
                               >
                                 Decline
                               </button>
@@ -340,9 +338,9 @@ export default function AdminPaymentsPage() {
               </div>
 
               {/* STUDENT ENTITLEMENTS TABLE */}
-              <div className="learnova-card overflow-hidden">
-                <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h2 className="text-base font-bold text-[#0B1230]">
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h2 className="text-base font-bold text-[#0F1F38]">
                     Student Access Entitlements ({filteredEntitlements.length})
                   </h2>
                   <div className="flex flex-wrap gap-1.5">
@@ -357,10 +355,10 @@ export default function AdminPaymentsPage() {
                       <button
                         key={st}
                         onClick={() => setStatusFilter(st)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                           statusFilter === st
-                            ? "bg-[#0B1230] text-white"
-                            : "bg-white text-[#43466E] border border-[#E4E1F5] hover:border-[#4F46E5]"
+                            ? "bg-[#0B1F3A] text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
                         {st.replace(/_/g, " ")}
@@ -370,29 +368,29 @@ export default function AdminPaymentsPage() {
                 </div>
 
                 {filteredEntitlements.length === 0 ? (
-                  <div className="p-10 text-center text-sm text-[#6B6F94]">
+                  <div className="p-10 text-center text-sm text-slate-500">
                     No student entitlements match this filter.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                      <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
+                      <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
                         <tr>
-                          <th className="px-4 py-3 font-semibold">Student</th>
-                          <th className="px-4 py-3 font-semibold">Class Level</th>
-                          <th className="px-4 py-3 font-semibold">Access Status</th>
-                          <th className="px-4 py-3 font-semibold">Expires</th>
-                          <th className="px-4 py-3 font-semibold text-right">Action</th>
+                          <th className="px-4 py-3">Student</th>
+                          <th className="px-4 py-3">Class Level</th>
+                          <th className="px-4 py-3">Access Status</th>
+                          <th className="px-4 py-3">Expires</th>
+                          <th className="px-4 py-3 text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E4E1F5]">
+                      <tbody className="divide-y divide-slate-100">
                         {filteredEntitlements.map((ent) => (
-                          <tr key={ent.id} className="hover:bg-[#FAF8FF]/70 transition">
+                          <tr key={ent.id}>
                             <td className="px-4 py-3">
-                              <p className="font-semibold text-[#0B1230]">{ent.studentName}</p>
-                              <p className="text-xs text-[#6B6F94]">{ent.studentEmail}</p>
+                              <p className="font-semibold text-[#0F1F38]">{ent.studentName}</p>
+                              <p className="text-xs text-slate-500">{ent.studentEmail}</p>
                             </td>
-                            <td className="px-4 py-3 font-semibold text-xs text-[#0B1230]">
+                            <td className="px-4 py-3 font-semibold text-xs text-[#0B1F3A]">
                               {levelCode(ent.classLevelId)} ·{" "}
                               {ent.allSubjects
                                 ? "All Subjects"
@@ -400,21 +398,21 @@ export default function AdminPaymentsPage() {
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`text-xs font-bold ${
+                                className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
                                   ent.accessStatus === "ACTIVE_PAID" ||
                                   ent.accessStatus === "SCHOLARSHIP_GRANTED"
-                                    ? "text-emerald-700"
+                                    ? "bg-teal-50 text-[#0D9488]"
                                     : ent.accessStatus === "AWAITING_CONFIRMATION"
-                                    ? "text-amber-700"
+                                    ? "bg-amber-50 text-amber-800"
                                     : ent.accessStatus === "EXPIRED"
-                                    ? "text-rose-700"
-                                    : "text-[#6B6F94]"
+                                    ? "bg-red-50 text-red-700"
+                                    : "bg-slate-100 text-slate-600"
                                 }`}
                               >
                                 {ent.accessStatus.replace(/_/g, " ")}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-xs text-[#6B6F94] tabular-nums">
+                            <td className="px-4 py-3 text-xs text-slate-500 tabular-nums">
                               {ent.expiresAt
                                 ? new Date(ent.expiresAt).toLocaleDateString("en-NG")
                                 : "—"}
@@ -435,7 +433,7 @@ export default function AdminPaymentsPage() {
                                       `Revoked classroom access for ${ent.studentName}.`
                                     )
                                   }
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-50"
                                 >
                                   <ShieldAlert size={13} />
                                   Revoke / Expire

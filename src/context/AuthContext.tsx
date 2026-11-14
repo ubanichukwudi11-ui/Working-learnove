@@ -52,67 +52,19 @@ function getStoredUser(): User | null {
 function persistUser(user: User | null) {
   if (typeof window === "undefined") return;
   try {
-    const isHttps = window.location.protocol === "https:";
-    const cookieFlags = isHttps
-      ? "path=/; max-age=604800; SameSite=None; Secure"
-      : "path=/; max-age=604800; SameSite=Lax";
-    const clearFlags = isHttps
-      ? "path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure"
-      : "path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-
     if (user) {
       const serialized = JSON.stringify(user);
       localStorage.setItem("learnova_user", serialized);
       localStorage.setItem("learnova-user", serialized);
       sessionStorage.setItem("learnova_user", serialized);
-      document.cookie = `learnova_user=${encodeURIComponent(serialized)}; ${cookieFlags}`;
+      document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax`;
     } else {
       localStorage.removeItem("learnova_user");
       localStorage.removeItem("learnova-user");
-      localStorage.removeItem("learnova_access_token");
       sessionStorage.removeItem("learnova_user");
-      sessionStorage.removeItem("learnova_access_token");
-      document.cookie = `learnova_user=; ${clearFlags}`;
+      document.cookie = "learnova_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
   } catch {}
-}
-
-let fetchPatched = false;
-function installAuthFetchInterceptor() {
-  if (typeof window === "undefined" || fetchPatched) return;
-  fetchPatched = true;
-  const origFetch = window.fetch.bind(window);
-  window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-    const urlStr =
-      typeof input === "string"
-        ? input
-        : input instanceof URL
-        ? input.toString()
-        : input.url;
-
-    const isSameOriginApi =
-      urlStr.startsWith("/api/") ||
-      urlStr.startsWith(`${window.location.origin}/api/`);
-
-    if (isSameOriginApi) {
-      try {
-        const token =
-          sessionStorage.getItem("learnova_access_token") ||
-          localStorage.getItem("learnova_access_token");
-        if (token) {
-          const headers = new Headers(
-            init?.headers || (input instanceof Request ? input.headers : undefined)
-          );
-          if (!headers.has("Authorization")) {
-            headers.set("Authorization", `Bearer ${token}`);
-          }
-          return origFetch(input, { ...init, headers });
-        }
-      } catch {}
-    }
-
-    return origFetch(input, init);
-  };
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -152,7 +104,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    installAuthFetchInterceptor();
     const cached = getStoredUser();
     if (cached) {
       setUser(cached);
@@ -165,12 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           persistUser(null);
           setUser(null);
         } else if (event === "SIGNED_IN" || session) {
-          if (session?.access_token) {
-            try {
-              localStorage.setItem("learnova_access_token", session.access_token);
-              sessionStorage.setItem("learnova_access_token", session.access_token);
-            } catch {}
-          }
           await loadUser();
         }
       }
