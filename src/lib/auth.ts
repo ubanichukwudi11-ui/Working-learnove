@@ -118,7 +118,15 @@ export async function login(email: string, password?: string): Promise<User> {
         localStorage.setItem("learnova_user", serialized);
         localStorage.setItem("learnova-user", serialized);
         sessionStorage.setItem("learnova_user", serialized);
-        document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax`;
+        if (data.session?.access_token) {
+          localStorage.setItem("learnova_access_token", data.session.access_token);
+          sessionStorage.setItem("learnova_access_token", data.session.access_token);
+        }
+        const isHttps = window.location.protocol === "https:";
+        const cookieFlags = isHttps
+          ? "path=/; max-age=604800; SameSite=None; Secure"
+          : "path=/; max-age=604800; SameSite=Lax";
+        document.cookie = `learnova_user=${encodeURIComponent(serialized)}; ${cookieFlags}`;
       } catch {}
     }
 
@@ -163,7 +171,9 @@ export async function logout(): Promise<void> {
   if (typeof window !== "undefined") {
     localStorage.removeItem("learnova_user");
     localStorage.removeItem("learnova-user");
+    localStorage.removeItem("learnova_access_token");
     sessionStorage.removeItem("learnova_user");
+    sessionStorage.removeItem("learnova_access_token");
   }
 
   try {
@@ -223,6 +233,10 @@ export async function registerStudent(data: {
 
   if (typeof window !== "undefined") {
     localStorage.setItem("learnova_user", JSON.stringify(result.user));
+    if (result.session?.access_token) {
+      localStorage.setItem("learnova_access_token", result.session.access_token);
+      sessionStorage.setItem("learnova_access_token", result.session.access_token);
+    }
   }
 
   return result.user;
@@ -279,6 +293,10 @@ export async function registerTeacher(data: {
 
   if (typeof window !== "undefined") {
     localStorage.setItem("learnova_user", JSON.stringify(result.user));
+    if (result.session?.access_token) {
+      localStorage.setItem("learnova_access_token", result.session.access_token);
+      sessionStorage.setItem("learnova_access_token", result.session.access_token);
+    }
   }
 
   return result.user;
@@ -323,6 +341,10 @@ export async function registerParent(data: {
 
   if (typeof window !== "undefined") {
     localStorage.setItem("learnova_user", JSON.stringify(result.user));
+    if (result.session?.access_token) {
+      localStorage.setItem("learnova_access_token", result.session.access_token);
+      sessionStorage.setItem("learnova_access_token", result.session.access_token);
+    }
   }
 
   return result.user;
@@ -333,8 +355,21 @@ export async function registerParent(data: {
 =========================================== */
 
 export async function getCurrentUser(): Promise<User | null> {
+  let storedToken: string | null = null;
+  if (typeof window !== "undefined") {
+    try {
+      storedToken =
+        sessionStorage.getItem("learnova_access_token") ||
+        localStorage.getItem("learnova_access_token");
+    } catch {}
+  }
+
   try {
-    const res = await fetch("/api/auth/me", { cache: "no-store" });
+    const headers: Record<string, string> = {};
+    if (storedToken) {
+      headers.Authorization = `Bearer ${storedToken}`;
+    }
+    const res = await fetch("/api/auth/me", { cache: "no-store", headers });
     if (res.ok) {
       const data = await res.json();
       if (data?.user) {
@@ -352,6 +387,12 @@ export async function getCurrentUser(): Promise<User | null> {
         data: { session },
       } = await supabase.auth.getSession();
       if (session?.access_token) {
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("learnova_access_token", session.access_token);
+            sessionStorage.setItem("learnova_access_token", session.access_token);
+          } catch {}
+        }
         const res = await fetch("/api/auth/session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

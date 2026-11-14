@@ -52,18 +52,23 @@ export async function POST(req: NextRequest) {
       avatarUrl: profile?.avatar_url || authUser.user_metadata?.avatar_url,
     };
 
+    const proto =
+      req.headers.get("x-forwarded-proto") ||
+      (req.url.startsWith("https:") ? "https" : "http");
+    const isHttps = proto.includes("https");
+    const cookieBase = {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
+      secure: isHttps,
+    };
+
     const response = NextResponse.json({ success: true, user });
     response.cookies.set("learnova_access_token", accessToken, {
+      ...cookieBase,
       httpOnly: true,
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: "lax",
     });
-    response.cookies.set("learnova_user", JSON.stringify(user), {
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-      sameSite: "lax",
-    });
+    response.cookies.set("learnova_user", JSON.stringify(user), cookieBase);
     return response;
   } catch {
     return NextResponse.json({ error: "Could not sync session." }, { status: 500 });

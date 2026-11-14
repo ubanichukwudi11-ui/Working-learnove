@@ -40,6 +40,9 @@ export default function LoginForm() {
       {}
     );
 
+  const [googleOauthUrl, setGoogleOauthUrl] =
+    useState<string | null>(null);
+
   function validate() {
     const newErrors: Record<
       string,
@@ -131,12 +134,17 @@ export default function LoginForm() {
   async function loginWithGoogle() {
     try {
       setErrors({});
+      setGoogleOauthUrl(null);
       await supabase.auth.signOut();
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const inIframe =
+        typeof window !== "undefined" && window.self !== window.top;
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: inIframe,
           queryParams: {
             prompt: "select_account",
           },
@@ -144,6 +152,10 @@ export default function LoginForm() {
       });
 
       if (error) throw error;
+
+      if (inIframe && data?.url) {
+        setGoogleOauthUrl(data.url);
+      }
     } catch (err: any) {
       setErrors({
         general:
@@ -296,6 +308,22 @@ export default function LoginForm() {
         />
         <span>Continue with Google</span>
       </button>
+
+      {googleOauthUrl && (
+        <div className="rounded-xl border border-[#C4B5FD] bg-[#F5F3FF] p-3.5 text-center space-y-2">
+          <p className="text-xs text-[#43466E]">
+            Google Sign-In cannot load inside an embedded preview frame. Open it in a new tab to complete sign-in:
+          </p>
+          <a
+            href={googleOauthUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-lg bg-[#4F46E5] px-4 py-2 text-xs font-bold text-white hover:bg-[#4338CA] transition"
+          >
+            Open Google Sign-In →
+          </a>
+        </div>
+      )}
 
       <div className="text-center text-xs text-[#43466E]">
         Don&apos;t have an account?{" "}

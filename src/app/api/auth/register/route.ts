@@ -288,17 +288,22 @@ export async function POST(req: Request) {
     });
 
     if (data.session?.access_token) {
+      const proto =
+        req.headers.get("x-forwarded-proto") ||
+        (req.url.startsWith("https:") ? "https" : "http");
+      const isHttps = proto.includes("https");
+      const cookieBase = {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: (isHttps ? "none" : "lax") as "none" | "lax",
+        secure: isHttps,
+      };
+
       response.cookies.set("learnova_access_token", data.session.access_token, {
+        ...cookieBase,
         httpOnly: true,
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-        sameSite: "lax",
       });
-      response.cookies.set("learnova_user", JSON.stringify(user), {
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-        sameSite: "lax",
-      });
+      response.cookies.set("learnova_user", JSON.stringify(user), cookieBase);
     }
 
     return response;

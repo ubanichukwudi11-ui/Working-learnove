@@ -18,6 +18,13 @@ export default function AuthCallbackPage() {
         return;
       }
 
+      if (session.access_token && typeof window !== "undefined") {
+        try {
+          localStorage.setItem("learnova_access_token", session.access_token);
+          sessionStorage.setItem("learnova_access_token", session.access_token);
+        } catch {}
+      }
+
       // Exchange OAuth access token for authoritative server profile & httpOnly cookie
       const sessionRes = await fetch("/api/auth/session", {
         method: "POST",
