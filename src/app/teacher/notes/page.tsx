@@ -47,32 +47,35 @@ export default function TeacherNotesPage() {
     <ProtectedRoute roles={["TEACHER", "ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Curriculum Materials
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
               Lesson Notes &amp; Study Guides
             </h1>
+            <p className="text-sm text-[#C4B5FD] mt-1">
+              Publish curriculum-aligned study outlines and downloadable revision sheets for your cohorts.
+            </p>
           </div>
 
           <form
             onSubmit={publishNote}
-            className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs"
+            className="learnova-card p-6 space-y-4"
           >
-            <h2 className="text-base font-bold text-[#0B1F3A]">Publish New Lesson Material</h2>
+            <h2 className="text-base font-bold text-[#0B1230]">Publish New Lesson Material</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="Document title"
-                className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm"
+                className="learnova-input text-sm"
               />
               <select
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm"
+                className="learnova-input text-sm"
               >
                 <option>Mathematics · SSS 2</option>
                 <option>Further Mathematics · SSS 3</option>
@@ -86,11 +89,11 @@ export default function TeacherNotesPage() {
               rows={3}
               required
               placeholder="Key lesson notes or revision outline for students..."
-              className="w-full rounded-xl border border-slate-300 bg-[#F7F8FA] p-3.5 text-sm"
+              className="learnova-input text-sm"
             />
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold transition"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-xs"
             >
               <Plus size={15} />
               Publish Material
@@ -101,17 +104,17 @@ export default function TeacherNotesPage() {
             {materials.map((m) => (
               <div
                 key={m.id}
-                className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between shadow-xs"
+                className="learnova-card p-6 flex flex-col justify-between"
               >
                 <div>
-                  <span className="text-xs font-bold text-[#0D9488] inline-flex items-center gap-1">
+                  <span className="text-xs font-bold text-[#4F46E5] inline-flex items-center gap-1.5">
                     <FileText size={13} />
                     {m.subject}
                   </span>
-                  <h3 className="text-lg font-bold text-[#0B1F3A] mt-2">{m.title}</h3>
-                  <p className="text-sm text-slate-600 mt-2 leading-relaxed">{m.summary}</p>
+                  <h3 className="text-lg font-bold text-[#0B1230] mt-2">{m.title}</h3>
+                  <p className="text-sm text-[#43466E] mt-2 leading-relaxed">{m.summary}</p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <div className="mt-4 pt-3 border-t border-[#E4E1F5] flex items-center justify-between text-xs text-[#6B6F94]">
                   <span>{m.updated}</span>
                   <button
                     onClick={() => {
@@ -125,7 +128,7 @@ export default function TeacherNotesPage() {
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="inline-flex items-center gap-1 font-bold text-[#0B1F3A] hover:text-[#0D9488]"
+                    className="inline-flex items-center gap-1 font-bold text-[#0B1230] hover:text-[#4F46E5] transition"
                   >
                     <Download size={13} />
                     Export

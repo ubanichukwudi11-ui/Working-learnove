@@ -20,7 +20,7 @@ export default function Pricing() {
         "5 Nova AI study questions daily",
         "Weekly timetable & study planner",
       ],
-      cta: "Start Free",
+      cta: "Get Started Free",
       href: "/register/student",
       featured: false,
     },
@@ -34,11 +34,11 @@ export default function Pricing() {
       description: "Full access for WAEC, NECO & JAMB preparation.",
       features: [
         "Unlimited Live Interactive Classes",
+        "All Subject → Term → Topic Video Lessons",
         "Unlimited Nova AI explanations & CBT drills",
-        "Assignment grading & class recordings",
-        "Parent progress monitoring link",
+        "Parent progress monitoring & PDF report cards",
       ],
-      cta: "Enroll Now",
+      cta: "Get Started",
       href: "/register/student",
       featured: true,
     },
@@ -53,7 +53,7 @@ export default function Pricing() {
         "Term report analytics & parent portal",
         "Onboarding support for teachers",
       ],
-      cta: "Contact School Desk",
+      cta: "Apply as Teacher / School",
       href: "/register/teacher",
       featured: false,
     },
@@ -62,23 +62,23 @@ export default function Pricing() {
   return (
     <section
       id="pricing"
-      className="bg-[#FAF8F4] py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-200"
+      className="bg-[#F5F3FF] py-20 lg:py-24 px-4 sm:px-6 lg:px-8 border-b border-[#E4E1F5]"
     >
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="landing-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#D97706]">
-              Transparent Naira Pricing
+            <p className="landing-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#6D28D9]">
+              Transparent Naira Plans
             </p>
-            <h2 className="landing-display mt-2 text-3xl sm:text-4xl font-bold tracking-[-0.025em] text-[#0B1F3A]">
-              Accessible plans for families and schools
+            <h2 className="landing-display mt-2 text-3xl sm:text-4xl font-bold tracking-[-0.02em] text-[#0B1230]">
+              Accessible plans for learners, families, and schools
             </h2>
           </div>
 
           <div
             role="tablist"
             aria-label="Scholar billing cadence"
-            className="inline-flex self-start md:self-auto rounded-xl bg-white p-1 border border-slate-200"
+            className="inline-flex self-start md:self-auto rounded-xl bg-white p-1 border border-[#E4E1F5]"
           >
             <button
               type="button"
@@ -87,8 +87,8 @@ export default function Pricing() {
               onClick={() => setCycle("monthly")}
               className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
                 cycle === "monthly"
-                  ? "bg-[#0B1F3A] text-white"
-                  : "text-slate-600 hover:text-[#0B1F3A]"
+                  ? "bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white"
+                  : "text-slate-600 hover:text-[#0B1230]"
               }`}
             >
               Monthly View
@@ -100,8 +100,8 @@ export default function Pricing() {
               onClick={() => setCycle("term")}
               className={`rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap ${
                 cycle === "term"
-                  ? "bg-[#0B1F3A] text-white"
-                  : "text-slate-600 hover:text-[#0B1F3A]"
+                  ? "bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white"
+                  : "text-slate-600 hover:text-[#0B1230]"
               }`}
             >
               Per Term View
@@ -113,10 +113,10 @@ export default function Pricing() {
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`rounded-2xl p-7 sm:p-8 flex flex-col justify-between transition-colors ${
+              className={`rounded-3xl p-7 sm:p-8 flex flex-col justify-between transition-colors ${
                 plan.featured
-                  ? "bg-[#0B1F3A] text-white border-2 border-[#0D9488] shadow-xl"
-                  : "bg-white text-[#0F1F38] border border-slate-200"
+                  ? "bg-gradient-to-br from-[#0B1230] via-[#131946] to-[#231955] text-white border-2 border-[#7C3AED] shadow-xl shadow-indigo-950/20"
+                  : "bg-white text-[#0B1230] border border-[#E4E1F5]"
               }`}
             >
               <div>
@@ -125,7 +125,7 @@ export default function Pricing() {
                     {plan.name}
                   </h3>
                   {plan.featured && (
-                    <span className="landing-mono text-[11px] font-semibold uppercase tracking-wider text-[#F59E0B]">
+                    <span className="landing-mono text-[11px] font-semibold uppercase tracking-wider text-[#22D3EE]">
                       Recommended
                     </span>
                   )}
@@ -137,7 +137,7 @@ export default function Pricing() {
                   </span>
                   <span
                     className={`block text-xs mt-1.5 landing-mono ${
-                      plan.featured ? "text-slate-300" : "text-slate-500"
+                      plan.featured ? "text-indigo-200/80" : "text-slate-500"
                     }`}
                   >
                     {plan.cadence}
@@ -146,19 +146,23 @@ export default function Pricing() {
 
                 <p
                   className={`mt-4 text-sm leading-relaxed ${
-                    plan.featured ? "text-slate-300" : "text-slate-600"
+                    plan.featured ? "text-indigo-100/85" : "text-slate-600"
                   }`}
                 >
                   {plan.description}
                 </p>
 
-                <ul className="mt-6 pt-6 border-t border-current/10 space-y-3 text-sm">
+                <ul
+                  className={`mt-6 pt-6 border-t space-y-3 text-sm ${
+                    plan.featured ? "border-white/15" : "border-[#E4E1F5]"
+                  }`}
+                >
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2.5">
                       <Check
                         size={16}
                         className={`mt-0.5 shrink-0 ${
-                          plan.featured ? "text-[#2DD4BF]" : "text-[#0D9488]"
+                          plan.featured ? "text-[#22D3EE]" : "text-[#6D28D9]"
                         }`}
                       />
                       <span>{feature}</span>
@@ -169,10 +173,10 @@ export default function Pricing() {
 
               <Link
                 href={plan.href}
-                className={`mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-bold transition-colors ${
+                className={`mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-bold transition-all ${
                   plan.featured
-                    ? "bg-[#0D9488] hover:bg-[#0F766E] text-white"
-                    : "border border-slate-300 bg-white hover:bg-slate-50 text-[#0B1F3A]"
+                    ? "bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] hover:from-[#8B5CF6] hover:to-[#4338CA] text-white shadow-md shadow-[#7C3AED]/25"
+                    : "border border-[#E4E1F5] bg-[#FAF8FF] hover:bg-[#EDE9FE] text-[#1E1B4B]"
                 }`}
               >
                 {plan.cta}

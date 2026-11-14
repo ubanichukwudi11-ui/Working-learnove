@@ -64,14 +64,14 @@ export default function SuggestedPrompts({ subjectFocus, onSelect }: Props) {
             key={card.title}
             type="button"
             onClick={() => onSelect(card.prompt, card.mode, card.persona)}
-            className="text-left rounded-2xl border border-slate-200 bg-white hover:border-[#0D9488] p-4 transition flex items-start gap-3.5 group"
+            className="text-left rounded-2xl border border-[#E4E1F5] bg-white hover:border-[#7C3AED] hover:bg-[#FAF8FF] p-4 transition flex items-start gap-3.5 group"
           >
-            <div className="w-9 h-9 rounded-xl bg-[#F7F8FA] border border-slate-200 group-hover:bg-teal-50 group-hover:border-teal-200 flex items-center justify-center shrink-0 transition">
-              <Icon size={17} className="text-[#0B1F3A] group-hover:text-[#0D9488]" />
+            <div className="w-9 h-9 rounded-xl bg-[#FAF8FF] border border-[#DCD7F5] group-hover:bg-[#F5F3FF] group-hover:border-[#C4B5FD] flex items-center justify-center shrink-0 transition">
+              <Icon size={17} className="text-[#4F46E5] group-hover:text-[#7C3AED]" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[#0B1F3A]">{card.title}</p>
-              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+              <p className="text-sm font-bold text-[#0B1230]">{card.title}</p>
+              <p className="text-xs text-[#4A5073] mt-0.5 leading-relaxed">
                 {card.subtitle}
               </p>
             </div>

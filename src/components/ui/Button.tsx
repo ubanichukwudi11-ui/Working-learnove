@@ -26,15 +26,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-[#0B1F3A] hover:bg-[#143258] text-white shadow-sm",
+    "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white shadow-sm shadow-[#4F46E5]/20",
   secondary:
-    "bg-[#0D9488] hover:bg-[#0F766E] text-white shadow-sm",
+    "bg-[#0B1230] hover:bg-[#151A44] text-white shadow-sm",
   amber:
     "bg-[#D97706] hover:bg-[#B45309] text-white shadow-sm",
   outline:
-    "border border-slate-300 bg-white hover:bg-slate-50 text-[#0F1F38]",
+    "border border-[#DCD7F5] bg-white hover:bg-[#F5F3FF] hover:border-[#C4B5FD] text-[#0B1230]",
   ghost:
-    "hover:bg-slate-100 text-slate-700",
+    "hover:bg-[#F5F3FF] text-[#43466E] hover:text-[#4F46E5]",
   danger:
     "bg-red-600 hover:bg-red-700 text-white",
   success:
@@ -60,8 +60,8 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const commonClasses = clsx(
-    "rounded-xl font-semibold transition-colors duration-200 inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0",
-    "focus:outline-none focus:ring-2 focus:ring-[#0D9488]/40",
+    "rounded-xl font-semibold transition-all duration-200 inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0",
+    "focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/35",
     "disabled:opacity-50 disabled:cursor-not-allowed",
     variantClasses[variant],
     sizeClasses[size],

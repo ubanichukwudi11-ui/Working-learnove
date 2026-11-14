@@ -115,7 +115,7 @@ export default function ClassroomTools({
   return (
     <div className="space-y-3">
       {actionToast && (
-        <div className="rounded-xl border border-teal-500/30 bg-teal-500/15 px-3 py-2 text-xs font-semibold text-teal-200">
+        <div className="rounded-xl border border-[#22D3EE]/35 bg-[#06B6D4]/15 px-3 py-2 text-xs font-semibold text-[#67E8F9]">
           {actionToast}
         </div>
       )}
@@ -124,9 +124,9 @@ export default function ClassroomTools({
       {tab === "polls" && (
         <div className="space-y-3">
           {poll ? (
-            <div className="rounded-xl border border-white/10 bg-[#091529] p-4 space-y-3">
+            <div className="rounded-xl border border-white/10 bg-[#121A4A] p-4 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-[#0D9488]">Live Class Poll</span>
+                <span className="font-bold text-[#22D3EE]">Live Class Poll</span>
                 <span className="text-slate-400 tabular-nums">
                   {poll.totalVotes} votes
                 </span>
@@ -144,15 +144,15 @@ export default function ClassroomTools({
                       type="button"
                       disabled={isTeacher || hasVoted}
                       onClick={() => onVotePoll?.(opt.id)}
-                      className="relative w-full text-left p-2.5 rounded-lg border border-white/10 bg-[#0E1E36] hover:border-[#0D9488] disabled:hover:border-white/10 overflow-hidden transition"
+                      className="relative w-full text-left p-2.5 rounded-lg border border-white/10 bg-[#0D1438] hover:border-[#7C3AED] disabled:hover:border-white/10 overflow-hidden transition"
                     >
                       <div
-                        className="absolute inset-y-0 left-0 bg-[#0D9488]/25 transition-all duration-300"
+                        className="absolute inset-y-0 left-0 bg-[#4F46E5]/35 transition-all duration-300"
                         style={{ width: `${pct}%` }}
                       />
                       <div className="relative z-10 flex items-center justify-between text-xs gap-3">
                         <span className="text-slate-100 font-medium">{opt.text}</span>
-                        <span className="font-bold text-teal-300 tabular-nums shrink-0">
+                        <span className="font-bold text-[#C4B5FD] tabular-nums shrink-0">
                           {opt.votes} ({pct}%)
                         </span>
                       </div>
@@ -167,7 +167,7 @@ export default function ClassroomTools({
               )}
             </div>
           ) : (
-            <div className="rounded-xl border border-white/10 bg-[#091529] p-5 text-center text-xs text-slate-400">
+            <div className="rounded-xl border border-white/10 bg-[#121A4A] p-5 text-center text-xs text-slate-400">
               No active poll right now.
             </div>
           )}
@@ -176,7 +176,7 @@ export default function ClassroomTools({
             (!isCreatingPoll ? (
               <button
                 onClick={() => setIsCreatingPoll(true)}
-                className="w-full py-2.5 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition"
               >
                 <Plus size={14} />
                 Launch New Poll
@@ -193,7 +193,7 @@ export default function ClassroomTools({
                   setNewOptions(["", ""]);
                   showToast("Poll launched to all students.");
                 }}
-                className="rounded-xl border border-white/15 bg-[#091529] p-4 space-y-2.5"
+                className="rounded-xl border border-white/15 bg-[#121A4A] p-4 space-y-2.5"
               >
                 <input
                   type="text"
@@ -201,7 +201,7 @@ export default function ClassroomTools({
                   value={newQuestion}
                   onChange={(e) => setNewQuestion(e.target.value)}
                   placeholder="Enter poll question..."
-                  className="w-full h-9 px-3 rounded-lg border border-white/15 bg-[#060E1B] text-xs text-white"
+                  className="w-full h-9 px-3 rounded-lg border border-white/15 bg-[#070D24] text-xs text-white placeholder-slate-400"
                 />
                 {newOptions.map((opt, idx) => (
                   <input
@@ -215,14 +215,14 @@ export default function ClassroomTools({
                       setNewOptions(next);
                     }}
                     placeholder={`Option ${idx + 1}`}
-                    className="w-full h-8 px-3 rounded-lg border border-white/15 bg-[#060E1B] text-xs text-white"
+                    className="w-full h-8 px-3 rounded-lg border border-white/15 bg-[#070D24] text-xs text-white placeholder-slate-400"
                   />
                 ))}
                 <div className="flex items-center justify-between pt-1">
                   <button
                     type="button"
                     onClick={() => setNewOptions([...newOptions, ""])}
-                    className="text-xs font-bold text-teal-300"
+                    className="text-xs font-bold text-[#22D3EE]"
                   >
                     + Add Option
                   </button>
@@ -236,7 +236,7 @@ export default function ClassroomTools({
                     </button>
                     <button
                       type="submit"
-                      className="px-3.5 py-1.5 rounded-lg bg-[#0D9488] text-white text-xs font-bold"
+                      className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold"
                     >
                       Launch
                     </button>
@@ -266,11 +266,11 @@ export default function ClassroomTools({
                 value={qaInput}
                 onChange={(e) => setQaInput(e.target.value)}
                 placeholder="Ask a question for the teacher..."
-                className="flex-1 h-9 px-3 rounded-xl border border-white/15 bg-[#091529] text-xs text-white placeholder-slate-400"
+                className="flex-1 h-9 px-3 rounded-xl border border-white/15 bg-[#121A4A] text-xs text-white placeholder-slate-400"
               />
               <button
                 type="submit"
-                className="px-3.5 h-9 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold inline-flex items-center gap-1"
+                className="px-3.5 h-9 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white text-xs font-bold inline-flex items-center gap-1 whitespace-nowrap"
               >
                 <Send size={13} />
                 Ask
@@ -282,7 +282,7 @@ export default function ClassroomTools({
             {questions.map((q) => (
               <div
                 key={q.id}
-                className="rounded-xl border border-white/10 bg-[#091529] p-3.5 space-y-2 text-xs"
+                className="rounded-xl border border-white/10 bg-[#121A4A] p-3.5 space-y-2 text-xs"
               >
                 <div className="flex items-center justify-between text-[11px] text-slate-400">
                   <span className="font-bold text-slate-200">{q.authorName}</span>
@@ -291,13 +291,13 @@ export default function ClassroomTools({
                   </span>
                 </div>
                 <p className="text-slate-100 font-medium flex items-start gap-2">
-                  <HelpCircle size={14} className="text-[#F59E0B] shrink-0 mt-0.5" />
+                  <HelpCircle size={14} className="text-[#22D3EE] shrink-0 mt-0.5" />
                   <span>{q.question}</span>
                 </p>
 
                 {q.answer && (
-                  <div className="rounded-lg bg-[#0D9488]/15 border border-[#0D9488]/30 px-3 py-2 text-teal-100">
-                    <span className="font-bold text-teal-300">{q.answeredBy || "Teacher"}: </span>
+                  <div className="rounded-lg bg-[#4F46E5]/20 border border-[#7C3AED]/40 px-3 py-2 text-slate-100">
+                    <span className="font-bold text-[#22D3EE]">{q.answeredBy || "Teacher"}: </span>
                     {q.answer}
                   </div>
                 )}
@@ -311,7 +311,7 @@ export default function ClassroomTools({
                         setReplyDrafts((prev) => ({ ...prev, [q.id]: e.target.value }))
                       }
                       placeholder="Write a short answer..."
-                      className="flex-1 h-8 px-2.5 rounded-lg border border-white/15 bg-[#060E1B] text-xs text-white"
+                      className="flex-1 h-8 px-2.5 rounded-lg border border-white/15 bg-[#070D24] text-xs text-white placeholder-slate-400"
                     />
                     <button
                       type="button"
@@ -321,7 +321,7 @@ export default function ClassroomTools({
                         onAnswerQuestion?.(q.id, ans);
                         setReplyDrafts((prev) => ({ ...prev, [q.id]: "" }));
                       }}
-                      className="px-3 h-8 rounded-lg bg-[#0D9488] text-white font-bold"
+                      className="px-3 h-8 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-bold"
                     >
                       Reply
                     </button>
@@ -339,10 +339,10 @@ export default function ClassroomTools({
           {resources.map((res) => (
             <div
               key={res.id}
-              className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-[#091529]"
+              className="flex items-center justify-between p-3 rounded-xl border border-white/10 bg-[#121A4A] gap-3"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-lg bg-[#0D9488]/15 text-teal-300 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-lg bg-[#4F46E5]/20 text-[#C4B5FD] flex items-center justify-center shrink-0">
                   <FileText size={16} />
                 </div>
                 <div className="min-w-0">
@@ -352,7 +352,7 @@ export default function ClassroomTools({
               </div>
               <button
                 onClick={() => handleDownload(res)}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold shrink-0"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white text-xs font-bold shrink-0 whitespace-nowrap"
               >
                 <Download size={13} />
                 Download
@@ -364,7 +364,7 @@ export default function ClassroomTools({
             (!isAddingResource ? (
               <button
                 onClick={() => setIsAddingResource(true)}
-                className="w-full py-2.5 rounded-xl border border-dashed border-white/20 hover:border-[#0D9488] text-xs font-bold text-slate-300 hover:text-white flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl border border-dashed border-white/20 hover:border-[#7C3AED] text-xs font-bold text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition"
               >
                 <Upload size={14} />
                 Share Class Resource
@@ -387,11 +387,11 @@ export default function ClassroomTools({
                   value={newResourceTitle}
                   onChange={(e) => setNewResourceTitle(e.target.value)}
                   placeholder="Enter document or past question title..."
-                  className="flex-1 h-9 px-3 rounded-lg border border-white/15 bg-[#091529] text-xs text-white"
+                  className="flex-1 h-9 px-3 rounded-lg border border-white/15 bg-[#121A4A] text-xs text-white placeholder-slate-400"
                 />
                 <button
                   type="submit"
-                  className="px-3.5 h-9 rounded-lg bg-[#0D9488] text-white text-xs font-bold"
+                  className="px-3.5 h-9 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold"
                 >
                   Share
                 </button>
@@ -402,14 +402,14 @@ export default function ClassroomTools({
 
       {/* ASSIGNMENTS TAB */}
       {tab === "assignments" && (
-        <div className="rounded-xl border border-white/10 bg-[#091529] p-4 space-y-3">
+        <div className="rounded-xl border border-white/10 bg-[#121A4A] p-4 space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
-            <div>
-              <span className="text-[11px] font-bold text-[#F59E0B]">Active Task</span>
+            <div className="min-w-0">
+              <span className="text-[11px] font-bold text-[#22D3EE]">Active Task</span>
               <h4 className="text-sm font-bold text-white mt-0.5">{assignment.title}</h4>
               <p className="text-xs text-slate-300 mt-1">{assignment.description}</p>
             </div>
-            <div className="text-right text-[11px] text-slate-400 tabular-nums">
+            <div className="text-right text-[11px] text-slate-400 tabular-nums shrink-0">
               <p className="flex items-center gap-1 text-[#F59E0B] font-semibold">
                 <Clock size={12} />
                 {assignment.dueDate}
@@ -422,17 +422,17 @@ export default function ClassroomTools({
 
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/10">
             {isTeacher ? (
-              <span className="text-xs text-teal-300 font-semibold">
+              <span className="text-xs text-[#22D3EE] font-semibold">
                 Visible to all students in this classroom
               </span>
             ) : (
               <button
                 onClick={() => setIsSubmittingModal(true)}
                 disabled={hasSubmittedAssignment}
-                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold ${
+                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold whitespace-nowrap ${
                   hasSubmittedAssignment
                     ? "bg-emerald-600/25 text-emerald-300"
-                    : "bg-[#0D9488] hover:bg-[#0F766E] text-white"
+                    : "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white"
                 }`}
               >
                 {hasSubmittedAssignment ? <CheckCircle2 size={14} /> : <Upload size={14} />}
@@ -443,7 +443,7 @@ export default function ClassroomTools({
             {onAskNova && (
               <button
                 onClick={() => onAskNova(`Help me approach this task: ${assignment.title}`)}
-                className="inline-flex items-center gap-1 text-xs font-bold text-teal-300 hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-[#C4B5FD] hover:underline whitespace-nowrap"
               >
                 <Sparkles size={13} />
                 Ask Nova for Hints
@@ -452,20 +452,20 @@ export default function ClassroomTools({
           </div>
 
           {isSubmittingModal && (
-            <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white text-[#0B1F3A] p-6 space-y-4">
-                <h3 className="text-base font-extrabold">{assignment.title}</h3>
+            <div className="fixed inset-0 z-50 bg-[#070D24]/75 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white text-[#0B1230] p-6 space-y-4 shadow-2xl">
+                <h3 className="landing-display text-base font-extrabold">{assignment.title}</h3>
                 <textarea
                   rows={4}
                   value={submissionText}
                   onChange={(e) => setSubmissionText(e.target.value)}
                   placeholder="Write your working steps and final answer..."
-                  className="w-full rounded-xl border border-slate-200 bg-[#F7F8FA] p-3 text-xs text-[#0B1F3A]"
+                  className="w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-3 text-xs text-[#0B1230] focus:outline-none focus:border-[#7C3AED]"
                 />
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsSubmittingModal(false)}
-                    className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                    className="px-4 py-2 rounded-xl border border-[#E4E1F5] text-xs font-bold text-[#4A5073] hover:bg-[#FAF8FF]"
                   >
                     Cancel
                   </button>
@@ -476,7 +476,7 @@ export default function ClassroomTools({
                       setSubmissionText("");
                       showToast("Assignment submitted.");
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold"
                   >
                     Submit Work
                   </button>
@@ -495,13 +495,13 @@ export default function ClassroomTools({
             onChange={(e) => setLocalNotes(e.target.value)}
             rows={4}
             placeholder="Write class notes here..."
-            className="w-full rounded-xl border border-white/15 bg-[#091529] p-3.5 text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#0D9488]"
+            className="w-full rounded-xl border border-white/15 bg-[#121A4A] p-3.5 text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#7C3AED]"
           />
           <div className="flex flex-wrap items-center justify-between gap-2">
             {onAskNova && (
               <button
                 onClick={() => onAskNova(`Summarize these class notes cleanly:\n${localNotes}`)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-bold text-teal-300"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-bold text-[#C4B5FD] whitespace-nowrap transition"
               >
                 <Sparkles size={13} />
                 Summarize with Nova
@@ -509,10 +509,10 @@ export default function ClassroomTools({
             )}
             <button
               onClick={handleSaveNotes}
-              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition ${
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                 notesSaved
                   ? "bg-emerald-600 text-white"
-                  : "bg-[#0D9488] hover:bg-[#0F766E] text-white"
+                  : "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white"
               }`}
             >
               {notesSaved ? <Check size={13} /> : <Save size={13} />}

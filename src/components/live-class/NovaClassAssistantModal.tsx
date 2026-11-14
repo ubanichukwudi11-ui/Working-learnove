@@ -83,42 +83,42 @@ export default function NovaClassAssistantModal({
       ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-2xl flex flex-col max-h-[84vh]">
-        <div className="px-5 py-4 bg-[#0B1F3A] text-white flex items-center justify-between">
+    <div className="fixed inset-0 z-50 bg-[#070D24]/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="w-full max-w-lg rounded-2xl border border-[#E4E1F5] bg-white overflow-hidden shadow-2xl flex flex-col max-h-[84vh]">
+        <div className="px-5 py-4 bg-[#070D24] text-white flex items-center justify-between border-b border-white/10">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#0D9488] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] flex items-center justify-center">
               <Sparkles size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-extrabold">Nova AI Classroom Co-Pilot</h3>
-              <p className="text-[11px] text-teal-300">{subject} · {topic}</p>
+              <h3 className="landing-display text-sm font-extrabold">Nova AI Classroom Co-Pilot</h3>
+              <p className="text-[11px] text-[#22D3EE]">{subject} · {topic}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10"
+            className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition"
           >
             <X size={16} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#F7F8FA]">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#F5F4FB]">
           {messages.map((m, idx) => (
             <div
               key={idx}
               className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {m.role === "nova" && (
-                <div className="w-7 h-7 rounded-lg bg-[#0B1F3A] text-[#F59E0B] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shrink-0 mt-0.5">
                   <Bot size={14} />
                 </div>
               )}
               <div
                 className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed whitespace-pre-line ${
                   m.role === "user"
-                    ? "bg-[#0D9488] text-white font-medium"
-                    : "bg-white border border-slate-200 text-[#0B1F3A]"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white font-medium"
+                    : "bg-white border border-[#E4E1F5] text-[#0B1230]"
                 }`}
               >
                 {m.text}
@@ -126,38 +126,38 @@ export default function NovaClassAssistantModal({
             </div>
           ))}
           {loading && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#0D9488]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#6D28D9]">
               <Loader2 size={14} className="animate-spin" />
               Nova is preparing a clear explanation...
             </div>
           )}
         </div>
 
-        <div className="px-4 py-2 bg-white border-t border-slate-200 flex gap-2 overflow-x-auto no-scrollbar">
+        <div className="px-4 py-2 bg-white border-t border-[#E4E1F5] flex gap-2 overflow-x-auto no-scrollbar">
           {quickPrompts.map((qp) => (
             <button
               key={qp}
               onClick={() => handleSend(qp)}
-              className="shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-slate-200 bg-[#F7F8FA] hover:border-[#0D9488] text-[#0B1F3A]"
+              className="shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-[#DCD7F5] bg-[#FAF8FF] hover:border-[#7C3AED] text-[#0B1230] whitespace-nowrap transition"
             >
               {qp}
             </button>
           ))}
         </div>
 
-        <div className="p-3 bg-white border-t border-slate-200 flex gap-2">
+        <div className="p-3 bg-white border-t border-[#E4E1F5] flex gap-2">
           <input
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="Ask Nova about this live lesson..."
-            className="flex-1 h-9 px-3.5 rounded-xl border border-slate-200 bg-[#F7F8FA] text-xs text-[#0B1F3A]"
+            className="flex-1 h-9 px-3.5 rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] text-xs text-[#0B1230] placeholder-[#7C82A1] focus:outline-none focus:border-[#7C3AED]"
           />
           <button
             onClick={() => handleSend()}
             disabled={!prompt.trim() || loading}
-            className="px-4 h-9 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] disabled:opacity-50 text-white text-xs font-bold inline-flex items-center justify-center"
+            className="px-4 h-9 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 disabled:opacity-50 text-white text-xs font-bold inline-flex items-center justify-center transition"
           >
             <Send size={14} />
           </button>

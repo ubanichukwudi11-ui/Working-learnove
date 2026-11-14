@@ -69,45 +69,45 @@ export default function SubjectsPage() {
     <ProtectedRoute>
       <AppLayout>
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-sm flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
                 {studentLevelName} · Nigerian Curriculum Registry
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold mt-1.5 tracking-tight">
                 Subjects &amp; Entitlement Access
               </h1>
-              <p className="text-sm text-slate-600 mt-1">
+              <p className="text-sm text-indigo-100/80 mt-1.5 max-w-2xl leading-relaxed">
                 View subjects configured for your class level and check which courses are
                 unlocked under your current subscription plan.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 w-full md:w-72">
-              <Search size={16} className="text-slate-400" />
+            <div className="flex items-center gap-2 bg-white/10 border border-white/15 focus-within:border-[#22D3EE] rounded-xl px-3.5 py-2.5 w-full md:w-72 shrink-0 transition">
+              <Search size={16} className="text-indigo-200 shrink-0" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Filter subjects..."
-                className="bg-transparent outline-none text-sm text-[#0F1F38] w-full"
+                className="bg-transparent outline-none text-sm text-white placeholder:text-indigo-200/70 w-full"
               />
             </div>
           </div>
 
           {!hasActiveSub && !loading && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-bold text-amber-900">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-amber-950">
                   No Active Paid Subscription or Scholarship Yet
                 </p>
-                <p className="text-xs text-amber-800 mt-0.5">
+                <p className="text-xs text-amber-900/80 mt-0.5">
                   Select your class level and activate a plan to unlock live classrooms and
                   subject modules.
                 </p>
               </div>
               <Link
                 href="/subscriptions"
-                className="px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold shrink-0"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold shrink-0 whitespace-nowrap"
               >
                 Choose Plan (₦)
               </Link>
@@ -115,11 +115,11 @@ export default function SubjectsPage() {
           )}
 
           {loading ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading subjects...
             </div>
           ) : filtered.length === 0 ? (
-            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center text-sm text-slate-500">
+            <div className="learnova-card border-dashed border-[#DCD7F5] p-12 text-center text-sm text-[#6B6F94]">
               No subjects match your class level or filter criteria.
             </div>
           ) : (
@@ -129,30 +129,30 @@ export default function SubjectsPage() {
                 return (
                   <div
                     key={subject.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between gap-4 hover:border-[#0D9488] transition"
+                    className="learnova-card p-6 flex flex-col justify-between gap-4 hover:border-[#7C3AED]/45 transition min-w-0"
                   >
                     <div>
-                      <div className="flex items-center justify-between text-xs font-bold">
-                        <span className="text-[#0D9488]">
+                      <div className="flex items-center justify-between text-xs font-bold gap-2">
+                        <span className="text-[#4F46E5] truncate">
                           {subject.code} · {subject.department}
                         </span>
                         {unlocked ? (
-                          <span className="inline-flex items-center gap-1 text-[#0D9488]">
+                          <span className="inline-flex items-center gap-1 text-[#059669] shrink-0">
                             <CheckCircle2 size={13} /> Unlocked
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-amber-700">
+                          <span className="inline-flex items-center gap-1 text-amber-700 shrink-0">
                             <Lock size={13} /> Locked
                           </span>
                         )}
                       </div>
 
-                      <h2 className="mt-3 text-lg font-bold text-[#0B1F3A] flex items-center gap-2">
-                        <BookOpen size={18} className="text-[#0B1F3A]" />
-                        {subject.name}
+                      <h2 className="mt-3 text-lg font-bold text-[#0B1230] flex items-center gap-2">
+                        <BookOpen size={18} className="text-[#6D28D9] shrink-0" />
+                        <span className="truncate">{subject.name}</span>
                       </h2>
 
-                      <p className="mt-2 text-sm text-slate-600 leading-relaxed">
+                      <p className="mt-2 text-sm text-[#43466E] leading-relaxed">
                         {subject.description}
                       </p>
                     </div>
@@ -161,14 +161,14 @@ export default function SubjectsPage() {
                       <div className="grid grid-cols-2 gap-2">
                         <Link
                           href={`/videos?subjectId=${encodeURIComponent(subject.id)}`}
-                          className="py-2.5 px-3 rounded-xl bg-[#0D9488] hover:bg-teal-700 text-white text-xs font-bold inline-flex items-center justify-center gap-1 transition"
+                          className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold inline-flex items-center justify-center gap-1 transition whitespace-nowrap"
                         >
                           Video Lessons
                           <ArrowRight size={13} />
                         </Link>
                         <Link
                           href="/timetable"
-                          className="py-2.5 px-3 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold inline-flex items-center justify-center gap-1 transition"
+                          className="py-2.5 px-3 rounded-xl bg-[#0B1230] hover:bg-[#151A44] text-white text-xs font-bold inline-flex items-center justify-center gap-1 transition whitespace-nowrap"
                         >
                           Timetable
                           <ArrowRight size={13} />
@@ -177,7 +177,7 @@ export default function SubjectsPage() {
                     ) : (
                       <Link
                         href="/subscriptions"
-                        className="w-full py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold inline-flex items-center justify-center gap-1.5 hover:bg-amber-100 transition"
+                        className="w-full py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold inline-flex items-center justify-center gap-1.5 hover:bg-amber-100 transition whitespace-nowrap"
                       >
                         <Lock size={13} />
                         Activate Plan to Unlock

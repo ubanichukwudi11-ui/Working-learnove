@@ -102,16 +102,16 @@ export default function AdminDashboardPage() {
       <AppLayout>
         <div className="space-y-6">
           {/* Header Banner */}
-          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
-                School Operations & Governance
+              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
+                School Operations &amp; Governance
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
                 School Administration Overview
               </h1>
-              <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-                Coordinate Nigerian academic terms, approve qualified educators per subject &
+              <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
+                Coordinate Nigerian academic terms, approve qualified educators per subject &amp;
                 class level, verify student subscriptions, publish conflict-free timetables, and
                 supervise parallel classroom allocations.
               </p>
@@ -119,13 +119,13 @@ export default function AdminDashboardPage() {
             <div className="flex flex-wrap gap-2.5 shrink-0">
               <Link
                 href="/admin/ai-assistant"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-amber-600 text-[#0B1F3A] text-xs sm:text-sm font-bold transition"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs sm:text-sm font-bold transition shadow-xs"
               >
                 <Sparkles size={15} /> Admin AI Copilot
               </Link>
               <Link
                 href="/admin/teachers"
-                className="px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-xs sm:text-sm font-semibold transition"
+                className="px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-xs sm:text-sm font-semibold border border-white/15 transition"
               >
                 Review Teachers
               </Link>
@@ -145,7 +145,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {loading ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading school administration records...
             </div>
           ) : (
@@ -154,64 +154,64 @@ export default function AdminDashboardPage() {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <Link
                   href="/admin/students"
-                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
                 >
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span className="text-xs font-semibold uppercase">Students</span>
-                    <Users size={17} className="text-[#0D9488]" />
+                  <div className="flex items-center justify-between text-[#6B6F94]">
+                    <span className="text-xs font-semibold uppercase tracking-wide">Students</span>
+                    <Users size={17} className="text-[#4F46E5]" />
                   </div>
-                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  <p className="text-2xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                     {summary.studentsCount}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-[#6B6F94] mt-1">
                     {summary.activePaidCount} with active access
                   </p>
                 </Link>
 
                 <Link
                   href="/admin/teachers"
-                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
                 >
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span className="text-xs font-semibold uppercase">Educators</span>
-                    <GraduationCap size={17} className="text-[#0D9488]" />
+                  <div className="flex items-center justify-between text-[#6B6F94]">
+                    <span className="text-xs font-semibold uppercase tracking-wide">Educators</span>
+                    <GraduationCap size={17} className="text-[#7C3AED]" />
                   </div>
-                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  <p className="text-2xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                     {summary.teachersCount}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-[#6B6F94] mt-1">
                     {summary.pendingAppsCount} pending review · {summary.approvedPairsCount} approved slots
                   </p>
                 </Link>
 
                 <Link
                   href="/admin/timetable"
-                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
                 >
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span className="text-xs font-semibold uppercase">Published Lessons</span>
-                    <CalendarDays size={17} className="text-[#0D9488]" />
+                  <div className="flex items-center justify-between text-[#6B6F94]">
+                    <span className="text-xs font-semibold uppercase tracking-wide">Published Lessons</span>
+                    <CalendarDays size={17} className="text-[#0891B2]" />
                   </div>
-                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  <p className="text-2xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                     {summary.publishedLessonsCount}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Across {summary.levelsCount} class levels & {summary.subjectsCount} subjects
+                  <p className="text-xs text-[#6B6F94] mt-1">
+                    Across {summary.levelsCount} class levels &amp; {summary.subjectsCount} subjects
                   </p>
                 </Link>
 
                 <Link
                   href="/admin/classrooms"
-                  className="bg-white border border-slate-200 rounded-2xl p-5 hover:border-[#0D9488] transition"
+                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
                 >
-                  <div className="flex items-center justify-between text-slate-500">
-                    <span className="text-xs font-semibold uppercase">Live Classrooms</span>
+                  <div className="flex items-center justify-between text-[#6B6F94]">
+                    <span className="text-xs font-semibold uppercase tracking-wide">Live Classrooms</span>
                     <Radio size={17} className="text-emerald-600" />
                   </div>
-                  <p className="text-2xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                  <p className="text-2xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                     {summary.liveRoomsCount}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-[#6B6F94] mt-1">
                     {summary.totalRoomsCount} total allocated group rooms
                   </p>
                 </Link>
@@ -220,11 +220,11 @@ export default function AdminDashboardPage() {
               {/* Operational Queues */}
               <div className="grid lg:grid-cols-3 gap-6">
                 {/* Pending Teacher Approvals */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                <div className="learnova-card p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
-                        <GraduationCap size={16} className="text-[#0D9488]" />
+                      <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
+                        <GraduationCap size={16} className="text-[#4F46E5]" />
                         Teacher Approval Queue
                       </h2>
                       <span className="text-xs font-bold text-amber-700 tabular-nums">
@@ -232,17 +232,17 @@ export default function AdminDashboardPage() {
                       </span>
                     </div>
                     {summary.pendingApps.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-6 text-center">
+                      <p className="text-xs text-[#6B6F94] py-6 text-center">
                         No pending teacher subject applications right now.
                       </p>
                     ) : (
-                      <ul className="divide-y divide-slate-100">
+                      <ul className="divide-y divide-[#E4E1F5]">
                         {summary.pendingApps.map((app) => (
                           <li key={app.id} className="py-2.5">
-                            <p className="text-sm font-semibold text-[#0B1F3A]">
+                            <p className="text-sm font-semibold text-[#0B1230]">
                               {app.teacherName}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-[#6B6F94]">
                               {app.subjectName} · {app.status.replace(/_/g, " ")}
                             </p>
                           </li>
@@ -252,18 +252,18 @@ export default function AdminDashboardPage() {
                   </div>
                   <Link
                     href="/admin/teachers"
-                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#0D9488] hover:underline"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] hover:underline"
                   >
                     Open Teacher Approval Centre <ArrowRight size={13} />
                   </Link>
                 </div>
 
                 {/* Pending Payment Verifications */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                <div className="learnova-card p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
-                        <CreditCard size={16} className="text-[#0D9488]" />
+                      <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
+                        <CreditCard size={16} className="text-[#4F46E5]" />
                         Pending Payment Checks
                       </h2>
                       <span className="text-xs font-bold text-amber-700 tabular-nums">
@@ -271,17 +271,17 @@ export default function AdminDashboardPage() {
                       </span>
                     </div>
                     {summary.pendingPayments.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-6 text-center">
+                      <p className="text-xs text-[#6B6F94] py-6 text-center">
                         No bank transfers awaiting confirmation.
                       </p>
                     ) : (
-                      <ul className="divide-y divide-slate-100">
+                      <ul className="divide-y divide-[#E4E1F5]">
                         {summary.pendingPayments.map((pay) => (
                           <li key={pay.id} className="py-2.5">
-                            <p className="text-sm font-semibold text-[#0B1F3A]">
+                            <p className="text-sm font-semibold text-[#0B1230] tabular-nums">
                               {pay.studentName} · ₦{Number(pay.amountNgn).toLocaleString()}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-[#6B6F94]">
                               Ref: {pay.reference}
                             </p>
                           </li>
@@ -291,36 +291,36 @@ export default function AdminDashboardPage() {
                   </div>
                   <Link
                     href="/admin/payments"
-                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#0D9488] hover:underline"
+                    className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#4F46E5] hover:underline"
                   >
-                    Open Payments & Access <ArrowRight size={13} />
+                    Open Payments &amp; Access <ArrowRight size={13} />
                   </Link>
                 </div>
 
                 {/* Capacity Shortfalls & Shortcuts */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between">
+                <div className="learnova-card p-5 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
-                        <AlertTriangle size={16} className="text-[#D97706]" />
+                      <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
+                        <AlertTriangle size={16} className="text-amber-600" />
                         Allocation Shortfalls
                       </h2>
-                      <span className="text-xs font-bold text-red-700 tabular-nums">
+                      <span className="text-xs font-bold text-rose-700 tabular-nums">
                         {summary.shortfallLessonsCount}
                       </span>
                     </div>
                     {summary.shortfallEntries.length === 0 ? (
-                      <p className="text-xs text-slate-500 py-6 text-center">
+                      <p className="text-xs text-[#6B6F94] py-6 text-center">
                         All scheduled classes have sufficient approved teachers for enrolled students.
                       </p>
                     ) : (
-                      <ul className="divide-y divide-slate-100">
+                      <ul className="divide-y divide-[#E4E1F5]">
                         {summary.shortfallEntries.map((entry) => (
                           <li key={entry.id} className="py-2.5">
-                            <p className="text-sm font-semibold text-red-700">
+                            <p className="text-sm font-semibold text-rose-700">
                               Shortfall: {entry.shortfallCount} unplaced students
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-[#6B6F94]">
                               {entry.dayOfWeek} {entry.startTime} WAT · Assign another approved teacher
                             </p>
                           </li>
@@ -328,16 +328,16 @@ export default function AdminDashboardPage() {
                       </ul>
                     )}
                   </div>
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap gap-3">
+                  <div className="mt-4 pt-3 border-t border-[#E4E1F5] flex flex-wrap gap-3">
                     <Link
                       href="/admin/academics"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0B1F3A] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0B1230] hover:text-[#4F46E5] hover:underline"
                     >
                       <BookOpenCheck size={13} /> Academics
                     </Link>
                     <Link
                       href="/admin/classrooms"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-[#0D9488] hover:underline"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:underline"
                     >
                       <MonitorCheck size={13} /> Classroom Control
                     </Link>

@@ -198,277 +198,56 @@ value
 
 
 
-return (
-
-<div
-
-className="
-
-bg-[#111827]
-
-border
-
-border-slate-800
-
-rounded-2xl
-
-p-6
-
-min-h-[600px]
-
-"
-
->
-
-
-
-{/* Header */}
-
-
-<div
-
-className="
-
-flex
-
-items-center
-
-justify-between
-
-mb-6
-
-"
-
->
-
-
-<div>
-
-
-<input
-
-
-value={title}
-
-
-onChange={(e)=>
-
-updateTitle(e.target.value)
-
-}
-
-
-placeholder="Untitled Note"
-
-
-className="
-
-bg-transparent
-
-outline-none
-
-text-3xl
-
-font-bold
-
-text-white
-
-w-full
-
-"
-
- />
-
-
-</div>
-
-
-
-
-
-<div
-
-className="
-
-flex
-
-items-center
-
-gap-2
-
-text-sm
-
-text-slate-400
-
-"
-
->
-
-
-<Check size={15}/>
-
-
-{status}
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-{/* Toolbar */}
-
-
-<div
-
-className="
-
-flex
-
-gap-2
-
-border-b
-
-border-slate-800
-
-pb-4
-
-mb-5
-
-"
-
->
-
-
-
-<button
-
-className="
-
-p-2
-
-rounded-lg
-
-hover:bg-slate-800
-
-text-slate-300
-
-"
-
->
-
-<Bold size={18}/>
-
-</button>
-
-
-
-
-<button
-
-className="
-
-p-2
-
-rounded-lg
-
-hover:bg-slate-800
-
-text-slate-300
-
-"
-
->
-
-<Italic size={18}/>
-
-</button>
-
-
-
-
-<button
-
-className="
-
-p-2
-
-rounded-lg
-
-hover:bg-slate-800
-
-text-slate-300
-
-"
-
->
-
-<Underline size={18}/>
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-
-
-{/* Editor */}
-
-
-<textarea
-
-
-value={content}
-
-
-onChange={(e)=>
-
-updateContent(e.target.value)
-
-}
-
-
-placeholder="Start writing your notes..."
-
-
-className="
-
-w-full
-
-min-h-[400px]
-
-resize-none
-
-bg-transparent
-
-outline-none
-
-text-slate-200
-
-leading-7
-
-"
-
- />
-
-
-
-
-</div>
-
-)
-
+  return (
+    <div className="learnova-card p-6 min-h-[600px]">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex-1 min-w-0">
+          <input
+            value={title}
+            onChange={(e) => updateTitle(e.target.value)}
+            placeholder="Untitled Note"
+            className="landing-display bg-transparent outline-none text-2xl sm:text-3xl font-bold text-[#0B1230] placeholder:text-[#9CA0C2] w-full"
+          />
+        </div>
+
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5] shrink-0">
+          <Check size={15} />
+          {status}
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className="flex gap-2 border-b border-[#E4E1F5] pb-4 mb-5">
+        <button
+          type="button"
+          className="p-2 rounded-lg hover:bg-[#FAF8FF] text-[#43466E] hover:text-[#4F46E5] transition"
+        >
+          <Bold size={18} />
+        </button>
+
+        <button
+          type="button"
+          className="p-2 rounded-lg hover:bg-[#FAF8FF] text-[#43466E] hover:text-[#4F46E5] transition"
+        >
+          <Italic size={18} />
+        </button>
+
+        <button
+          type="button"
+          className="p-2 rounded-lg hover:bg-[#FAF8FF] text-[#43466E] hover:text-[#4F46E5] transition"
+        >
+          <Underline size={18} />
+        </button>
+      </div>
+
+      {/* Editor */}
+      <textarea
+        value={content}
+        onChange={(e) => updateContent(e.target.value)}
+        placeholder="Start writing your notes..."
+        className="w-full min-h-[400px] resize-none bg-transparent outline-none text-[#0B1230] placeholder:text-[#9CA0C2] leading-7 text-sm sm:text-base"
+      />
+    </div>
+  );
 }

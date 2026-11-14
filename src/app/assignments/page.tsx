@@ -212,34 +212,34 @@ export default function StudentAssignmentsPage() {
     <ProtectedRoute roles={["STUDENT", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+          {/* Header Banner */}
+          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
                 Continuous Assessment &amp; Timed CBT Simulator
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
                 Assignments &amp; WAEC / JAMB CBT Lab
               </h1>
             </div>
 
-            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+            <div className="inline-flex rounded-2xl border border-white/15 bg-[#0D1438] p-1 shrink-0 self-start lg:self-auto">
               <button
                 onClick={() => setActiveTab("assignments")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
                   activeTab === "assignments"
-                    ? "bg-[#0B1F3A] text-white"
-                    : "text-slate-600 hover:text-[#0B1F3A]"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-sm"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 Written Assignments
               </button>
               <button
                 onClick={() => setActiveTab("cbt")}
-                className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
                   activeTab === "cbt"
-                    ? "bg-[#0B1F3A] text-white"
-                    : "text-slate-600 hover:text-[#0B1F3A]"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-sm"
+                    : "text-slate-300 hover:text-white"
                 }`}
               >
                 Timed WAEC / JAMB CBT
@@ -252,11 +252,11 @@ export default function StudentAssignmentsPage() {
               {assignments.map((item) => (
                 <div
                   key={item.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col justify-between shadow-xs"
+                  className="learnova-card p-6 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-2 text-xs font-semibold">
-                      <span className="text-[#0D9488]">
+                      <span className="text-[#4F46E5] font-bold">
                         {item.subject} · {item.classLevel}
                       </span>
                       <span
@@ -264,8 +264,8 @@ export default function StudentAssignmentsPage() {
                           item.status === "Graded"
                             ? "text-emerald-700"
                             : item.status === "Submitted"
-                            ? "text-[#0B1F3A]"
-                            : "text-[#D97706]"
+                            ? "text-[#4F46E5]"
+                            : "text-amber-600"
                         }`}
                       >
                         {item.status === "Pending" ? (
@@ -278,25 +278,25 @@ export default function StudentAssignmentsPage() {
                       </span>
                     </div>
 
-                    <h2 className="text-lg font-bold text-[#0B1F3A] mt-2">
+                    <h2 className="landing-display text-lg font-bold text-[#0B1230] mt-2">
                       {item.title}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-[#6B6F94] mt-1">
                       Teacher: {item.teacher} · Due: {item.dueDate}
                     </p>
-                    <p className="text-sm text-slate-600 mt-3 leading-relaxed bg-[#F7F8FA] rounded-xl p-3.5 border border-slate-100">
+                    <p className="text-sm text-[#43466E] mt-3 leading-relaxed bg-[#FAF8FF] rounded-xl p-3.5 border border-[#E4E1F5]">
                       {item.instructions}
                     </p>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-500 tabular-nums">
+                  <div className="mt-5 pt-4 border-t border-[#E4E1F5] flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#6B6F94] tabular-nums">
                       Total Marks: {item.marks}
                     </span>
                     {item.status === "Pending" ? (
                       <button
                         onClick={() => setSelectedTask(item)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                       >
                         <Send size={13} />
                         Submit Solution
@@ -314,13 +314,13 @@ export default function StudentAssignmentsPage() {
             /* REAL TIMED JAMB / WAEC CBT SIMULATOR */
             <div className="space-y-6">
               {/* Exam Pack Selector */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+              <div className="learnova-card p-5 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <h2 className="text-base font-bold text-[#0B1F3A]">
+                    <h2 className="landing-display text-base font-bold text-[#0B1230]">
                       Select Exam Paper
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#6B6F94]">
                       Practice under real timed CBT conditions with automatic grading and worked solutions.
                     </p>
                   </div>
@@ -328,11 +328,11 @@ export default function StudentAssignmentsPage() {
                     <div
                       className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-extrabold tabular-nums ${
                         secondsLeft <= 60
-                          ? "bg-red-50 text-red-700 border border-red-200"
-                          : "bg-[#0B1F3A] text-white"
+                          ? "bg-rose-50 text-rose-700 border border-rose-200"
+                          : "bg-[#0B1230] text-white border border-[#1E2756]"
                       }`}
                     >
-                      <Timer size={16} />
+                      <Timer size={16} className={secondsLeft <= 60 ? "text-rose-600" : "text-[#22D3EE]"} />
                       <span>{formatTimer(secondsLeft)}</span>
                     </div>
                   )}
@@ -346,18 +346,18 @@ export default function StudentAssignmentsPage() {
                         key={pack.id}
                         className={`rounded-xl border p-4 flex flex-col justify-between gap-3 transition ${
                           selected
-                            ? "border-[#0D9488] bg-teal-50/40"
-                            : "border-slate-200 bg-[#F7F8FA]"
+                            ? "border-[#7C3AED] bg-[#F5F3FF]"
+                            : "border-[#E4E1F5] bg-[#FAF8FF]"
                         }`}
                       >
                         <div>
-                          <span className="text-[11px] font-bold text-[#0D9488]">
+                          <span className="text-[11px] font-bold text-[#4F46E5]">
                             {pack.examBody} · {pack.durationMinutes} mins
                           </span>
-                          <p className="text-sm font-bold text-[#0B1F3A] mt-1">
+                          <p className="text-sm font-bold text-[#0B1230] mt-1">
                             {pack.title}
                           </p>
-                          <p className="text-xs text-slate-500 mt-1 tabular-nums">
+                          <p className="text-xs text-[#6B6F94] mt-1 tabular-nums">
                             {pack.questions.length} Objective Questions
                           </p>
                         </div>
@@ -365,7 +365,7 @@ export default function StudentAssignmentsPage() {
                         <button
                           type="button"
                           onClick={() => startExam(pack)}
-                          className="w-full py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5"
+                          className="w-full py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold inline-flex items-center justify-center gap-1.5 transition shadow-sm"
                         >
                           <Play size={13} />
                           {selected && examStarted
@@ -382,15 +382,15 @@ export default function StudentAssignmentsPage() {
               {activePack && (examStarted || examSubmitted) && (
                 <div className="grid lg:grid-cols-[1fr_280px] gap-6 items-start">
                   {/* Left: Active Question or Full Solution Breakdown */}
-                  <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+                  <div className="learnova-card p-6 space-y-5 min-w-0">
                     {examSubmitted ? (
                       <div className="space-y-5">
-                        <div className="rounded-2xl bg-[#0B1F3A] text-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                          <div>
-                            <p className="text-xs font-bold text-[#F59E0B] uppercase tracking-wider">
+                        <div className="learnova-banner-dark bg-architectural-grid-dark rounded-2xl text-white p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-[#22D3EE] uppercase tracking-wider">
                               CBT Exam Submitted
                             </p>
-                            <h3 className="text-xl font-extrabold mt-1">
+                            <h3 className="landing-display text-xl font-extrabold mt-1">
                               {activePack.title}
                             </h3>
                             <p className="text-xs text-slate-300 mt-1">
@@ -399,8 +399,8 @@ export default function StudentAssignmentsPage() {
                                 : "Score saved to your Term Analytics & Report Card."}
                             </p>
                           </div>
-                          <div className="text-left sm:text-right tabular-nums">
-                            <p className="text-3xl font-extrabold text-[#F59E0B]">
+                          <div className="text-left sm:text-right tabular-nums shrink-0">
+                            <p className="text-3xl font-extrabold text-[#22D3EE]">
                               {Math.round(
                                 (correctCount /
                                   Math.max(1, activePack.questions.length)) *
@@ -421,21 +421,21 @@ export default function StudentAssignmentsPage() {
                             return (
                               <div
                                 key={q.id}
-                                className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 space-y-2.5"
+                                className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-2.5"
                               >
                                 <div className="flex items-center justify-between text-xs">
-                                  <span className="font-bold text-[#0B1F3A]">
+                                  <span className="font-bold text-[#0B1230]">
                                     Question {idx + 1} · {q.examTag}
                                   </span>
                                   <span
                                     className={`font-bold ${
-                                      isCorrect ? "text-emerald-700" : "text-red-600"
+                                      isCorrect ? "text-emerald-700" : "text-rose-600"
                                     }`}
                                   >
                                     {isCorrect ? "Correct" : "Incorrect"}
                                   </span>
                                 </div>
-                                <p className="text-sm font-bold text-[#0B1F3A]">
+                                <p className="text-sm font-bold text-[#0B1230]">
                                   {q.prompt}
                                 </p>
                                 <div className="grid sm:grid-cols-2 gap-2">
@@ -449,8 +449,8 @@ export default function StudentAssignmentsPage() {
                                           rightOpt
                                             ? "bg-emerald-50 border-emerald-500 text-emerald-900"
                                             : picked
-                                            ? "bg-red-50 border-red-400 text-red-700"
-                                            : "bg-white border-slate-200 text-slate-500"
+                                            ? "bg-rose-50 border-rose-400 text-rose-700"
+                                            : "bg-white border-[#E4E1F5] text-[#6B6F94]"
                                         }`}
                                       >
                                         {opt}
@@ -458,8 +458,8 @@ export default function StudentAssignmentsPage() {
                                     );
                                   })}
                                 </div>
-                                <p className="text-xs text-slate-600 bg-white border border-slate-200 rounded-lg p-3">
-                                  <strong className="text-[#0B1F3A]">
+                                <p className="text-xs text-[#43466E] bg-white border border-[#E4E1F5] rounded-lg p-3">
+                                  <strong className="text-[#0B1230]">
                                     Worked Explanation:
                                   </strong>{" "}
                                   {q.explanation}
@@ -472,7 +472,7 @@ export default function StudentAssignmentsPage() {
                         <button
                           type="button"
                           onClick={() => startExam(activePack)}
-                          className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-[#0B1F3A] text-white text-xs font-bold"
+                          className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                         >
                           <RotateCcw size={14} />
                           Retake Timed CBT
@@ -480,8 +480,8 @@ export default function StudentAssignmentsPage() {
                       </div>
                     ) : activeQuestion ? (
                       <>
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
-                          <span className="text-xs font-bold text-[#0D9488] tabular-nums">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E4E1F5]">
+                          <span className="text-xs font-bold text-[#4F46E5] tabular-nums">
                             Question {currentIdx + 1} of {activePack.questions.length}
                             {activeQuestion.examTag
                               ? ` · ${activeQuestion.examTag}`
@@ -498,8 +498,8 @@ export default function StudentAssignmentsPage() {
                             }
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition ${
                               flagged.includes(currentIdx)
-                                ? "bg-amber-50 border-amber-300 text-[#D97706]"
-                                : "bg-white border-slate-200 text-slate-600 hover:text-[#0B1F3A]"
+                                ? "bg-amber-50 border-amber-300 text-amber-700"
+                                : "bg-white border-[#E4E1F5] text-[#43466E] hover:text-[#0B1230]"
                             }`}
                           >
                             <Flag size={13} />
@@ -509,7 +509,7 @@ export default function StudentAssignmentsPage() {
                           </button>
                         </div>
 
-                        <p className="text-base sm:text-lg font-bold text-[#0B1F3A] leading-relaxed">
+                        <p className="text-base sm:text-lg font-bold text-[#0B1230] leading-relaxed">
                           {activeQuestion.prompt}
                         </p>
 
@@ -529,15 +529,15 @@ export default function StudentAssignmentsPage() {
                                 }
                                 className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold flex items-center gap-3 transition ${
                                   chosen
-                                    ? "bg-[#0B1F3A] border-[#0B1F3A] text-white"
-                                    : "bg-[#F7F8FA] border-slate-200 text-[#0F1F38] hover:border-[#0D9488]"
+                                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] border-[#4F46E5] text-white shadow-sm"
+                                    : "bg-[#FAF8FF] border-[#E4E1F5] text-[#0B1230] hover:border-[#4F46E5]"
                                 }`}
                               >
                                 <span
                                   className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
                                     chosen
-                                      ? "bg-[#0D9488] text-white"
-                                      : "bg-white border border-slate-200 text-[#0B1F3A]"
+                                      ? "bg-white/20 text-white"
+                                      : "bg-white border border-[#E4E1F5] text-[#4F46E5]"
                                   }`}
                                 >
                                   {letter}
@@ -548,12 +548,12 @@ export default function StudentAssignmentsPage() {
                           })}
                         </div>
 
-                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <div className="pt-4 border-t border-[#E4E1F5] flex items-center justify-between gap-2">
                           <button
                             type="button"
                             disabled={currentIdx === 0}
                             onClick={() => setCurrentIdx((i) => Math.max(0, i - 1))}
-                            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-[#0B1F3A] disabled:opacity-40"
+                            className="inline-flex items-center gap-1 px-4 py-2 rounded-xl border border-[#DCD7F5] bg-white text-xs font-bold text-[#0B1230] hover:bg-[#FAF8FF] disabled:opacity-40 transition"
                           >
                             <ChevronLeft size={14} /> Previous
                           </button>
@@ -566,7 +566,7 @@ export default function StudentAssignmentsPage() {
                                   Math.min(activePack.questions.length - 1, i + 1)
                                 )
                               }
-                              className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-[#0B1F3A] text-white text-xs font-bold"
+                              className="inline-flex items-center gap-1 px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                             >
                               Next <ChevronRight size={14} />
                             </button>
@@ -574,7 +574,7 @@ export default function StudentAssignmentsPage() {
                             <button
                               type="button"
                               onClick={finishExam}
-                              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-[#0D9488] hover:bg-teal-700 text-white text-xs font-bold"
+                              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition"
                             >
                               <BookOpen size={14} />
                               Submit CBT Exam
@@ -586,12 +586,12 @@ export default function StudentAssignmentsPage() {
                   </div>
 
                   {/* Right: Question Navigator Grid (1..N) */}
-                  <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
+                  <div className="learnova-card p-5 space-y-4">
                     <div>
-                      <h3 className="text-sm font-bold text-[#0B1F3A]">
+                      <h3 className="text-sm font-bold text-[#0B1230]">
                         Question Navigator
                       </h3>
-                      <p className="text-[11px] text-slate-500 mt-0.5 tabular-nums">
+                      <p className="text-[11px] text-[#6B6F94] mt-0.5 tabular-nums">
                         {Object.keys(answers).length}/{activePack.questions.length} answered ·{" "}
                         {flagged.length} flagged
                       </p>
@@ -609,12 +609,12 @@ export default function StudentAssignmentsPage() {
                             onClick={() => setCurrentIdx(idx)}
                             className={`h-9 rounded-lg text-xs font-bold tabular-nums border transition ${
                               isCurrent
-                                ? "bg-[#0B1F3A] border-[#0B1F3A] text-white"
+                                ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] border-[#4F46E5] text-white"
                                 : isFlagged
-                                ? "bg-amber-50 border-amber-400 text-[#D97706]"
+                                ? "bg-amber-50 border-amber-400 text-amber-700"
                                 : isAnswered
-                                ? "bg-teal-50 border-[#0D9488] text-[#0D9488]"
-                                : "bg-[#F7F8FA] border-slate-200 text-slate-600 hover:border-[#0B1F3A]"
+                                ? "bg-[#F5F3FF] border-[#7C3AED] text-[#4F46E5]"
+                                : "bg-[#FAF8FF] border-[#E4E1F5] text-[#43466E] hover:border-[#4F46E5]"
                             }`}
                           >
                             {idx + 1}
@@ -627,7 +627,7 @@ export default function StudentAssignmentsPage() {
                       <button
                         type="button"
                         onClick={finishExam}
-                        className="w-full py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-700 text-white text-xs font-bold transition"
+                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                       >
                         Finish &amp; Grade Exam
                       </button>
@@ -638,26 +638,26 @@ export default function StudentAssignmentsPage() {
 
               {/* Persistent CBT Score History */}
               {pastAttempts.length > 0 && (
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
-                  <h3 className="text-sm font-bold text-[#0B1F3A] flex items-center gap-1.5">
-                    <Award size={15} className="text-[#0D9488]" />
+                <div className="learnova-card p-5 space-y-3">
+                  <h3 className="text-sm font-bold text-[#0B1230] flex items-center gap-1.5">
+                    <Award size={15} className="text-[#4F46E5]" />
                     Recent Timed CBT Score History
                   </h3>
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {pastAttempts.slice(0, 6).map((a) => (
                       <div
                         key={a.id}
-                        className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-3.5 flex items-center justify-between gap-2"
+                        className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3.5 flex items-center justify-between gap-2"
                       >
                         <div className="min-w-0">
-                          <p className="text-xs font-bold text-[#0B1F3A] truncate">
+                          <p className="text-xs font-bold text-[#0B1230] truncate">
                             {a.title}
                           </p>
-                          <p className="text-[11px] text-slate-500">
+                          <p className="text-[11px] text-[#6B6F94]">
                             {a.subjectName} · {Math.round(a.durationSeconds)}s
                           </p>
                         </div>
-                        <span className="text-sm font-extrabold text-[#0D9488] tabular-nums shrink-0">
+                        <span className="text-sm font-extrabold text-[#4F46E5] tabular-nums shrink-0">
                           {a.percentage}%
                         </span>
                       </div>
@@ -670,16 +670,16 @@ export default function StudentAssignmentsPage() {
 
           {/* Submission Modal for Written Assignments */}
           {selectedTask && (
-            <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-50 bg-[#070D24]/70 backdrop-blur-xs flex items-center justify-center p-4">
               <form
                 onSubmit={handleSubmitAssignment}
-                className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 p-6 shadow-2xl space-y-4"
+                className="w-full max-w-lg rounded-2xl bg-white border border-[#E4E1F5] p-6 shadow-2xl space-y-4"
               >
                 <div>
-                  <p className="text-xs font-bold text-[#0D9488]">
+                  <p className="text-xs font-bold text-[#4F46E5]">
                     {selectedTask.subject}
                   </p>
-                  <h3 className="text-lg font-bold text-[#0B1F3A] mt-0.5">
+                  <h3 className="landing-display text-lg font-bold text-[#0B1230] mt-0.5">
                     {selectedTask.title}
                   </h3>
                 </div>
@@ -690,20 +690,20 @@ export default function StudentAssignmentsPage() {
                   rows={5}
                   required
                   placeholder="Write out your workings, final answer, or paste a document link..."
-                  className="w-full rounded-xl border border-slate-300 bg-[#F7F8FA] p-3.5 text-sm text-[#0F1F38] focus:outline-none focus:border-[#0B1F3A] focus:bg-white"
+                  className="learnova-input w-full p-3.5 text-sm"
                 />
 
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => setSelectedTask(null)}
-                    className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    className="px-4 py-2 rounded-xl border border-[#DCD7F5] text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold"
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                   >
                     Submit Assignment
                   </button>

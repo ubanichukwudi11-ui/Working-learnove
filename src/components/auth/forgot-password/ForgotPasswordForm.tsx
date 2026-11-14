@@ -45,15 +45,17 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-2xl font-extrabold text-[#0B1F3A]">Forgot Password</h1>
-        <p className="mt-1.5 text-sm text-slate-600">
+        <h1 className="landing-display text-2xl font-extrabold text-[#0B1230]">
+          Forgot Password
+        </h1>
+        <p className="mt-1.5 text-sm text-[#43466E]">
           Enter your email address and we&apos;ll send you a password reset link.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-[#0B1F3A] mb-1.5">
+          <label className="block text-xs font-bold text-[#0B1230] mb-1.5">
             Email Address
           </label>
           <input
@@ -64,8 +66,10 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
               setError("");
             }}
             placeholder="student@school.ng"
-            className={`w-full h-11 px-3.5 rounded-xl bg-[#F7F8FA] border text-sm text-[#0B1F3A] focus:outline-none transition ${
-              error ? "border-rose-500" : "border-slate-200 focus:border-[#0D9488]"
+            className={`w-full h-11 px-3.5 rounded-xl bg-[#FAF8FF] border text-sm text-[#0B1230] placeholder:text-[#6B6F94] focus:outline-none transition ${
+              error
+                ? "border-rose-500"
+                : "border-[#DCD7F5] focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
             }`}
           />
           {error && <p className="text-rose-600 text-xs mt-1.5 font-medium">{error}</p>}
@@ -74,13 +78,13 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#0B1F3A] hover:bg-[#143258] transition disabled:opacity-50"
+          className="w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] shadow-md shadow-[#4F46E5]/20 transition disabled:opacity-50"
         >
           {loading ? "Sending..." : "Send Reset Link"}
         </button>
 
         <div className="text-center pt-1">
-          <Link href="/login" className="text-xs font-bold text-[#0D9488] hover:underline">
+          <Link href="/login" className="text-xs font-bold text-[#6D28D9] hover:text-[#4F46E5] hover:underline">
             Back to Sign In
           </Link>
         </div>

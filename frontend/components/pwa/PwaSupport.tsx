@@ -121,7 +121,7 @@ export function PWAInstallButton() {
       <button
         type="button"
         onClick={handleInstall}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-teal-200 bg-teal-50 hover:bg-teal-100 px-3 py-2 text-xs font-bold text-[#0D9488] transition whitespace-nowrap shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-[#DDD6FE] bg-[#F5F3FF] hover:bg-[#EDE9FE] px-3 py-2 text-xs font-bold text-[#6D28D9] transition whitespace-nowrap shrink-0"
         title="Install Learnova for faster low-data & offline revision"
       >
         <Download size={14} />
@@ -129,19 +129,19 @@ export function PWAInstallButton() {
       </button>
 
       {showIosGuide && (
-        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-4 shadow-xl z-50 text-xs space-y-2">
+        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-[#E4E1F5] bg-white p-4 shadow-xl shadow-[#0B1230]/10 z-50 text-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-bold text-[#0B1F3A]">Install on iPhone / iPad</span>
+            <span className="font-bold text-[#0B1230]">Install on iPhone / iPad</span>
             <button
               type="button"
               onClick={() => setShowIosGuide(false)}
-              className="text-slate-400 hover:text-slate-700"
+              className="text-slate-400 hover:text-[#0B1230]"
             >
               <X size={14} />
             </button>
           </div>
-          <p className="text-slate-600 leading-relaxed flex items-start gap-1.5">
-            <Share size={14} className="text-[#0D9488] shrink-0 mt-0.5" />
+          <p className="text-[#43466E] leading-relaxed flex items-start gap-1.5">
+            <Share size={14} className="text-[#6D28D9] shrink-0 mt-0.5" />
             Tap the Safari <strong>Share</strong> button and choose{" "}
             <strong>&ldquo;Add to Home Screen&rdquo;</strong> for offline Study Notebook &amp; PDF access.
           </p>

@@ -4,23 +4,28 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Outfit", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 :root {
-  --background: #f7f8fa;
-  --foreground: #0f1f38;
+  --background: #f5f4fb;
+  --foreground: #0b1230;
   --surface: #ffffff;
-  --surface-subtle: #f1f4f8;
-  --navy-deep: #0b1f3a;
-  --navy-mid: #143258;
-  --emerald-accent: #0d9488;
+  --surface-subtle: #ede9fe;
+  --surface-lavender: #faf8ff;
+  --navy-deep: #070d24;
+  --navy-mid: #151a44;
+  --indigo-accent: #4f46e5;
+  --violet-accent: #7c3aed;
+  --cyan-accent: #06b6d4;
+  --cyan-bright: #22d3ee;
+  --emerald-accent: #059669;
   --gold-accent: #d97706;
-  --border: #e2e8f0;
+  --border: #e4e1f5;
   --radius: 0.75rem;
-  --font-landing-display: "Outfit", "Inter", sans-serif;
+  --font-landing-display: "Outfit", "Plus Jakarta Sans", sans-serif;
   --font-landing-body: "Plus Jakarta Sans", "Inter", sans-serif;
   --font-landing-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
@@ -34,6 +39,12 @@
   text-wrap: balance;
 }
 
+.landing-hero-serif {
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-optical-sizing: auto;
+  text-wrap: balance;
+}
+
 .landing-mono {
   font-family: var(--font-landing-mono);
   font-variant-numeric: tabular-nums;
@@ -41,16 +52,54 @@
 
 .bg-architectural-grid-dark {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    linear-gradient(to right, rgba(167, 139, 250, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(167, 139, 250, 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
 }
 
 .bg-architectural-grid-light {
   background-image:
-    linear-gradient(to right, rgba(11, 31, 58, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(11, 31, 58, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
   background-size: 44px 44px;
+}
+
+.bg-learnova-dots-lavender {
+  background-image: radial-gradient(rgba(109, 40, 217, 0.085) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.learnova-banner-dark {
+  background: linear-gradient(135deg, #070d24 0%, #151a44 55%, #24195e 100%);
+}
+
+.learnova-card {
+  background-color: #ffffff;
+  border: 1px solid #e4e1f5;
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(11, 18, 48, 0.04);
+}
+
+.learnova-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #dcd7f5;
+  background-color: #faf8ff;
+  color: #0b1230;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.learnova-input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 @layer base {
@@ -69,6 +118,10 @@
     color: var(--foreground);
     min-height: 100vh;
     overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
   }
 
   button {
@@ -97,7 +150,7 @@
   width: 5px;
 }
 .sidebar-scroll::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.35);
+  background: rgba(167, 139, 250, 0.3);
   border-radius: 9999px;
 }
 .sidebar-scroll::-webkit-scrollbar-track {

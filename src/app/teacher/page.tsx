@@ -70,12 +70,12 @@ function TeacherWorkspace() {
     <AppLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+        <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
               Educator Workspace · Africa/Lagos (WAT)
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold mt-1">
               Good day, {displayName}
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
@@ -87,21 +87,21 @@ function TeacherWorkspace() {
           <div className="flex flex-wrap gap-2.5 shrink-0">
             <Link
               href="/teacher/classes"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs sm:text-sm font-bold transition shadow-sm whitespace-nowrap"
             >
               <Video size={15} />
               My Classrooms ({classrooms.length})
             </Link>
             <Link
               href="/teacher/videos"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
             >
               <PlaySquare size={15} />
               Video Lessons
             </Link>
             <Link
               href="/teacher/applications"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/15 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
             >
               <FileBadge2 size={15} />
               Subject Applications
@@ -131,89 +131,89 @@ function TeacherWorkspace() {
         )}
 
         {loading ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+          <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
             Loading your teaching workspace...
           </div>
         ) : (
           <>
             {/* Real KPIs */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="flex items-center justify-between text-slate-500">
+              <div className="learnova-card p-5">
+                <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Approved Subjects</span>
-                  <Award size={17} className="text-[#0D9488]" />
+                  <Award size={17} className="text-[#4F46E5]" />
                 </div>
-                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                <p className="landing-display text-3xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                   {approvals.length}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">Subject-level authorizations</p>
+                <p className="text-xs text-[#6B6F94] mt-1">Subject-level authorizations</p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="flex items-center justify-between text-slate-500">
+              <div className="learnova-card p-5">
+                <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Assigned Classrooms</span>
-                  <BookOpen size={17} className="text-[#0D9488]" />
+                  <BookOpen size={17} className="text-[#7C3AED]" />
                 </div>
-                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                <p className="landing-display text-3xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                   {classrooms.length}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-[#6B6F94] mt-1">
                   {liveRooms.length} live now
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="flex items-center justify-between text-slate-500">
+              <div className="learnova-card p-5">
+                <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Allocated Students</span>
-                  <Users size={17} className="text-[#0D9488]" />
+                  <Users size={17} className="text-[#0891B2]" />
                 </div>
-                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                <p className="landing-display text-3xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                   {totalStudents}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">Across assigned groups</p>
+                <p className="text-xs text-[#6B6F94] mt-1">Across assigned groups</p>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-5">
-                <div className="flex items-center justify-between text-slate-500">
+              <div className="learnova-card p-5">
+                <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Attendance Entries</span>
-                  <CalendarCheck size={17} className="text-[#0D9488]" />
+                  <CalendarCheck size={17} className="text-[#4F46E5]" />
                 </div>
-                <p className="text-3xl font-extrabold text-[#0B1F3A] mt-2 tabular-nums">
+                <p className="landing-display text-3xl font-extrabold text-[#0B1230] mt-2 tabular-nums">
                   {attendanceCount}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">Recorded session logs</p>
+                <p className="text-xs text-[#6B6F94] mt-1">Recorded session logs</p>
               </div>
             </div>
 
             {/* Assigned Classroom Groups */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+            <div className="learnova-card p-6 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold text-[#0B1F3A]">
+                <h2 className="landing-display text-base font-bold text-[#0B1230]">
                   Your Assigned Classroom Groups
                 </h2>
                 <Link
                   href="/teacher/classes"
-                  className="text-xs font-bold text-[#0D9488] hover:underline inline-flex items-center gap-1"
+                  className="text-xs font-bold text-[#4F46E5] hover:underline inline-flex items-center gap-1"
                 >
-                  Prepare & Launch
+                  Prepare &amp; Launch
                   <ArrowRight size={13} />
                 </Link>
               </div>
 
               {classrooms.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center space-y-2">
-                  <BookOpen size={28} className="mx-auto text-slate-400" />
-                  <p className="text-sm font-bold text-[#0F1F38]">
+                <div className="rounded-2xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-10 text-center space-y-2">
+                  <BookOpen size={28} className="mx-auto text-[#6B6F94]" />
+                  <p className="text-sm font-bold text-[#0B1230]">
                     No Assigned Classrooms Yet
                   </p>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  <p className="text-xs text-[#6B6F94] max-w-md mx-auto">
                     {approvals.length === 0
                       ? "Submit a subject teaching application so School Admin can approve you and place you on the official timetable."
                       : "You are approved! Once School Admin schedules and publishes your lessons on the official timetable, your classroom groups will appear here."}
                   </p>
                   <Link
                     href="/teacher/applications"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0B1F3A] text-white text-xs font-semibold"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-semibold transition shadow-sm"
                   >
                     Manage Subject Applications
                   </Link>
@@ -223,21 +223,21 @@ function TeacherWorkspace() {
                   {classrooms.map((rm) => (
                     <div
                       key={rm.id}
-                      className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 flex flex-col justify-between gap-3"
+                      className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 flex flex-col justify-between gap-3"
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-[#0D9488]">
+                          <span className="text-xs font-bold text-[#4F46E5]">
                             {rm.classLevelName} · {rm.subjectName}
                           </span>
-                          <span className="text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-200 text-[#0B1F3A]">
+                          <span className="text-xs font-bold text-[#0B1230]">
                             {rm.groupName} · {rm.status}
                           </span>
                         </div>
-                        <h3 className="text-sm font-bold text-[#0B1F3A] mt-1">
+                        <h3 className="text-sm font-bold text-[#0B1230] mt-1">
                           {rm.lessonTitle}
                         </h3>
-                        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1 tabular-nums">
+                        <p className="text-xs text-[#6B6F94] mt-1 flex items-center gap-1 tabular-nums">
                           <Clock size={12} />
                           {rm.dayOfWeek} · {rm.startTime}–{rm.endTime} WAT ·{" "}
                           {rm.studentUserIds?.length || 0}/{rm.maxCapacity} students
@@ -247,13 +247,13 @@ function TeacherWorkspace() {
                       <div className="flex gap-2">
                         <Link
                           href={`/teacher/classes?prepare=${rm.id}`}
-                          className="flex-1 py-2 rounded-xl border border-slate-300 bg-white text-[#0B1F3A] text-xs font-bold text-center hover:bg-slate-50"
+                          className="flex-1 py-2 rounded-xl border border-[#DCD7F5] bg-white text-[#0B1230] text-xs font-bold text-center hover:bg-[#F5F3FF] transition"
                         >
                           Prepare Room
                         </Link>
                         <Link
                           href={`/teacher/live-class/${rm.id}`}
-                          className="flex-1 py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold text-center inline-flex items-center justify-center gap-1.5"
+                          className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold text-center inline-flex items-center justify-center gap-1.5 transition shadow-sm"
                         >
                           <Video size={13} />
                           Open Classroom

@@ -86,10 +86,10 @@ export default function AuthCallbackPage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA] text-[#0B1F3A]">
+    <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
       <div className="text-center">
-        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#0D9488] border-t-transparent" />
-        <p className="mt-4 text-sm font-semibold text-slate-600">
+        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#4F46E5] border-t-transparent" />
+        <p className="mt-4 text-sm font-semibold text-[#43466E]">
           Completing sign in...
         </p>
       </div>

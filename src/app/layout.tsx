@@ -14,11 +14,14 @@ import "@fontsource/plus-jakarta-sans/700.css";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "@fontsource/ibm-plex-mono/600.css";
+import "@fontsource/source-serif-4/600.css";
+import "@fontsource/source-serif-4/600-italic.css";
+import "@fontsource/source-serif-4/700.css";
 import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#0B1F3A",
+  themeColor: "#070D24",
   width: "device-width",
   initialScale: 1,
 };
@@ -53,7 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="font-sans bg-[#F7F8FA] text-[#0F1F38] antialiased">
+      <body className="landing-body bg-[#F5F4FB] text-[#0B1230] antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

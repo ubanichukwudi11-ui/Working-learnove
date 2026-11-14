@@ -83,7 +83,7 @@ export default function VideoLessonPlayer({
   if (ytId) {
     return (
       <div className="space-y-2">
-        <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#0B1F3A] border border-slate-200">
+        <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-[#E4E1F5] shadow-sm">
           <iframe
             key={ytId}
             src={`https://www.youtube.com/embed/${ytId}?rel=0`}
@@ -93,13 +93,13 @@ export default function VideoLessonPlayer({
             allowFullScreen
           />
         </div>
-        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+        <div className="flex items-center justify-between text-xs text-[#6B6F94] px-1">
           <span>Curated YouTube Lesson</span>
           <a
             href={`https://www.youtube.com/watch?v=${ytId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 font-semibold text-[#0B1F3A] hover:text-[#0D9488]"
+            className="inline-flex items-center gap-1 font-semibold text-[#4F46E5] hover:text-[#6D28D9]"
           >
             Open in YouTube
             <ExternalLink size={12} />
@@ -114,7 +114,7 @@ export default function VideoLessonPlayer({
     /\.(mp4|webm|mov|m4v|ogv)(\?|$)/i.test(video.videoUrl)
   ) {
     return (
-      <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black border border-slate-200">
+      <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-[#E4E1F5] shadow-sm">
         <video
           key={video.videoUrl}
           src={video.videoUrl}
@@ -128,13 +128,13 @@ export default function VideoLessonPlayer({
   }
 
   return (
-    <div className="aspect-video w-full rounded-2xl bg-[#0B1F3A] text-white flex flex-col items-center justify-center p-8 text-center space-y-4">
-      <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center text-[#F59E0B]">
+    <div className="learnova-banner-dark bg-architectural-grid-dark aspect-video w-full rounded-2xl text-white border border-white/10 flex flex-col items-center justify-center p-8 text-center space-y-4">
+      <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-[#22D3EE]">
         <Film size={28} />
       </div>
       <div className="max-w-md space-y-1.5">
         <h3 className="text-lg font-bold">{video.title}</h3>
-        <p className="text-xs text-slate-300">
+        <p className="text-xs text-indigo-100/80">
           External instructional video link provided by {video.uploadedByName}.
         </p>
       </div>
@@ -142,7 +142,7 @@ export default function VideoLessonPlayer({
         href={video.videoUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-bold transition"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shadow-sm"
       >
         Launch External Video Lesson
         <ExternalLink size={15} />

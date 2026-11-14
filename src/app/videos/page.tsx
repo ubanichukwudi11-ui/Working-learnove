@@ -11,7 +11,7 @@ export default function VideoLessonsPage() {
       <AppLayout>
         <Suspense
           fallback={
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading video lessons...
             </div>
           }

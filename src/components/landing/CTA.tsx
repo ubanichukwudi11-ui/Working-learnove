@@ -5,43 +5,47 @@ import { ArrowRight } from "lucide-react";
 
 export default function CTA() {
   return (
-    <section className="relative overflow-hidden bg-[#07162B] text-white py-20 px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden bg-gradient-to-br from-[#070D24] via-[#131946] to-[#281A5E] text-white py-20 lg:py-24 px-4 sm:px-6 lg:px-8">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-architectural-grid-dark"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-0 top-1/2 -translate-y-1/2 h-80 w-80 rounded-full bg-[#0D9488]/15 blur-[100px]"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 92% 50%, rgba(124, 58, 237, 0.28), transparent 45%), radial-gradient(circle at 8% 85%, rgba(6, 182, 212, 0.16), transparent 40%)",
+        }}
       />
 
-      <div className="relative mx-auto max-w-6xl flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-        <div className="max-w-2xl">
-          <p className="landing-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#2DD4BF]">
-            Begin This Term
+      <div className="relative mx-auto max-w-6xl rounded-3xl border border-indigo-400/25 bg-[#0A1030]/75 p-8 sm:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-8 shadow-2xl shadow-black/35">
+        <div className="max-w-2xl space-y-3">
+          <p className="landing-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#22D3EE]">
+            Join The Learnova Campus
           </p>
-          <h2 className="landing-display mt-2 text-3xl sm:text-4xl font-bold tracking-[-0.025em] text-white leading-tight">
-            Ready for the Second Term on Learnova?
+          <h2 className="landing-display text-3xl sm:text-4xl font-bold tracking-[-0.02em] text-white leading-tight">
+            Step into a sharper, calmer way to learn and teach
           </h2>
-          <p className="mt-3 text-slate-300 text-base leading-relaxed">
-            Join as a student, teacher, parent, or school administrator and step
-            into a calmer, sharper digital classroom.
+          <p className="text-indigo-100/80 text-base leading-relaxed">
+            Create your free student, teacher, or parent account in minutes—or
+            sign in to continue where you left off this term.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3.5 shrink-0">
           <Link
             href="/register"
-            className="inline-flex items-center gap-2 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-[#07162B] px-6 py-3.5 text-sm font-bold transition-colors whitespace-nowrap"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7C3AED] via-[#6D28D9] to-[#4F46E5] hover:from-[#8B5CF6] hover:to-[#4338CA] text-white px-6 py-3.5 text-sm font-bold shadow-lg shadow-[#7C3AED]/30 transition-all whitespace-nowrap min-h-[46px]"
           >
-            Create Free Account
+            Get Started
             <ArrowRight size={16} />
           </Link>
           <Link
             href="/login"
-            className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/5 hover:bg-white/10 text-white px-6 py-3.5 text-sm font-semibold transition-colors whitespace-nowrap"
+            className="inline-flex items-center justify-center rounded-xl border border-white/25 bg-white/8 hover:bg-white/15 text-white px-6 py-3.5 text-sm font-semibold transition-colors whitespace-nowrap min-h-[46px]"
           >
-            Sign In
+            Log In
           </Link>
         </div>
       </div>

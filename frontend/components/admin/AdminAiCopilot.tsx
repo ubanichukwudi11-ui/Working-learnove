@@ -222,18 +222,18 @@ export default function AdminAiCopilot({
   };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+    <div className="learnova-card overflow-hidden">
       {/* Header & Mode Switcher */}
-      <div className="bg-slate-50 border-b border-slate-200 px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-[#FAF8FF] border-b border-[#E4E1F5] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#0B1F3A] text-[#F59E0B] flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Sparkles size={18} />
           </div>
-          <div>
-            <h2 className="text-sm sm:text-base font-extrabold text-[#0B1F3A]">
+          <div className="min-w-0">
+            <h2 className="text-sm sm:text-base font-extrabold text-[#0B1230]">
               Learnova Admin AI Copilot
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#6B6F94]">
               {snapshot
                 ? `${snapshot.counts?.approvedTeacherPairs || 0} approved teacher slots · ${snapshot.counts?.pendingTeacherApplications || 0} pending approvals · ${snapshot.counts?.pendingBankTransfers || 0} pending transfers`
                 : "Grounded in live school approvals, timetables, and enrolments"}
@@ -241,14 +241,14 @@ export default function AdminAiCopilot({
           </div>
         </div>
 
-        <div className="inline-flex rounded-xl bg-white border border-slate-200 p-1 shrink-0">
+        <div className="inline-flex rounded-xl bg-white border border-[#E4E1F5] p-1 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("timetable")}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
               activeTab === "timetable"
-                ? "bg-[#0D9488] text-white"
-                : "text-slate-600 hover:text-[#0B1F3A]"
+                ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                : "text-[#43466E] hover:text-[#0B1230]"
             }`}
           >
             <CalendarDays size={14} /> Timetable Planner
@@ -258,8 +258,8 @@ export default function AdminAiCopilot({
             onClick={() => setActiveTab("copilot")}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
               activeTab === "copilot"
-                ? "bg-[#0D9488] text-white"
-                : "text-slate-600 hover:text-[#0B1F3A]"
+                ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                : "text-[#43466E] hover:text-[#0B1230]"
             }`}
           >
             <MessageSquare size={14} /> Operations Assistant
@@ -271,8 +271,8 @@ export default function AdminAiCopilot({
         <div
           className={`mx-5 mt-4 rounded-xl px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border ${
             aiFeedback.type === "ok"
-              ? "bg-teal-50 text-[#0D9488] border-teal-200"
-              : "bg-red-50 text-red-700 border-red-200"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+              : "bg-rose-50 text-rose-700 border-rose-200"
           }`}
         >
           {aiFeedback.type === "ok" ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />}
@@ -286,7 +286,7 @@ export default function AdminAiCopilot({
           <form onSubmit={handleGenerateTimetable} className="space-y-3">
             <div className="grid md:grid-cols-4 gap-3">
               <div className="md:col-span-3">
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-[#43466E] mb-1">
                   Scheduling Goal or Constraint
                 </label>
                 <input
@@ -294,17 +294,17 @@ export default function AdminAiCopilot({
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
                   placeholder="e.g. Build a conflict-free SS1–SS3 morning timetable (WAT)..."
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#0D9488]"
+                  className="learnova-input text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-[#43466E] mb-1">
                   Class Level Scope
                 </label>
                 <select
                   value={targetClassLevelId}
                   onChange={(e) => setTargetClassLevelId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white"
+                  className="learnova-input text-sm"
                 >
                   <option value="">All Class Levels</option>
                   {(snapshot?.activeClassLevels || []).map((lvl: any) => (
@@ -323,7 +323,7 @@ export default function AdminAiCopilot({
                     key={i}
                     type="button"
                     onClick={() => setGoal(preset)}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-[#F5F3FF] border border-[#DCD7F5] hover:border-[#4F46E5] text-[#43466E] hover:text-[#4F46E5] transition"
                   >
                     {i === 0 ? "Morning Core" : i === 1 ? "WAEC SS1–SS3" : "Fill Weekly Gaps"}
                   </button>
@@ -333,7 +333,7 @@ export default function AdminAiCopilot({
               <button
                 type="submit"
                 disabled={planning}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#132c52] text-white text-xs sm:text-sm font-bold disabled:opacity-50 transition"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs sm:text-sm font-bold disabled:opacity-50 transition shadow-xs"
               >
                 {planning ? (
                   <>
@@ -341,7 +341,7 @@ export default function AdminAiCopilot({
                   </>
                 ) : (
                   <>
-                    <Sparkles size={15} className="text-[#F59E0B]" /> Generate AI Timetable Draft
+                    <Sparkles size={15} className="text-[#22D3EE]" /> Generate AI Timetable Draft
                   </>
                 )}
               </button>
@@ -349,8 +349,8 @@ export default function AdminAiCopilot({
           </form>
 
           {planSummary && (
-            <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 text-xs sm:text-sm text-slate-700">
-              <span className="font-extrabold text-[#0B1F3A]">AI Assessment: </span>
+            <div className="rounded-xl bg-[#FAF8FF] border border-[#E4E1F5] p-4 text-xs sm:text-sm text-[#43466E]">
+              <span className="font-extrabold text-[#0B1230]">AI Assessment: </span>
               {planSummary}
             </div>
           )}
@@ -364,27 +364,25 @@ export default function AdminAiCopilot({
                     key={s.tempId}
                     className={`rounded-2xl border p-4 space-y-3 ${
                       s.validation.valid
-                        ? "border-slate-200 bg-white"
+                        ? "border-[#E4E1F5] bg-white"
                         : "border-amber-200 bg-amber-50/40"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-extrabold text-[#0B1F3A]">
+                        <p className="text-sm font-extrabold text-[#0B1230]">
                           {s.classLevelCode} · {s.subjectName}
                         </p>
-                        <p className="text-xs text-slate-600 mt-0.5 flex items-center gap-2 tabular-nums">
-                          <Clock size={12} className="text-[#0D9488]" />
+                        <p className="text-xs text-[#43466E] mt-0.5 flex items-center gap-2 tabular-nums">
+                          <Clock size={12} className="text-[#4F46E5]" />
                           {s.dayOfWeek} · {s.startTime}–{s.endTime} WAT ({s.mode})
                         </p>
                       </div>
                       <span
-                        className={`text-[11px] font-bold px-2 py-0.5 rounded-md shrink-0 ${
-                          isPublished
-                            ? "bg-teal-100 text-[#0D9488]"
-                            : s.validation.valid
-                            ? "bg-teal-50 text-[#0D9488]"
-                            : "bg-red-50 text-red-700"
+                        className={`text-[11px] font-bold shrink-0 ${
+                          isPublished || s.validation.valid
+                            ? "text-emerald-700"
+                            : "text-rose-700"
                         }`}
                       >
                         {isPublished
@@ -395,23 +393,23 @@ export default function AdminAiCopilot({
                       </span>
                     </div>
 
-                    <div className="text-xs text-slate-600 space-y-1">
+                    <div className="text-xs text-[#43466E] space-y-1">
                       <p className="flex items-center gap-1.5">
-                        <Users size={12} className="text-slate-400" />
+                        <Users size={12} className="text-[#6B6F94]" />
                         <span>
-                          <strong>Teachers:</strong>{" "}
+                          <strong className="text-[#0B1230]">Teachers:</strong>{" "}
                           {s.teacherNames.length > 0 ? s.teacherNames.join(", ") : "None assigned"}
                         </span>
                       </p>
                       <p>
-                        <strong>Demand:</strong> {s.eligibleStudentCount} entitled student(s) · Max{" "}
+                        <strong className="text-[#0B1230]">Demand:</strong> {s.eligibleStudentCount} entitled student(s) · Max{" "}
                         {s.maxCapacityPerRoom}/room
                       </p>
-                      {s.rationale && <p className="text-slate-500 italic">{s.rationale}</p>}
+                      {s.rationale && <p className="text-[#6B6F94] italic">{s.rationale}</p>}
                     </div>
 
                     {!s.validation.valid && s.validation.errors.length > 0 && (
-                      <div className="rounded-lg bg-red-50 border border-red-200 p-2 text-[11px] text-red-700">
+                      <div className="rounded-lg bg-rose-50 border border-rose-200 p-2 text-[11px] text-rose-700">
                         {s.validation.errors.join(" ")}
                       </div>
                     )}
@@ -426,7 +424,7 @@ export default function AdminAiCopilot({
                         <button
                           type="button"
                           onClick={() => onLoadSuggestionIntoForm(s)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-[#0B1F3A]"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#DCD7F5] hover:bg-[#FAF8FF] text-xs font-semibold text-[#0B1230] transition"
                         >
                           <Plus size={12} /> Load into Form
                         </button>
@@ -435,7 +433,7 @@ export default function AdminAiCopilot({
                         type="button"
                         disabled={!s.validation.valid || publishingId === s.tempId || isPublished}
                         onClick={() => handlePublishSuggestion(s)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0D9488] hover:bg-teal-600 text-white text-xs font-semibold disabled:opacity-50"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold disabled:opacity-50 transition"
                       >
                         {publishingId === s.tempId
                           ? "Publishing..."
@@ -451,10 +449,10 @@ export default function AdminAiCopilot({
           )}
 
           {suggestions.length === 0 && !planning && (
-            <div className="rounded-xl border border-dashed border-slate-200 p-4 text-xs text-slate-500 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="rounded-xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-4 text-xs text-[#6B6F94] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span>
-                Only subjects with <strong>approved teachers</strong> in{" "}
-                <Link href="/admin/teachers" className="text-[#0D9488] font-bold underline">
+                Only subjects with <strong className="text-[#0B1230]">approved teachers</strong> in{" "}
+                <Link href="/admin/teachers" className="text-[#4F46E5] font-bold underline">
                   Teacher Approvals
                 </Link>{" "}
                 can be scheduled automatically.
@@ -462,7 +460,7 @@ export default function AdminAiCopilot({
               {!compact && (
                 <Link
                   href="/admin/timetable"
-                  className="inline-flex items-center gap-1 font-bold text-[#0B1F3A] hover:underline shrink-0"
+                  className="inline-flex items-center gap-1 font-bold text-[#0B1230] hover:text-[#4F46E5] hover:underline shrink-0"
                 >
                   Open Timetable Builder <ArrowRight size={13} />
                 </Link>
@@ -482,7 +480,7 @@ export default function AdminAiCopilot({
                 type="button"
                 disabled={chatting}
                 onClick={() => handleSendChat(p)}
-                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-teal-50 hover:text-[#0D9488] text-slate-700 transition text-left"
+                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-[#FAF8FF] border border-[#DCD7F5] hover:border-[#4F46E5] hover:text-[#4F46E5] text-[#43466E] transition text-left"
               >
                 {p}
               </button>
@@ -490,7 +488,7 @@ export default function AdminAiCopilot({
           </div>
 
           <div
-            className={`rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3 overflow-y-auto ${
+            className={`rounded-2xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-3 overflow-y-auto ${
               compact ? "max-h-72" : "h-96"
             }`}
           >
@@ -502,8 +500,8 @@ export default function AdminAiCopilot({
                 <div
                   className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed ${
                     m.role === "user"
-                      ? "bg-[#0B1F3A] text-white"
-                      : "bg-white border border-slate-200 text-slate-800"
+                      ? "bg-[#0B1230] text-white"
+                      : "bg-white border border-[#E4E1F5] text-[#0B1230]"
                   }`}
                 >
                   {m.text}
@@ -512,8 +510,8 @@ export default function AdminAiCopilot({
             ))}
             {chatting && (
               <div className="flex justify-start">
-                <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs text-slate-500 flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-[#0D9488]" />
+                <div className="bg-white border border-[#E4E1F5] rounded-2xl px-4 py-3 text-xs text-[#6B6F94] flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-[#4F46E5]" />
                   Analyzing live school records...
                 </div>
               </div>
@@ -532,12 +530,12 @@ export default function AdminAiCopilot({
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="Ask about timetable gaps, teacher approvals, bank transfers, or draft a school notice..."
-              className="flex-1 rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:border-[#0D9488]"
+              className="flex-1 learnova-input text-sm"
             />
             <button
               type="submit"
               disabled={chatting || !chatInput.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-semibold disabled:opacity-50 transition shrink-0"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition shrink-0 shadow-xs"
             >
               <Send size={15} /> Ask
             </button>

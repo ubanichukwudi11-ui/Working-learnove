@@ -7,7 +7,7 @@ export default function NovaPage() {
     <AppLayout>
       <Suspense
         fallback={
-          <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center text-sm text-slate-500">
+          <div className="bg-white border border-[#E4E1F5] rounded-3xl p-12 text-center text-sm text-[#4A5073]">
             Loading Nova Classroom Workspace...
           </div>
         }
