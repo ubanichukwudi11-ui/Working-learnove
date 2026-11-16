@@ -24,10 +24,10 @@ export default function ProtectedRoute({ children, roles }: Props) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F7F8FA]">
-        <div className="text-center space-y-2">
-          <div className="h-9 w-9 animate-spin rounded-full border-4 border-[#0D9488] border-t-transparent mx-auto" />
-          <p className="text-xs font-semibold text-slate-600">
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender">
+        <div className="text-center space-y-2.5">
+          <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#4F46E5] border-t-transparent mx-auto" />
+          <p className="text-xs font-semibold text-[#43466E]">
             Verifying your Learnova session...
           </p>
         </div>
@@ -40,20 +40,20 @@ export default function ProtectedRoute({ children, roles }: Props) {
   if (roles && !roles.includes(user.role)) {
     const homeHref = getDashboardRoute(user.role);
     return (
-      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-xs space-y-4">
+      <div className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-[#E4E1F5] bg-white p-8 text-center shadow-lg shadow-[#0B1230]/6 space-y-4">
           <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
             <ShieldAlert size={24} />
           </div>
-          <h1 className="text-xl font-extrabold text-[#0B1F3A]">
+          <h1 className="landing-display text-xl font-extrabold text-[#0B1230]">
             Access Restricted
           </h1>
-          <p className="text-xs text-slate-600 leading-relaxed">
+          <p className="text-xs text-[#43466E] leading-relaxed">
             Your signed-in role (<strong>{user.role.replace("_", " ")}</strong>) does not have permission to open this workspace.
           </p>
           <Link
             href={homeHref}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
           >
             <ArrowLeft size={14} />
             Return to Your Workspace

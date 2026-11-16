@@ -131,14 +131,14 @@ export default function AdminTeachersPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
-              Educator Vetting & Subject Authorization
+          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
+              Educator Vetting &amp; Subject Authorization
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
               Teacher Approval Centre
             </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-2xl">
+            <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
               Review educator credentials, approve specific subjects for chosen class levels
               (e.g. Mathematics for JSS1–JSS3 or SS1–SS3), request resubmissions, or revoke
               approvals. Only approved subject-level pairs can be placed on official timetables.
@@ -149,8 +149,8 @@ export default function AdminTeachersPage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -173,8 +173,8 @@ export default function AdminTeachersPage() {
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
                   filter === f
-                    ? "bg-[#0B1F3A] text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    ? "bg-[#0B1230] text-white"
+                    : "bg-white border border-[#E4E1F5] text-[#43466E] hover:border-[#4F46E5]"
                 }`}
               >
                 {f.replace(/_/g, " ")}
@@ -183,17 +183,17 @@ export default function AdminTeachersPage() {
           </div>
 
           {loading ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading teacher applications...
             </div>
           ) : (
             <div className="space-y-8">
               {/* Applications Queue */}
               {filteredApps.length === 0 ? (
-                <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center space-y-2">
-                  <GraduationCap size={30} className="mx-auto text-slate-400" />
-                  <p className="font-bold text-[#0F1F38]">No Teacher Applications Found</p>
-                  <p className="text-xs text-slate-500">
+                <div className="learnova-card border-dashed p-12 text-center space-y-2">
+                  <GraduationCap size={30} className="mx-auto text-[#6B6F94]" />
+                  <p className="font-bold text-[#0B1230]">No Teacher Applications Found</p>
+                  <p className="text-xs text-[#6B6F94]">
                     When teachers submit subject teaching applications, they will appear here for
                     verification and level-by-level approval.
                   </p>
@@ -205,33 +205,34 @@ export default function AdminTeachersPage() {
                     return (
                       <div
                         key={app.id}
-                        className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4"
+                        className="learnova-card p-5 space-y-4"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                          <div>
+                          <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h2 className="text-lg font-extrabold text-[#0B1F3A]">
+                              <h2 className="text-lg font-extrabold text-[#0B1230]">
                                 {app.teacherName}
                               </h2>
-                              <span className="text-xs font-semibold text-slate-500">
+                              <span className="text-xs font-semibold text-[#6B6F94]">
                                 ({app.teacherEmail})
                               </span>
+                              <span aria-hidden="true" className="text-[#6B6F94]">·</span>
                               <span
-                                className={`text-xs font-bold px-2.5 py-0.5 rounded-lg ${
+                                className={`text-xs font-bold ${
                                   app.status === "APPROVED"
-                                    ? "bg-teal-50 text-[#0D9488]"
+                                    ? "text-emerald-700"
                                     : app.status === "PENDING_REVIEW"
-                                    ? "bg-amber-50 text-amber-800"
-                                    : "bg-red-50 text-red-700"
+                                    ? "text-amber-700"
+                                    : "text-rose-700"
                                 }`}
                               >
                                 {app.status.replace(/_/g, " ")}
                               </span>
                             </div>
-                            <p className="text-sm font-bold text-[#0D9488] mt-1">
+                            <p className="text-sm font-bold text-[#4F46E5] mt-1">
                               Subject Requested: {app.subjectName}
                             </p>
-                            <p className="text-xs text-slate-600 mt-1">
+                            <p className="text-xs text-[#43466E] mt-1">
                               Qualification: <strong>{app.qualification}</strong> · Institution:{" "}
                               {app.institution || "—"} · Experience: {app.experience || "—"}
                               {app.licenseNumber ? ` · TRCN: ${app.licenseNumber}` : ""}
@@ -240,16 +241,16 @@ export default function AdminTeachersPage() {
 
                           <Link
                             href={`/admin/teachers/${app.teacherUserId}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-[#0B1F3A] hover:bg-slate-50 shrink-0"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] shrink-0 transition"
                           >
-                            Full Profile & Documents
+                            Full Profile &amp; Documents
                             <ExternalLink size={12} />
                           </Link>
                         </div>
 
                         {/* Granular Class Level Approval Selector */}
-                        <div className="bg-slate-50 rounded-xl p-3.5 space-y-2">
-                          <p className="text-xs font-bold text-slate-700">
+                        <div className="bg-[#FAF8FF] border border-[#E4E1F5] rounded-xl p-3.5 space-y-2">
+                          <p className="text-xs font-bold text-[#43466E]">
                             Select Class Levels Approved to Teach {app.subjectName}:
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -262,8 +263,8 @@ export default function AdminTeachersPage() {
                                   onClick={() => toggleLevelForApp(app.id, lvlId)}
                                   className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
                                     checked
-                                      ? "bg-[#0D9488] text-white border-[#0D9488]"
-                                      : "bg-white text-slate-600 border-slate-200"
+                                      ? "bg-[#4F46E5] text-white border-[#4F46E5]"
+                                      : "bg-white text-[#43466E] border-[#DCD7F5] hover:border-[#4F46E5]"
                                   }`}
                                 >
                                   {checked ? "✓ " : ""}
@@ -285,34 +286,34 @@ export default function AdminTeachersPage() {
                               }))
                             }
                             placeholder="Explanation or feedback for teacher (recommended)..."
-                            className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                            className="flex-1 learnova-input text-xs py-2"
                           />
                           <div className="flex flex-wrap gap-2 shrink-0">
                             <button
                               disabled={saving || selectedLevels.length === 0}
                               onClick={() => handleReview(app.id, "APPROVED")}
-                              className="px-3.5 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-semibold hover:bg-teal-700 disabled:opacity-50"
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold disabled:opacity-50 transition shadow-xs"
                             >
                               Approve Selected Levels
                             </button>
                             <button
                               disabled={saving}
                               onClick={() => handleReview(app.id, "RESUBMISSION_REQUIRED")}
-                              className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold hover:bg-amber-100"
+                              className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold hover:bg-amber-100 transition"
                             >
                               Request Info
                             </button>
                             <button
                               disabled={saving}
                               onClick={() => handleReview(app.id, "REJECTED")}
-                              className="px-3 py-2 rounded-xl border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-50"
+                              className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
                             >
                               Reject
                             </button>
                             <button
                               disabled={saving}
                               onClick={() => handleReview(app.id, "SUSPENDED")}
-                              className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-100"
+                              className="px-3 py-2 rounded-xl border border-[#DCD7F5] text-[#43466E] text-xs font-semibold hover:bg-[#FAF8FF] transition"
                             >
                               Suspend
                             </button>
@@ -325,45 +326,45 @@ export default function AdminTeachersPage() {
               )}
 
               {/* Active Authorizations Matrix */}
-              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-100">
-                  <h2 className="text-base font-bold text-[#0F1F38]">
-                    Approved Subject & Class-Level Authorizations ({approvals.length})
+              <div className="learnova-card overflow-hidden">
+                <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                  <h2 className="text-base font-bold text-[#0B1230]">
+                    Approved Subject &amp; Class-Level Authorizations ({approvals.length})
                   </h2>
                 </div>
                 {approvals.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-slate-500">
+                  <div className="p-8 text-center text-xs text-[#6B6F94]">
                     No approved teacher-subject-level authorizations yet. Approve an
                     application above before scheduling that educator on the timetable.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                      <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+                      <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
                         <tr>
-                          <th className="px-4 py-3">Educator</th>
-                          <th className="px-4 py-3">Subject</th>
-                          <th className="px-4 py-3">Class Level</th>
-                          <th className="px-4 py-3">Status</th>
-                          <th className="px-4 py-3 text-right">Action</th>
+                          <th className="px-4 py-3 font-semibold">Educator</th>
+                          <th className="px-4 py-3 font-semibold">Subject</th>
+                          <th className="px-4 py-3 font-semibold">Class Level</th>
+                          <th className="px-4 py-3 font-semibold">Status</th>
+                          <th className="px-4 py-3 font-semibold text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100">
+                      <tbody className="divide-y divide-[#E4E1F5]">
                         {approvals.map((ap) => (
-                          <tr key={ap.id}>
-                            <td className="px-4 py-3 font-semibold text-[#0F1F38]">
+                          <tr key={ap.id} className="hover:bg-[#FAF8FF]/70 transition">
+                            <td className="px-4 py-3 font-semibold text-[#0B1230]">
                               {ap.teacherName}
                             </td>
-                            <td className="px-4 py-3 text-slate-700">{ap.subjectName}</td>
-                            <td className="px-4 py-3 font-bold text-[#0B1F3A]">
+                            <td className="px-4 py-3 text-[#43466E]">{ap.subjectName}</td>
+                            <td className="px-4 py-3 font-bold text-[#0B1230]">
                               {ap.classLevelName}
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`text-xs font-bold px-2.5 py-0.5 rounded ${
+                                className={`text-xs font-bold ${
                                   ap.status === "APPROVED"
-                                    ? "bg-teal-50 text-[#0D9488]"
-                                    : "bg-red-50 text-red-700"
+                                    ? "text-emerald-700"
+                                    : "text-rose-700"
                                 }`}
                               >
                                 {ap.status}
@@ -374,7 +375,7 @@ export default function AdminTeachersPage() {
                                 <button
                                   disabled={saving}
                                   onClick={() => handleToggleApproval(ap.id, "REVOKED")}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-red-200 text-red-700 text-xs font-semibold hover:bg-red-50"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
                                 >
                                   <ShieldAlert size={12} />
                                   Revoke
@@ -383,7 +384,7 @@ export default function AdminTeachersPage() {
                                 <button
                                   disabled={saving}
                                   onClick={() => handleToggleApproval(ap.id, "APPROVED")}
-                                  className="px-2.5 py-1 rounded-lg bg-[#0D9488] text-white text-xs font-semibold"
+                                  className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold"
                                 >
                                   Restore
                                 </button>

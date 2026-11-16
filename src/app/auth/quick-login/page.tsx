@@ -70,13 +70,15 @@ function QuickLoginContent() {
   }, [router, searchParams, saveUser]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-4 text-white">
-      <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900 p-8 text-center shadow-2xl">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-400">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#070D24] bg-architectural-grid-dark px-4 text-white">
+      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0D1438] p-8 text-center shadow-2xl shadow-[#000000]/40">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4F46E5]/20 to-[#06B6D4]/20 border border-white/10 text-[#22D3EE]">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight">Instant Sign In</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <h2 className="landing-display text-2xl font-extrabold tracking-tight">
+          Instant Sign In
+        </h2>
+        <p className="mt-2 text-sm text-indigo-100/75">
           {error ? (
             <span className="text-red-400">{error}</span>
           ) : (
@@ -87,7 +89,7 @@ function QuickLoginContent() {
         {error && (
           <button
             onClick={() => router.push("/login")}
-            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 py-3 font-semibold text-white transition hover:opacity-90"
+            className="mt-6 w-full rounded-2xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] py-3 font-semibold text-white transition"
           >
             Go to Login
           </button>
@@ -101,8 +103,8 @@ export default function QuickLoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">
-          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+        <div className="flex min-h-screen items-center justify-center bg-[#070D24] bg-architectural-grid-dark text-white">
+          <Loader2 className="h-8 w-8 animate-spin text-[#22D3EE]" />
         </div>
       }
     >

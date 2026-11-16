@@ -74,27 +74,27 @@ export default function NotebookPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+        <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Digital Study Notebook
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
               Class Notes &amp; Revision Summaries
             </h1>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 shrink-0">
             <Link
               href="/nova"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white text-[#0B1F3A] text-xs font-bold hover:bg-slate-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 text-white text-xs font-bold hover:bg-white/15 transition"
             >
-              <Sparkles size={14} className="text-[#D97706]" />
+              <Sparkles size={14} className="text-[#22D3EE]" />
               Open Nova Classroom AI
             </Link>
             <button
               onClick={() => setIsCreating(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
             >
               <Plus size={15} />
               New Note
@@ -110,8 +110,8 @@ export default function NotebookPage() {
                 onClick={() => setActiveFolder(f)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
                   activeFolder === f
-                    ? "bg-[#0B1F3A] text-white"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-sm"
+                    : "bg-white border border-[#E4E1F5] text-[#43466E] hover:bg-[#FAF8FF]"
                 }`}
               >
                 {f}
@@ -119,13 +119,13 @@ export default function NotebookPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 bg-white border border-slate-300 rounded-xl px-3.5 py-2 sm:w-64">
-            <Search size={15} className="text-slate-400" />
+          <div className="flex items-center gap-2 bg-white border border-[#DCD7F5] focus-within:border-[#4F46E5] rounded-xl px-3.5 py-2 sm:w-64 transition">
+            <Search size={15} className="text-[#6B6F94]" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search notes..."
-              className="bg-transparent outline-none text-xs text-[#0F1F38] w-full"
+              className="bg-transparent outline-none text-xs text-[#0B1230] placeholder:text-[#6B6F94] w-full"
             />
           </div>
         </div>
@@ -133,21 +133,23 @@ export default function NotebookPage() {
         {isCreating && (
           <form
             onSubmit={handleCreate}
-            className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs"
+            className="learnova-card p-6 space-y-4"
           >
-            <h2 className="text-base font-bold text-[#0B1F3A]">Create New Note</h2>
+            <h2 className="landing-display text-base font-bold text-[#0B1230]">
+              Create New Note
+            </h2>
             <div className="grid sm:grid-cols-2 gap-3">
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
                 placeholder="Note title (e.g. Organic Chemistry Alkanes)"
-                className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm text-[#0F1F38]"
+                className="learnova-input px-3.5 py-2.5 text-sm"
               />
               <select
                 value={folder}
                 onChange={(e) => setFolder(e.target.value)}
-                className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm text-[#0F1F38]"
+                className="learnova-input px-3.5 py-2.5 text-sm"
               >
                 {NOTEBOOK_FOLDERS.map((f) => (
                   <option key={f}>{f}</option>
@@ -160,19 +162,19 @@ export default function NotebookPage() {
               rows={4}
               required
               placeholder="Write your revision notes..."
-              className="w-full rounded-xl border border-slate-300 bg-[#F7F8FA] p-3.5 text-sm text-[#0F1F38]"
+              className="learnova-input w-full p-3.5 text-sm"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-600"
+                className="px-4 py-2 rounded-xl border border-[#DCD7F5] text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
               >
                 Save Note
               </button>
@@ -181,7 +183,7 @@ export default function NotebookPage() {
         )}
 
         {filteredNotes.length === 0 ? (
-          <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center text-sm text-slate-500">
+          <div className="bg-white border border-dashed border-[#DCD7F5] rounded-2xl p-12 text-center text-sm text-[#6B6F94]">
             No study notes found in this subject folder yet. Save notes directly from Video
             Lessons, Nova AI, or click New Note above.
           </div>
@@ -190,31 +192,31 @@ export default function NotebookPage() {
             {filteredNotes.map((note) => (
               <div
                 key={note.id}
-                className="rounded-2xl border border-slate-200 bg-white p-5 flex flex-col justify-between shadow-xs"
+                className="learnova-card p-5 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#0D9488] inline-flex items-center gap-1">
+                    <span className="font-bold text-[#4F46E5] inline-flex items-center gap-1">
                       <NotebookPen size={13} />
                       {note.folder}
                     </span>
                     <button
                       onClick={() => handleDelete(note.id)}
                       aria-label="Delete note"
-                      className="text-slate-400 hover:text-red-600 transition"
+                      className="text-[#6B6F94] hover:text-rose-600 transition"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
-                  <h3 className="text-base font-bold text-[#0B1F3A] mt-2">
+                  <h3 className="landing-display text-base font-bold text-[#0B1230] mt-2">
                     {note.title}
                   </h3>
-                  <p className="text-sm text-slate-600 mt-2 leading-relaxed whitespace-pre-wrap line-clamp-6">
+                  <p className="text-sm text-[#43466E] mt-2 leading-relaxed whitespace-pre-wrap line-clamp-6">
                     {note.content}
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-slate-400 truncate">
+                <div className="mt-4 pt-3 border-t border-[#E4E1F5] flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-[#6B6F94] truncate">
                     {note.date}
                     {note.sourceLabel ? ` · ${note.sourceLabel}` : ""}
                   </p>
@@ -244,7 +246,7 @@ export default function NotebookPage() {
                         setDeckLoading(false);
                       }
                     }}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0D9488] hover:underline shrink-0"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#7C3AED] hover:underline shrink-0"
                   >
                     <Layers size={12} />
                     Flashcards

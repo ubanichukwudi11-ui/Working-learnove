@@ -18,51 +18,12 @@ return (
 <AppLayout>
 
 
-<div
-
-className="
-
-min-h-screen
-
-bg-[#0F172A]
-
-text-white
-
-grid
-
-grid-cols-[1fr_320px]
-
-gap-6
-
-p-6
-
-"
-
->
-
-
-<main>
-
-<NoteEditor
-
-noteId={params.id}
-
-/>
-
-</main>
-
-
-
-<NovaNotebookPanel/>
-
-
-
-
-</div>
-
-
-</AppLayout>
-
-)
-
+      <div className="min-h-screen text-[#0B1230] grid lg:grid-cols-[1fr_340px] gap-6 items-start">
+        <main className="min-w-0">
+          <NoteEditor noteId={params.id} />
+        </main>
+        <NovaNotebookPanel />
+      </div>
+    </AppLayout>
+  );
 }

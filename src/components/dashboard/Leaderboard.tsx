@@ -21,15 +21,8 @@ const students = [
 
 export default function Leaderboard() {
   return (
-    <div
-      className="
-        bg-[#111827]
-        border border-slate-800
-        rounded-2xl
-        p-5
-      "
-    >
-      <h3 className="text-white font-semibold mb-4">
+    <div className="learnova-card p-5">
+      <h3 className="text-[#0B1230] font-bold text-base mb-4">
         Leaderboard
       </h3>
 
@@ -37,22 +30,19 @@ export default function Leaderboard() {
         {students.map((student, index) => (
           <div
             key={student.name}
-            className="
-              flex justify-between
-              items-center
-            "
+            className="flex justify-between items-center py-1.5"
           >
             <div className="flex gap-3 items-center">
-              <span className="text-purple-400">
+              <span className="text-[#6D28D9] font-bold tabular-nums text-sm">
                 #{index + 1}
               </span>
 
-              <span className="text-white">
+              <span className="text-[#0B1230] font-medium text-sm">
                 {student.name}
               </span>
             </div>
 
-            <span className="text-cyan-400">
+            <span className="text-[#0891B2] font-bold text-sm tabular-nums">
               {student.xp} XP
             </span>
           </div>

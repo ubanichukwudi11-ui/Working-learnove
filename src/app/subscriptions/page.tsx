@@ -191,12 +191,12 @@ export default function StudentSubscriptionsPage() {
       <AppLayout>
         <div className="space-y-6">
           {/* Header Banner */}
-          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
-                Enrolment & Term Subscription Access (₦)
+          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
+                Enrolment &amp; Term Subscription Access (₦)
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold mt-1">
                 My Class Enrolment &amp; Subscription Plan
               </h1>
               <p className="text-sm text-slate-300 mt-1 max-w-2xl">
@@ -208,7 +208,7 @@ export default function StudentSubscriptionsPage() {
               <p className="text-[11px] uppercase tracking-wider text-slate-300">
                 Current Access Status
               </p>
-              <p className="text-sm font-extrabold text-[#F59E0B] mt-0.5">
+              <p className="text-sm font-extrabold text-[#22D3EE] mt-0.5">
                 {statusText.replace(/_/g, " ")}
               </p>
               <p className="text-xs text-slate-300 mt-0.5">{levelName}</p>
@@ -219,8 +219,8 @@ export default function StudentSubscriptionsPage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -229,7 +229,7 @@ export default function StudentSubscriptionsPage() {
           )}
 
           {loading ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading your enrolment &amp; subscription plans...
             </div>
           ) : (
@@ -237,15 +237,15 @@ export default function StudentSubscriptionsPage() {
               {/* Step 1: Class Level & Subject Enrolment */}
               <form
                 onSubmit={handleSaveEnrolment}
-                className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4"
+                className="learnova-card p-6 space-y-4"
               >
-                <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
-                  <BookOpen size={17} className="text-[#0D9488]" />
+                <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
+                  <BookOpen size={17} className="text-[#4F46E5]" />
                   Step 1: Confirm Class Level &amp; Subjects
                 </h2>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
                     Your Class Level
                   </label>
                   <select
@@ -254,7 +254,7 @@ export default function StudentSubscriptionsPage() {
                       setSelectedLevelId(e.target.value);
                       setSelectedSubjectIds([]);
                     }}
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm bg-white font-semibold"
+                    className="learnova-input w-full px-3 py-2.5 text-sm font-semibold"
                   >
                     {classLevels.map((lvl) => (
                       <option key={lvl.id} value={lvl.id}>
@@ -265,7 +265,7 @@ export default function StudentSubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-2">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-2">
                     Subjects You Offer ({selectedSubjectIds.length} selected)
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -278,8 +278,8 @@ export default function StudentSubscriptionsPage() {
                           onClick={() => toggleSubject(s.id)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
                             active
-                              ? "bg-[#0D9488] text-white border-[#0D9488]"
-                              : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                              ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white border-[#4F46E5]"
+                              : "bg-[#FAF8FF] text-[#43466E] border-[#E4E1F5] hover:bg-[#F5F3FF]"
                           }`}
                         >
                           {active ? "✓ " : ""}
@@ -292,16 +292,16 @@ export default function StudentSubscriptionsPage() {
 
                 <button
                   disabled={saving || !selectedLevelId}
-                  className="w-full py-2.5 rounded-xl bg-[#0B1F3A] text-white text-sm font-semibold hover:bg-[#132c52]"
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-semibold transition shadow-sm"
                 >
                   {saving ? "Saving..." : "Save Class Enrolment"}
                 </button>
               </form>
 
               {/* Step 2: Subscription Plans & Payment Verification */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-5">
-                <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
-                  <CreditCard size={17} className="text-[#0D9488]" />
+              <div className="learnova-card p-6 space-y-5">
+                <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
+                  <CreditCard size={17} className="text-[#7C3AED]" />
                   Step 2: Choose Subscription Plan (₦)
                 </h2>
 
@@ -311,8 +311,8 @@ export default function StudentSubscriptionsPage() {
                       key={p.id}
                       className={`block border rounded-2xl p-4 cursor-pointer transition ${
                         selectedPlanId === p.id
-                          ? "border-[#0D9488] bg-teal-50/40"
-                          : "border-slate-200 hover:bg-slate-50"
+                          ? "border-[#7C3AED] bg-[#F5F3FF]"
+                          : "border-[#E4E1F5] bg-[#FAF8FF] hover:bg-white"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -322,19 +322,20 @@ export default function StudentSubscriptionsPage() {
                             name="plan"
                             checked={selectedPlanId === p.id}
                             onChange={() => setSelectedPlanId(p.id)}
+                            className="accent-[#4F46E5]"
                           />
                           <div>
-                            <p className="font-bold text-[#0B1F3A] text-sm">{p.name}</p>
-                            <p className="text-xs text-slate-500">
+                            <p className="font-bold text-[#0B1230] text-sm">{p.name}</p>
+                            <p className="text-xs text-[#6B6F94]">
                               {p.billingCycle} · {p.durationDays} days
                             </p>
                           </div>
                         </div>
-                        <span className="text-lg font-extrabold text-[#0D9488] tabular-nums">
+                        <span className="text-lg font-extrabold text-[#4F46E5] tabular-nums">
                           ₦{Number(p.priceNgn).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-600 mt-1.5 ml-6">{p.description}</p>
+                      <p className="text-xs text-[#43466E] mt-1.5 ml-6">{p.description}</p>
                     </label>
                   ))}
                 </div>
@@ -343,10 +344,10 @@ export default function StudentSubscriptionsPage() {
                 {gatewayInfo.paystackServerEnabled && (
                   <form
                     onSubmit={handleVerifyPaystack}
-                    className="border-t border-slate-100 pt-4 space-y-3"
+                    className="border-t border-[#E4E1F5] pt-4 space-y-3"
                   >
-                    <p className="text-xs font-bold text-[#0B1F3A] flex items-center gap-1.5">
-                      <ShieldCheck size={14} className="text-[#0D9488]" />
+                    <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
+                      <ShieldCheck size={14} className="text-[#4F46E5]" />
                       Paystack Server-Verified Reference
                     </p>
                     <div className="flex gap-2">
@@ -355,11 +356,11 @@ export default function StudentSubscriptionsPage() {
                         value={paystackRef}
                         onChange={(e) => setPaystackRef(e.target.value)}
                         placeholder="Enter Paystack transaction reference..."
-                        className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                        className="learnova-input flex-1 px-3 py-2 text-xs"
                       />
                       <button
                         disabled={saving}
-                        className="px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold"
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                       >
                         Verify Paystack
                       </button>
@@ -371,10 +372,10 @@ export default function StudentSubscriptionsPage() {
                 {gatewayInfo.allowManualBankTransfer && (
                   <form
                     onSubmit={handleBankTransferSubmit}
-                    className="border-t border-slate-100 pt-4 space-y-3"
+                    className="border-t border-[#E4E1F5] pt-4 space-y-3"
                   >
-                    <p className="text-xs font-bold text-[#0B1F3A] flex items-center gap-1.5">
-                      <Clock size={14} className="text-[#D97706]" />
+                    <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
+                      <Clock size={14} className="text-amber-600" />
                       Bank Transfer Confirmation (Verified by School Admin)
                     </p>
                     <input
@@ -382,17 +383,17 @@ export default function StudentSubscriptionsPage() {
                       value={transferRef}
                       onChange={(e) => setTransferRef(e.target.value)}
                       placeholder="Bank Transfer Reference / Teller ID (e.g. NIP-2026-...)"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      className="learnova-input w-full px-3 py-2 text-xs"
                     />
                     <input
                       value={transferNotes}
                       onChange={(e) => setTransferNotes(e.target.value)}
                       placeholder="Sender bank name or account name (optional)"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs"
+                      className="learnova-input w-full px-3 py-2 text-xs"
                     />
                     <button
                       disabled={saving || !selectedPlanId || !selectedLevelId}
-                      className="w-full py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-700 text-white text-xs font-bold disabled:opacity-50"
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold disabled:opacity-50 transition shadow-sm"
                     >
                       {saving ? "Submitting..." : "Submit Payment Reference for Verification"}
                     </button>
@@ -404,31 +405,33 @@ export default function StudentSubscriptionsPage() {
 
           {/* Student Payment History */}
           {payments.length > 0 && (
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100">
-                <h2 className="text-base font-bold text-[#0F1F38]">Payment History</h2>
+            <div className="learnova-card overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#E4E1F5]">
+                <h2 className="landing-display text-base font-bold text-[#0B1230]">
+                  Payment History
+                </h2>
               </div>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#E4E1F5]">
                 {payments.map((p) => (
                   <div
                     key={p.id}
                     className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                   >
                     <div>
-                      <p className="font-bold text-[#0B1F3A]">
+                      <p className="font-bold text-[#0B1230] tabular-nums">
                         {p.planName} · ₦{Number(p.amountNgn).toLocaleString()}
                       </p>
-                      <p className="text-slate-500">
+                      <p className="text-[#6B6F94]">
                         {p.provider} · Ref: <span className="font-mono">{p.reference}</span>
                       </p>
                     </div>
                     <span
-                      className={`font-bold px-2.5 py-1 rounded-lg w-fit ${
+                      className={`font-bold shrink-0 ${
                         p.status === "VERIFIED"
-                          ? "bg-teal-50 text-[#0D9488]"
+                          ? "text-emerald-700"
                           : p.status === "AWAITING_CONFIRMATION"
-                          ? "bg-amber-50 text-amber-800"
-                          : "bg-red-50 text-red-700"
+                          ? "text-amber-700"
+                          : "text-rose-700"
                       }`}
                     >
                       {p.status.replace(/_/g, " ")}

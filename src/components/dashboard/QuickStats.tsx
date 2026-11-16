@@ -10,7 +10,7 @@ const stats = [
     sub: "NERDC SSS 2 Core",
     href: "/subjects",
     icon: BookOpen,
-    accent: "text-[#0B1F3A] bg-slate-100",
+    accent: "text-[#4F46E5] bg-[#EEF2FF]",
   },
   {
     title: "Assignments Due",
@@ -26,7 +26,7 @@ const stats = [
     sub: "23 of 24 live classes",
     href: "/timetable",
     icon: CalendarCheck,
-    accent: "text-[#0D9488] bg-teal-50",
+    accent: "text-[#0891B2] bg-cyan-50",
   },
   {
     title: "Continuous Assessment",
@@ -34,7 +34,7 @@ const stats = [
     sub: "+4% vs First Term",
     href: "/analytics",
     icon: Award,
-    accent: "text-emerald-700 bg-emerald-50",
+    accent: "text-[#6D28D9] bg-[#F5F3FF]",
   },
 ];
 
@@ -47,18 +47,18 @@ export default function QuickStats() {
           <Link
             key={stat.title}
             href={stat.href}
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-slate-300 hover:shadow-sm transition block"
+            className="learnova-card p-5 hover:border-[#7C3AED]/45 transition block min-w-0"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold text-slate-500">{stat.title}</p>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${stat.accent}`}>
+              <p className="text-xs font-semibold text-[#6B6F94] truncate">{stat.title}</p>
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${stat.accent}`}>
                 <Icon size={17} />
               </div>
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-3 tabular-nums">
+            <p className="text-2xl sm:text-3xl font-extrabold text-[#0B1230] mt-3 tabular-nums">
               {stat.value}
             </p>
-            <p className="text-xs text-slate-500 mt-1">{stat.sub}</p>
+            <p className="text-xs text-[#6B6F94] mt-1 truncate">{stat.sub}</p>
           </Link>
         );
       })}

@@ -245,15 +245,15 @@ export default function AdminVideoManager() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-white/10">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+          <p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">
             School Admin · Curriculum Video Control
           </p>
-          <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+          <h1 className="landing-display text-2xl sm:text-3xl font-bold mt-1">
             Video Lessons, Curated Topics &amp; Teacher Requests
           </h1>
-          <p className="text-sm text-slate-300 mt-1 max-w-2xl">
+          <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
             Organize curriculum topics by Subject &amp; Term, request subject teachers to
             record or upload topic videos, approve submissions, or curate YouTube lessons.
           </p>
@@ -262,7 +262,7 @@ export default function AdminVideoManager() {
         <div className="flex flex-wrap gap-2.5 shrink-0">
           <Link
             href="/videos"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white text-xs sm:text-sm font-bold transition whitespace-nowrap"
           >
             <Eye size={15} />
             Student View (/videos)
@@ -272,27 +272,27 @@ export default function AdminVideoManager() {
 
       {/* Metrics Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-slate-200 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-slate-500">Curriculum Topics</p>
-          <p className="text-2xl font-extrabold text-[#0B1F3A] mt-1 tabular-nums">
+        <div className="learnova-card p-5">
+          <p className="text-xs font-semibold text-[#6B6F94]">Curriculum Topics</p>
+          <p className="text-2xl font-extrabold text-[#0D1438] mt-1 tabular-nums">
             {topics.length}
           </p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-slate-500">Published Videos</p>
-          <p className="text-2xl font-extrabold text-[#0D9488] mt-1 tabular-nums">
+        <div className="learnova-card p-5">
+          <p className="text-xs font-semibold text-[#6B6F94]">Published Videos</p>
+          <p className="text-2xl font-extrabold text-[#4F46E5] mt-1 tabular-nums">
             {videos.filter((v) => v.status === "PUBLISHED").length}
           </p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-slate-500">Pending Teacher Uploads</p>
+        <div className="learnova-card p-5">
+          <p className="text-xs font-semibold text-[#6B6F94]">Pending Teacher Uploads</p>
           <p className="text-2xl font-extrabold text-amber-600 mt-1 tabular-nums">
             {requests.filter((r) => r.status === "REQUESTED").length}
           </p>
         </div>
-        <div className="bg-white border border-slate-200 rounded-2xl p-4">
-          <p className="text-xs font-semibold text-slate-500">Submitted for Review</p>
-          <p className="text-2xl font-extrabold text-[#0B1F3A] mt-1 tabular-nums">
+        <div className="learnova-card p-5">
+          <p className="text-xs font-semibold text-[#6B6F94]">Submitted for Review</p>
+          <p className="text-2xl font-extrabold text-[#0891B2] mt-1 tabular-nums">
             {requests.filter((r) => r.status === "SUBMITTED").length}
           </p>
         </div>
@@ -302,8 +302,8 @@ export default function AdminVideoManager() {
         <div
           className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
             feedback.type === "ok"
-              ? "bg-teal-50 text-[#0D9488] border-teal-200"
-              : "bg-red-50 text-red-700 border-red-200"
+              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+              : "bg-rose-50 text-rose-700 border-rose-200"
           }`}
         >
           {feedback.type === "ok" ? (
@@ -316,14 +316,14 @@ export default function AdminVideoManager() {
       )}
 
       {/* Workspace Switch Tabs */}
-      <div className="inline-flex rounded-xl bg-slate-200/70 p-1">
+      <div className="inline-flex rounded-2xl bg-[#EAE7FA] border border-[#DCD7F5] p-1">
         <button
           type="button"
           onClick={() => setActiveTab("requests")}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
             activeTab === "requests"
-              ? "bg-white text-[#0B1F3A] shadow-xs"
-              : "text-slate-600 hover:text-[#0B1F3A]"
+              ? "bg-white text-[#0D1438] shadow-xs"
+              : "text-[#43466E] hover:text-[#0D1438]"
           }`}
         >
           <Send size={14} /> Assign &amp; Review Teacher Requests
@@ -331,10 +331,10 @@ export default function AdminVideoManager() {
         <button
           type="button"
           onClick={() => setActiveTab("curriculum")}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition ${
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
             activeTab === "curriculum"
-              ? "bg-white text-[#0B1F3A] shadow-xs"
-              : "text-slate-600 hover:text-[#0B1F3A]"
+              ? "bg-white text-[#0D1438] shadow-xs"
+              : "text-[#43466E] hover:text-[#0D1438]"
           }`}
         >
           <BookOpen size={14} /> Topics &amp; Curated Library
@@ -342,7 +342,7 @@ export default function AdminVideoManager() {
       </div>
 
       {loading ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+        <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
           Loading video management workspace...
         </div>
       ) : activeTab === "requests" ? (
@@ -366,22 +366,22 @@ export default function AdminVideoManager() {
                 setReqDueDate("");
               }
             }}
-            className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4"
+            className="learnova-card p-5 space-y-4"
           >
-            <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-              <Send size={16} className="text-[#0D9488]" />
+            <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
+              <Send size={16} className="text-[#4F46E5]" />
               Assign Teacher Video Request
             </h2>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-[#43466E] mb-1">
                   Subject
                 </label>
                 <select
                   value={reqSubjectId}
                   onChange={(e) => setReqSubjectId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm"
+                  className="learnova-input w-full px-3 py-2 text-xs sm:text-sm"
                 >
                   {subjects.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -391,13 +391,13 @@ export default function AdminVideoManager() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-[#43466E] mb-1">
                   Class Level
                 </label>
                 <select
                   value={reqLevelId}
                   onChange={(e) => setReqLevelId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm"
+                  className="learnova-input w-full px-3 py-2 text-xs sm:text-sm"
                 >
                   {classLevels.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -409,13 +409,13 @@ export default function AdminVideoManager() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-[#43466E] mb-1">
                 Academic Term
               </label>
               <select
                 value={reqTermId}
                 onChange={(e) => setReqTermId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               >
                 {terms.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -426,14 +426,14 @@ export default function AdminVideoManager() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-[#43466E] mb-1">
                 Target Topic
               </label>
               <select
                 required
                 value={reqTopicId}
                 onChange={(e) => setReqTopicId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               >
                 {reqMatchingTopics.length === 0 ? (
                   <option value="">
@@ -451,14 +451,14 @@ export default function AdminVideoManager() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-[#43466E] mb-1">
                 Assign Teacher
               </label>
               <select
                 required
                 value={reqTeacherId}
                 onChange={(e) => setReqTeacherId(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               >
                 {teachers.length === 0 ? (
                   <option value="">No active teachers available</option>
@@ -474,19 +474,19 @@ export default function AdminVideoManager() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-[#43466E] mb-1">
                 Target Due Date (optional)
               </label>
               <input
                 type="date"
                 value={reqDueDate}
                 onChange={(e) => setReqDueDate(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-[#43466E] mb-1">
                 Brief / Recording Instructions
               </label>
               <textarea
@@ -494,35 +494,35 @@ export default function AdminVideoManager() {
                 value={reqInstructions}
                 onChange={(e) => setReqInstructions(e.target.value)}
                 placeholder="e.g. Record a 10–12 min WAEC solved-examples walkthrough for SS2 learners."
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               />
             </div>
 
             <button
               type="submit"
               disabled={saving || !reqTopicId || !reqTeacherId}
-              className="w-full py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-700 text-white text-sm font-bold transition disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition disabled:opacity-50"
             >
               {saving ? "Sending Request..." : "Assign Upload Request"}
             </button>
           </form>
 
           {/* Upload Requests Tracking & Review Queue */}
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                <ClipboardList size={16} className="text-[#0D9488]" />
+          <div className="lg:col-span-2 learnova-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#E4E1F5] flex items-center justify-between">
+              <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
+                <ClipboardList size={16} className="text-[#4F46E5]" />
                 Teacher Video Requests ({requests.length})
               </h2>
             </div>
 
             {requests.length === 0 ? (
-              <div className="p-10 text-center text-sm text-slate-500">
+              <div className="p-10 text-center text-sm text-[#6B6F94]">
                 No video upload requests created yet. Assign a teacher on the left to get
                 started.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#E4E1F5]">
                 {requests.map((r) => {
                   const linkedVideo = r.fulfilledVideoId
                     ? videos.find((v) => v.id === r.fulfilledVideoId)
@@ -532,8 +532,8 @@ export default function AdminVideoManager() {
                     <div key={r.id} className="p-5 space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                         <div>
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                            <span className="font-bold text-[#0D9488]">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">
+                            <span className="font-bold text-[#4F46E5]">
                               {subName(r.subjectId)} · {levelCode(r.classLevelId)} ·{" "}
                               {termName(r.termId)}
                             </span>
@@ -546,24 +546,24 @@ export default function AdminVideoManager() {
                               </>
                             )}
                           </div>
-                          <h3 className="text-sm font-bold text-[#0B1F3A] mt-1">
+                          <h3 className="text-sm font-bold text-[#0D1438] mt-1">
                             {topicTitle(r.topicId)}
                           </h3>
-                          <p className="text-xs text-slate-600 mt-0.5">{r.instructions}</p>
+                          <p className="text-xs text-[#43466E] mt-0.5">{r.instructions}</p>
                         </div>
 
-                        <span className="text-xs font-bold text-[#0B1F3A] shrink-0">
+                        <span className="text-xs font-bold text-[#0D1438] shrink-0">
                           {r.status.replace(/_/g, " ")}
                         </span>
                       </div>
 
                       {linkedVideo && (
-                        <div className="rounded-xl bg-[#F7F8FA] border border-slate-200 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="rounded-xl bg-[#FAF8FF] border border-[#E4E1F5] p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="text-xs">
-                            <p className="font-bold text-[#0B1F3A]">
+                            <p className="font-bold text-[#0D1438]">
                               Submitted: {linkedVideo.title}
                             </p>
-                            <p className="text-slate-500">
+                            <p className="text-[#6B6F94]">
                               Source:{" "}
                               {linkedVideo.sourceType === "UPLOADED_VIDEO"
                                 ? "Uploaded Video File"
@@ -573,7 +573,7 @@ export default function AdminVideoManager() {
                           <button
                             type="button"
                             onClick={() => setPreviewVideo(linkedVideo)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-[#0B1F3A] hover:bg-slate-50 shrink-0"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white border border-[#E4E1F5] text-xs font-bold text-[#0D1438] hover:bg-[#F5F3FF] shrink-0 transition"
                           >
                             <Eye size={13} /> Watch Submission
                           </button>
@@ -591,7 +591,7 @@ export default function AdminVideoManager() {
                               }))
                             }
                             placeholder="Optional approval note or revision feedback..."
-                            className="flex-1 min-w-[200px] rounded-xl border border-slate-200 px-3 py-1.5 text-xs"
+                            className="learnova-input flex-1 min-w-[200px] px-3 py-1.5 text-xs"
                           />
                           <button
                             type="button"
@@ -607,7 +607,7 @@ export default function AdminVideoManager() {
                                 "Submission approved and teacher notified."
                               )
                             }
-                            className="px-3.5 py-1.5 rounded-xl bg-[#0D9488] text-white text-xs font-bold hover:bg-teal-700"
+                            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition"
                           >
                             Approve &amp; Publish
                           </button>
@@ -627,7 +627,7 @@ export default function AdminVideoManager() {
                                 "Revision requested from teacher."
                               )
                             }
-                            className="px-3.5 py-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-bold hover:bg-amber-100"
+                            className="px-3.5 py-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-bold hover:bg-amber-100 transition"
                           >
                             Request Revision
                           </button>
@@ -667,10 +667,10 @@ export default function AdminVideoManager() {
                   setTopDesc("");
                 }
               }}
-              className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4"
+              className="learnova-card p-5 space-y-4"
             >
-              <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                <Plus size={16} className="text-[#0D9488]" />
+              <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
+                <Plus size={16} className="text-[#4F46E5]" />
                 Add Curriculum Topic
               </h2>
 
@@ -678,7 +678,7 @@ export default function AdminVideoManager() {
                 <select
                   value={topSubjectId}
                   onChange={(e) => setTopSubjectId(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm"
+                  className="learnova-input px-3 py-2 text-xs sm:text-sm"
                 >
                   {subjects.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -689,7 +689,7 @@ export default function AdminVideoManager() {
                 <select
                   value={topTermId}
                   onChange={(e) => setTopTermId(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm"
+                  className="learnova-input px-3 py-2 text-xs sm:text-sm"
                 >
                   {terms.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -700,7 +700,7 @@ export default function AdminVideoManager() {
                 <select
                   value={topLevelId}
                   onChange={(e) => setTopLevelId(e.target.value)}
-                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs sm:text-sm"
+                  className="learnova-input px-3 py-2 text-xs sm:text-sm"
                 >
                   {classLevels.map((l) => (
                     <option key={l.id} value={l.id}>
@@ -716,13 +716,13 @@ export default function AdminVideoManager() {
                   value={topTitle}
                   onChange={(e) => setTopTitle(e.target.value)}
                   placeholder="Topic title (e.g. Organic Hydrocarbons)"
-                  className="sm:col-span-2 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  className="sm:col-span-2 learnova-input px-3 py-2 text-sm"
                 />
                 <input
                   value={topWeek}
                   onChange={(e) => setTopWeek(e.target.value)}
                   placeholder="Week (e.g. Week 4)"
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  className="learnova-input px-3 py-2 text-sm"
                 />
               </div>
 
@@ -731,13 +731,13 @@ export default function AdminVideoManager() {
                 value={topDesc}
                 onChange={(e) => setTopDesc(e.target.value)}
                 placeholder="Topic overview & WAEC/NECO learning objectives..."
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               />
 
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full py-2.5 rounded-xl bg-[#0B1F3A] text-white text-sm font-bold hover:bg-[#143258] disabled:opacity-50"
+                className="w-full py-2.5 rounded-xl bg-[#0D1438] text-white text-sm font-bold hover:bg-[#151A44] disabled:opacity-50 transition"
               >
                 Create Topic
               </button>
@@ -768,24 +768,24 @@ export default function AdminVideoManager() {
                   setAdminMaterials([]);
                 }
               }}
-              className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4"
+              className="learnova-card p-5 space-y-4"
             >
               <div className="flex items-center justify-between gap-2">
-                <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                  <Film size={16} className="text-[#0D9488]" />
+                <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
+                  <Film size={16} className="text-[#4F46E5]" />
                   Add Curated Video or Upload
                 </h2>
-                <div className="inline-flex rounded-lg bg-slate-100 p-0.5">
+                <div className="inline-flex rounded-xl bg-[#EAE7FA] border border-[#DCD7F5] p-0.5">
                   <button
                     type="button"
                     onClick={() => {
                       setVidSourceMode("YOUTUBE");
                       setVidUrl("");
                     }}
-                    className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                       vidSourceMode === "YOUTUBE"
-                        ? "bg-white text-[#0B1F3A] shadow-xs"
-                        : "text-slate-600"
+                        ? "bg-white text-[#0D1438] shadow-xs"
+                        : "text-[#43466E]"
                     }`}
                   >
                     YouTube / Link
@@ -796,10 +796,10 @@ export default function AdminVideoManager() {
                       setVidSourceMode("UPLOADED_VIDEO");
                       setVidUrl("");
                     }}
-                    className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
                       vidSourceMode === "UPLOADED_VIDEO"
-                        ? "bg-white text-[#0B1F3A] shadow-xs"
-                        : "text-slate-600"
+                        ? "bg-white text-[#0D1438] shadow-xs"
+                        : "text-[#43466E]"
                     }`}
                   >
                     Upload File
@@ -808,14 +808,14 @@ export default function AdminVideoManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1">
+                <label className="block text-xs font-semibold text-[#43466E] mb-1">
                   Topic
                 </label>
                 <select
                   required
                   value={vidTopicId}
                   onChange={(e) => setVidTopicId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                  className="learnova-input w-full px-3 py-2 text-sm"
                 >
                   {topics.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -832,13 +832,13 @@ export default function AdminVideoManager() {
                   value={vidTitle}
                   onChange={(e) => setVidTitle(e.target.value)}
                   placeholder="Lesson title"
-                  className="sm:col-span-2 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                  className="sm:col-span-2 learnova-input px-3 py-2 text-sm"
                 />
                 <input
                   value={vidDuration}
                   onChange={(e) => setVidDuration(e.target.value)}
                   placeholder="Duration (10:15)"
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm tabular-nums"
+                  className="learnova-input px-3 py-2 text-sm tabular-nums"
                 />
               </div>
 
@@ -849,10 +849,10 @@ export default function AdminVideoManager() {
                     value={vidUrl}
                     onChange={(e) => setVidUrl(e.target.value)}
                     placeholder="Paste YouTube URL or https:// lesson link..."
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    className="learnova-input w-full px-3 py-2 text-sm"
                   />
                   {previewYtId && (
-                    <div className="rounded-xl overflow-hidden border border-slate-200 aspect-video max-w-xs bg-black">
+                    <div className="rounded-xl overflow-hidden border border-[#E4E1F5] aspect-video max-w-xs bg-[#070D24]">
                       <iframe
                         src={`https://www.youtube.com/embed/${previewYtId}?rel=0`}
                         title="Curated preview"
@@ -863,11 +863,11 @@ export default function AdminVideoManager() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-xl border border-dashed border-slate-300 bg-[#F7F8FA] p-4 flex items-center justify-between gap-3">
-                  <span className="text-xs text-slate-600 truncate">
+                <div className="rounded-xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-4 flex items-center justify-between gap-3">
+                  <span className="text-xs text-[#43466E] truncate">
                     {vidUrl ? `Uploaded: ${vidUrl}` : "Select .mp4 / .webm / .mov file"}
                   </span>
-                  <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0B1F3A] text-white text-xs font-bold cursor-pointer shrink-0">
+                  <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0D1438] hover:bg-[#151A44] text-white text-xs font-bold cursor-pointer shrink-0 transition">
                     <UploadCloud size={14} />
                     {uploadingFile ? "Uploading..." : "Upload Video"}
                     <input
@@ -886,16 +886,16 @@ export default function AdminVideoManager() {
                 value={vidDesc}
                 onChange={(e) => setVidDesc(e.target.value)}
                 placeholder="Brief summary for students..."
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                className="learnova-input w-full px-3 py-2 text-sm"
               />
 
-              <div className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-3 space-y-2">
+              <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3 space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-slate-600">
+                  <span className="text-xs font-semibold text-[#43466E]">
                     Study Material Attachment (Optional)
                   </span>
-                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#0D9488] text-xs font-bold text-[#0B1F3A] cursor-pointer">
-                    <FileText size={13} className="text-[#0D9488]" />
+                  <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#E4E1F5] hover:border-[#4F46E5] text-xs font-bold text-[#0D1438] cursor-pointer transition">
+                    <FileText size={13} className="text-[#4F46E5]" />
                     {uploadingMaterial ? "Uploading..." : "Attach PDF / Slides"}
                     <input
                       type="file"
@@ -911,9 +911,9 @@ export default function AdminVideoManager() {
                     {adminMaterials.map((m, idx) => (
                       <div
                         key={`${m.url}-${idx}`}
-                        className="flex items-center justify-between gap-2 rounded-lg bg-white border border-slate-200 px-2.5 py-1.5 text-xs"
+                        className="flex items-center justify-between gap-2 rounded-lg bg-white border border-[#E4E1F5] px-2.5 py-1.5 text-xs"
                       >
-                        <span className="truncate font-medium text-[#0B1F3A]">
+                        <span className="truncate font-medium text-[#0D1438]">
                           {m.type} · {m.title}
                         </span>
                         <button
@@ -921,7 +921,7 @@ export default function AdminVideoManager() {
                           onClick={() =>
                             setAdminMaterials((p) => p.filter((_, i) => i !== idx))
                           }
-                          className="text-red-600 font-semibold hover:underline"
+                          className="text-rose-600 font-semibold hover:underline"
                         >
                           Remove
                         </button>
@@ -934,7 +934,7 @@ export default function AdminVideoManager() {
               <button
                 type="submit"
                 disabled={saving || uploadingFile || uploadingMaterial || !vidTopicId || !vidUrl}
-                className="w-full py-2.5 rounded-xl bg-[#0D9488] text-white text-sm font-bold hover:bg-teal-700 disabled:opacity-50"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition"
               >
                 Publish Video Lesson
               </button>
@@ -942,31 +942,31 @@ export default function AdminVideoManager() {
           </div>
 
           {/* All Topics & Attached Videos */}
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <h2 className="text-base font-bold text-[#0B1F3A]">
+          <div className="learnova-card overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#E4E1F5]">
+              <h2 className="landing-display text-base font-bold text-[#0D1438]">
                 All Curriculum Topics &amp; Attached Videos ({topics.length})
               </h2>
             </div>
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[#E4E1F5]">
               {topics.map((t) => {
                 const tVideos = videos.filter((v) => v.topicId === t.id);
                 return (
                   <div key={t.id} className="p-5 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <p className="text-xs font-semibold text-[#0D9488]">
+                        <p className="text-xs font-semibold text-[#4F46E5]">
                           {subName(t.subjectId)} · {levelCode(t.classLevelId)} ·{" "}
                           {termName(t.termId)}
                           {t.weekLabel ? ` · ${t.weekLabel}` : ""}
                         </p>
-                        <h3 className="text-sm font-bold text-[#0B1F3A] mt-0.5">
+                        <h3 className="text-sm font-bold text-[#0D1438] mt-0.5">
                           {t.title}
                         </h3>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500 tabular-nums">
+                        <span className="text-xs text-[#6B6F94] tabular-nums">
                           {tVideos.length} video(s)
                         </span>
                         <button
@@ -978,7 +978,7 @@ export default function AdminVideoManager() {
                               `Topic "${t.title}" deleted.`
                             )
                           }
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-red-200 text-xs font-semibold text-red-700 hover:bg-red-50"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition"
                         >
                           <Trash2 size={12} /> Delete Topic
                         </button>
@@ -990,17 +990,17 @@ export default function AdminVideoManager() {
                         {tVideos.map((v) => (
                           <div
                             key={v.id}
-                            className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-3 flex items-center justify-between gap-2"
+                            className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3 flex items-center justify-between gap-2"
                           >
                             <div className="min-w-0">
-                              <p className="text-xs font-bold text-[#0B1F3A] truncate">
+                              <p className="text-xs font-bold text-[#0D1438] truncate">
                                 {v.title}
                               </p>
-                              <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                              <p className="text-[11px] text-[#6B6F94] flex items-center gap-1.5">
                                 {v.sourceType === "YOUTUBE" ? (
-                                  <PlayCircle size={12} className="text-red-600 shrink-0" />
+                                  <PlayCircle size={12} className="text-rose-600 shrink-0" />
                                 ) : (
-                                  <Film size={12} className="text-[#0D9488] shrink-0" />
+                                  <Film size={12} className="text-[#4F46E5] shrink-0" />
                                 )}
                                 <span className="truncate">{v.uploadedByName}</span>
                               </p>
@@ -1009,7 +1009,7 @@ export default function AdminVideoManager() {
                               <button
                                 type="button"
                                 onClick={() => setPreviewVideo(v)}
-                                className="p-1.5 rounded-lg bg-white border border-slate-200 text-[#0B1F3A] hover:bg-slate-100"
+                                className="p-1.5 rounded-lg bg-white border border-[#E4E1F5] text-[#0D1438] hover:bg-[#F5F3FF] transition"
                                 title="Preview video"
                               >
                                 <Eye size={13} />
@@ -1023,7 +1023,7 @@ export default function AdminVideoManager() {
                                     "Video lesson removed."
                                   )
                                 }
-                                className="p-1.5 rounded-lg bg-white border border-red-200 text-red-700 hover:bg-red-50"
+                                className="p-1.5 rounded-lg bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 transition"
                                 title="Remove video"
                               >
                                 <Trash2 size={13} />
@@ -1043,21 +1043,21 @@ export default function AdminVideoManager() {
 
       {/* Preview Modal */}
       {previewVideo && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-5 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-50 bg-[#070D24]/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="learnova-card max-w-3xl w-full p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold text-[#0D9488]">
+                <p className="text-xs font-semibold text-[#4F46E5]">
                   {subName(previewVideo.subjectId)} · {topicTitle(previewVideo.topicId)}
                 </p>
-                <h3 className="text-lg font-bold text-[#0B1F3A]">
+                <h3 className="landing-display text-lg font-bold text-[#0D1438]">
                   {previewVideo.title}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewVideo(null)}
-                className="p-2 rounded-xl hover:bg-slate-100 text-slate-500"
+                className="p-2 rounded-xl hover:bg-[#F5F3FF] text-[#6B6F94] transition"
               >
                 <X size={18} />
               </button>

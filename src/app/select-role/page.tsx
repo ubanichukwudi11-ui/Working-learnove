@@ -71,17 +71,17 @@ export default function SelectRolePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F8FA] px-6 py-14 flex items-center justify-center">
+    <main className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender px-5 sm:px-6 py-12 flex items-center justify-center">
       <div className="mx-auto max-w-5xl w-full">
         <div className="flex justify-center mb-6">
-          <Logo href="/" />
+          <Logo href="/" variant="learnova" />
         </div>
 
         <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0B1F3A]">
+          <h1 className="landing-display text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B1230]">
             Welcome to Learnova
           </h1>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-[#43466E] max-w-lg mx-auto">
             Select how you will use Learnova to finish setting up your workspace.
           </p>
         </div>
@@ -96,13 +96,15 @@ export default function SelectRolePage() {
           <button
             disabled={loading}
             onClick={() => chooseRole("STUDENT")}
-            className="rounded-2xl border border-slate-200 bg-white p-7 text-left hover:border-[#0D9488] transition disabled:opacity-50 shadow-xs"
+            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 text-left hover:border-[#7C3AED] hover:shadow-lg hover:shadow-[#4F46E5]/8 transition-all disabled:opacity-50 shadow-xs"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#0D9488]/10 text-[#0D9488] flex items-center justify-center mb-5">
-              <GraduationCap size={26} />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center mb-5 shadow-md shadow-[#4F46E5]/20">
+              <GraduationCap size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#0B1F3A]">Student</h2>
-            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            <h2 className="landing-display text-xl font-extrabold text-[#0B1230] group-hover:text-[#4F46E5] transition-colors">
+              Student
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-[#43466E]">
               Join live classes, study with Nova AI, complete assignments, and track your academic progress.
             </p>
           </button>
@@ -110,13 +112,15 @@ export default function SelectRolePage() {
           <button
             disabled={loading}
             onClick={() => chooseRole("TEACHER")}
-            className="rounded-2xl border border-slate-200 bg-white p-7 text-left hover:border-[#0B1F3A] transition disabled:opacity-50 shadow-xs"
+            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 text-left hover:border-[#4F46E5] hover:shadow-lg hover:shadow-[#4F46E5]/8 transition-all disabled:opacity-50 shadow-xs"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#0B1F3A]/10 text-[#0B1F3A] flex items-center justify-center mb-5">
-              <School size={26} />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0B1230] to-[#151A44] text-[#22D3EE] flex items-center justify-center mb-5 shadow-md shadow-[#0B1230]/15">
+              <School size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#0B1F3A]">Teacher</h2>
-            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            <h2 className="landing-display text-xl font-extrabold text-[#0B1230] group-hover:text-[#4F46E5] transition-colors">
+              Teacher
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-[#43466E]">
               Teach students, host interactive live classrooms, upload notes, and manage assessments.
             </p>
           </button>
@@ -124,20 +128,22 @@ export default function SelectRolePage() {
           <button
             disabled={loading}
             onClick={() => chooseRole("PARENT")}
-            className="rounded-2xl border border-slate-200 bg-white p-7 text-left hover:border-[#D97706] transition disabled:opacity-50 shadow-xs"
+            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 text-left hover:border-[#06B6D4] hover:shadow-lg hover:shadow-[#06B6D4]/8 transition-all disabled:opacity-50 shadow-xs"
           >
-            <div className="w-12 h-12 rounded-xl bg-[#D97706]/10 text-[#D97706] flex items-center justify-center mb-5">
-              <Users size={26} />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white flex items-center justify-center mb-5 shadow-md shadow-[#06B6D4]/20">
+              <Users size={24} />
             </div>
-            <h2 className="text-xl font-extrabold text-[#0B1F3A]">Parent</h2>
-            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+            <h2 className="landing-display text-xl font-extrabold text-[#0B1230] group-hover:text-[#0891B2] transition-colors">
+              Parent
+            </h2>
+            <p className="mt-2 text-xs leading-relaxed text-[#43466E]">
               Monitor your child&apos;s attendance, continuous assessment scores, and live schedule.
             </p>
           </button>
         </div>
 
         {loading && (
-          <div className="mt-8 text-center text-xs font-bold text-[#0D9488]">
+          <div className="mt-8 text-center text-xs font-bold text-[#6D28D9]">
             Setting up your Learnova workspace...
           </div>
         )}

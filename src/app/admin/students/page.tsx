@@ -70,24 +70,24 @@ export default function AdminStudentsPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
                 Student Enrolment Registry
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
-                Students & Class Level Placement
+              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
+                Students &amp; Class Level Placement
               </h1>
-              <p className="text-sm text-slate-300 mt-1 max-w-2xl">
+              <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
                 View all registered students, verify their assigned class levels (JSS1–SS3), and
                 inspect subscription entitlement status.
               </p>
             </div>
             <Link
               href="/admin/payments"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0D9488] hover:bg-teal-600 text-white text-sm font-semibold transition shrink-0"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shrink-0 shadow-xs"
             >
-              Manage Payments & Scholarships
+              Manage Payments &amp; Scholarships
             </Link>
           </div>
 
@@ -95,8 +95,8 @@ export default function AdminStudentsPage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -105,31 +105,31 @@ export default function AdminStudentsPage() {
           )}
 
           {loading ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading students...
             </div>
           ) : students.length === 0 ? (
-            <div className="bg-white border border-dashed border-slate-300 rounded-2xl p-12 text-center space-y-2">
-              <Users size={30} className="mx-auto text-slate-400" />
-              <p className="font-bold text-[#0F1F38]">No Registered Students Yet</p>
-              <p className="text-xs text-slate-500">
+            <div className="learnova-card border-dashed p-12 text-center space-y-2">
+              <Users size={30} className="mx-auto text-[#6B6F94]" />
+              <p className="font-bold text-[#0B1230]">No Registered Students Yet</p>
+              <p className="text-xs text-[#6B6F94]">
                 Students who create accounts will appear here automatically for enrolment and
                 classroom placement.
               </p>
             </div>
           ) : (
-            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+            <div className="learnova-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+                  <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
                     <tr>
-                      <th className="px-4 py-3">Student</th>
-                      <th className="px-4 py-3">Enrolled Class Level</th>
-                      <th className="px-4 py-3">Access Status</th>
-                      <th className="px-4 py-3 text-right">Place / Reassign Level</th>
+                      <th className="px-4 py-3.5 font-semibold">Student</th>
+                      <th className="px-4 py-3.5 font-semibold">Enrolled Class Level</th>
+                      <th className="px-4 py-3.5 font-semibold">Access Status</th>
+                      <th className="px-4 py-3.5 font-semibold text-right">Place / Reassign Level</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-[#E4E1F5]">
                     {students.map((st) => {
                       const enr = enrolments.find((e) => e.studentUserId === st.id);
                       const ent = entitlements.find((e) => e.studentUserId === st.id);
@@ -141,21 +141,21 @@ export default function AdminStudentsPage() {
                         "Unassigned";
 
                       return (
-                        <tr key={st.id}>
+                        <tr key={st.id} className="hover:bg-[#FAF8FF]/70 transition">
                           <td className="px-4 py-3">
-                            <p className="font-semibold text-[#0F1F38]">{st.fullName}</p>
-                            <p className="text-xs text-slate-500">{st.email}</p>
+                            <p className="font-semibold text-[#0B1230]">{st.fullName}</p>
+                            <p className="text-xs text-[#6B6F94]">{st.email}</p>
                           </td>
-                          <td className="px-4 py-3 font-bold text-[#0B1F3A]">{lvlCode}</td>
+                          <td className="px-4 py-3 font-bold text-[#0B1230]">{lvlCode}</td>
                           <td className="px-4 py-3">
                             <span
-                              className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                              className={`text-xs font-bold ${
                                 activeStatus === "ACTIVE_PAID" ||
                                 activeStatus === "SCHOLARSHIP_GRANTED"
-                                  ? "bg-teal-50 text-[#0D9488]"
+                                  ? "text-emerald-700"
                                   : activeStatus === "AWAITING_CONFIRMATION"
-                                  ? "bg-amber-50 text-amber-800"
-                                  : "bg-slate-100 text-slate-600"
+                                  ? "text-amber-700"
+                                  : "text-[#6B6F94]"
                               }`}
                             >
                               {activeStatus.replace(/_/g, " ")}
@@ -169,7 +169,7 @@ export default function AdminStudentsPage() {
                               onChange={(e) => {
                                 if (e.target.value) handleAssignLevel(st, e.target.value);
                               }}
-                              className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold bg-white"
+                              className="learnova-input w-auto text-xs font-semibold py-1.5 px-2.5"
                             >
                               <option value="">Select Class Level...</option>
                               {classLevels.map((lvl) => (

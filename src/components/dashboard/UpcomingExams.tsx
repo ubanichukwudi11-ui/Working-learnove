@@ -17,15 +17,8 @@ const exams = [
 
 export default function UpcomingExams() {
   return (
-    <div
-      className="
-        bg-[#111827]
-        border border-slate-800
-        rounded-2xl
-        p-5
-      "
-    >
-      <h3 className="text-white font-semibold mb-4">
+    <div className="learnova-card p-5">
+      <h3 className="text-[#0B1230] font-bold text-base mb-4">
         Upcoming Exams
       </h3>
 
@@ -33,19 +26,13 @@ export default function UpcomingExams() {
         {exams.map((exam) => (
           <div
             key={exam.subject}
-            className="
-              flex justify-between
-              items-center
-              p-3
-              rounded-xl
-              bg-slate-900
-            "
+            className="flex justify-between items-center p-3 rounded-xl bg-[#FAF8FF] border border-[#E4E1F5]"
           >
-            <span className="text-white">
+            <span className="text-[#0B1230] font-medium text-sm">
               {exam.subject}
             </span>
 
-            <span className="text-cyan-400 text-sm">
+            <span className="text-[#4F46E5] font-semibold text-sm tabular-nums">
               {exam.date}
             </span>
           </div>

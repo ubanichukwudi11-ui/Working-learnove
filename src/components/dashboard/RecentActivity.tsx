@@ -25,43 +25,22 @@ const activities = [
 
 export default function RecentActivity() {
   return (
-    <div
-      className="
-        bg-[#111827]
-        border border-slate-800
-        rounded-2xl
-        p-5
-      "
-    >
-      <h3 className="text-white font-semibold mb-4">
+    <div className="learnova-card p-5">
+      <h3 className="text-[#0B1230] font-bold text-base mb-4">
         Recent Activity
       </h3>
 
-      <div className="space-y-4">
+      <div className="divide-y divide-[#E4E1F5]">
         {activities.map((activity) => (
           <div
             key={activity.id}
-            className="
-              flex items-start gap-3
-              border-b border-slate-800
-              pb-3
-            "
+            className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
           >
-            <div
-              className="
-                w-2 h-2
-                rounded-full
-                bg-[#10B981]
-                mt-2
-              "
-            />
-
-            <div>
-              <p className="text-white text-sm">
+            <div className="min-w-0">
+              <p className="text-[#0B1230] font-medium text-sm">
                 {activity.title}
               </p>
-
-              <p className="text-slate-400 text-xs">
+              <p className="text-[#6B6F94] text-xs mt-0.5">
                 {activity.time}
               </p>
             </div>

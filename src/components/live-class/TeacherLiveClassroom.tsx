@@ -270,13 +270,13 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
   if (accessError) {
     return (
-      <div className="min-h-screen bg-[#060E1B] text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-white/15 bg-[#0B1F3A] p-8 text-center space-y-4">
-          <h1 className="text-xl font-extrabold">Classroom Access Restricted</h1>
+      <div className="min-h-screen bg-[#070D24] bg-architectural-grid-dark text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl border border-white/12 bg-[#0D1438] p-8 text-center space-y-4 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+          <h1 className="landing-display text-xl font-extrabold">Classroom Access Restricted</h1>
           <p className="text-xs text-slate-300 leading-relaxed">{accessError.message}</p>
           <Link
             href="/teacher/classes"
-            className="inline-block w-full py-3 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold"
+            className="inline-block w-full py-3 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white text-xs font-bold transition"
           >
             Return to My Assigned Classrooms
           </Link>
@@ -286,39 +286,39 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
   }
 
   return (
-    <div className="min-h-screen bg-[#060E1B] text-white flex flex-col">
+    <div className="min-h-screen bg-[#070D24] text-white flex flex-col">
       {/* Top Studio Header */}
-      <header className="h-16 border-b border-white/10 bg-[#0B1F3A] px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0">
+      <header className="h-16 border-b border-white/10 bg-[#0D1438] px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Link
             href="/teacher"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-200 whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs font-bold text-slate-200 whitespace-nowrap shrink-0 transition"
           >
             <ArrowLeft size={14} />
             Workspace
           </Link>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-extrabold truncate">
+            <h1 className="landing-display text-sm sm:text-base font-extrabold truncate">
               {snapshot?.title || "Teacher Live Classroom"}
             </h1>
-            <p className="text-[11px] text-teal-300 truncate">
+            <p className="text-[11px] text-[#22D3EE] truncate">
               Teacher Control Room · {snapshot?.classLevel || "SSS 2"} · {snapshot?.timeWat || "WAT"}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {snapshot?.sessionStatus === "live" ? (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-bold text-emerald-300 tabular-nums">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/35 text-xs font-bold text-emerald-300 tabular-nums whitespace-nowrap">
               <Radio size={13} />
               <span>LIVE</span>
-              <span>·</span>
+              <span aria-hidden="true">·</span>
               <span>{formatDuration(elapsedSeconds)}</span>
             </div>
           ) : (
             <button
               onClick={() => act("START_CLASS")}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold whitespace-nowrap"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white text-xs font-bold whitespace-nowrap transition shadow-[0_6px_16px_rgba(79,70,229,0.35)]"
             >
               <Play size={13} fill="currentColor" />
               Start Live Class
@@ -337,7 +337,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
           <button
             onClick={() => setIsEndModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold whitespace-nowrap transition"
           >
             <PhoneOff size={13} />
             End Class
@@ -363,14 +363,14 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => act("APPROVE_STAGE", { targetUserId: st.id })}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white font-bold"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white font-bold whitespace-nowrap"
                 >
                   <Check size={13} />
                   Approve to Stage
                 </button>
                 <button
                   onClick={() => act("REJECT_STAGE", { targetUserId: st.id })}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 font-bold whitespace-nowrap"
                 >
                   <X size={13} />
                   Decline
@@ -380,9 +380,9 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
           ))}
 
           {mediaNotice && (
-            <div className="rounded-xl border border-white/15 bg-[#0B1F3A] px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-slate-200">
+            <div className="rounded-xl border border-white/15 bg-[#0D1438] px-4 py-2.5 flex items-center justify-between gap-3 text-xs text-slate-200">
               <span>{mediaNotice}</span>
-              <button onClick={() => setMediaNotice(null)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setMediaNotice(null)} className="text-slate-400 hover:text-white shrink-0">
                 <X size={14} />
               </button>
             </div>
@@ -393,13 +393,13 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
       {/* Main Studio Body */}
       <div className="flex-1 p-4 sm:p-6 grid lg:grid-cols-[1.55fr_0.9fr] gap-5 items-start">
         {/* LEFT COLUMN: Stage + Host/Stage Video + Controls + Interactive Tools */}
-        <div className="space-y-4">
+        <div className="space-y-4 min-w-0">
           {/* Host Video + Stage Guests + Presentation Stage */}
           <div className="grid md:grid-cols-[0.42fr_1fr] gap-4 items-stretch">
             {/* Teacher Camera + Stage Guests Column */}
-            <div className="space-y-3 flex flex-col">
+            <div className="space-y-3 flex flex-col min-w-0">
               {/* Teacher Host Video Feed */}
-              <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-[#0B1F3A] aspect-[4/3] shadow-sm">
+              <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-[#0D1438] aspect-[4/3] shadow-sm">
                 {hostVideoActive ? (
                   <video
                     ref={localVideoRef}
@@ -413,20 +413,21 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                     src={snapshot?.hostPoster || "/images/teacher-live-poster.jpg"}
                     alt={snapshot?.teacherName || "Instructor"}
                     fill
+                    referrerPolicy="no-referrer"
                     className="object-cover opacity-85"
                   />
                 )}
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 flex items-center justify-between text-xs">
-                  <div>
-                    <p className="font-bold text-white leading-tight">
+                  <div className="min-w-0">
+                    <p className="font-bold text-white leading-tight truncate">
                       {snapshot?.teacherName || user?.fullName || "Instructor"}
                     </p>
-                    <p className="text-[11px] text-teal-300">
+                    <p className="text-[11px] text-[#22D3EE] truncate">
                       Host · {snapshot?.hostAudioOnly ? "Audio-Only Mode" : snapshot?.hostVideoOn ? "Camera Live" : "Camera Paused"}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {snapshot?.hostMicOn ? (
                       <span className="px-2 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] tabular-nums">
                         MIC {audioLevel}%
@@ -445,7 +446,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                 stageStudents.map((st) => (
                   <div
                     key={st.id}
-                    className="relative rounded-2xl overflow-hidden border border-[#0D9488] bg-[#0B1F3A] p-3 space-y-2"
+                    className="relative rounded-2xl overflow-hidden border border-[#7C3AED] bg-[#121A4A] p-3 space-y-2"
                   >
                     {remoteStreams[st.id] && st.videoOn ? (
                       <div className="relative rounded-xl overflow-hidden aspect-video bg-black">
@@ -453,12 +454,12 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                       </div>
                     ) : (
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-[#0D9488] flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] flex items-center justify-center font-bold text-xs shrink-0">
                           {st.initials}
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-white truncate">{st.name}</p>
-                          <p className="text-[11px] text-teal-300">
+                          <p className="text-[11px] text-[#22D3EE]">
                             On Stage · {st.micOn ? "Speaking / Mic Live" : "Muted"}
                           </p>
                         </div>
@@ -470,13 +471,13 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                         onClick={() =>
                           act("MUTE_STUDENT", { targetUserId: st.id, micOn: !st.micOn })
                         }
-                        className="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-bold"
+                        className="flex-1 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-bold transition"
                       >
                         {st.micOn ? "Mute Mic" : "Allow Mic"}
                       </button>
                       <button
                         onClick={() => act("REMOVE_STAGE", { targetUserId: st.id })}
-                        className="flex-1 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-[11px] font-bold"
+                        className="flex-1 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-[11px] font-bold transition"
                       >
                         Remove Stage
                       </button>
@@ -484,7 +485,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-[#0B1F3A]/60 p-4 text-xs text-slate-300 flex-1 flex flex-col justify-center">
+                <div className="rounded-2xl border border-white/10 bg-[#0D1438] p-4 text-xs text-slate-300 flex-1 flex flex-col justify-center">
                   <p className="font-bold text-white">No Students on Stage</p>
                   <p className="text-slate-400 mt-1 leading-relaxed">
                     Students join as audience avatars. Approve a raised hand or invite someone from the roster to unlock their mic &amp; camera here.
@@ -494,27 +495,29 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
             </div>
 
             {/* Presentation / Screen Share / Whiteboard Stage */}
-            <PresentationStage
-              classId={classId}
-              subject={snapshot?.subject}
-              type={snapshot?.screenShare.type || "slide"}
-              slideIndex={snapshot?.screenShare.slideIndex || 0}
-              screenStream={screenStream}
-              whiteboardStrokes={snapshot?.whiteboardStrokes || []}
-              isTeacher
-              onChangeSlide={(nextIndex) => act("SET_STAGE_VIEW", { slideIndex: nextIndex })}
-              onAddStroke={(stroke: WhiteboardStroke) => act("WHITEBOARD_STROKE", { stroke })}
-              onClearWhiteboard={() => act("CLEAR_WHITEBOARD")}
-              onAskNova={() => setIsNovaOpen(true)}
-            />
+            <div className="min-w-0">
+              <PresentationStage
+                classId={classId}
+                subject={snapshot?.subject}
+                type={snapshot?.screenShare.type || "slide"}
+                slideIndex={snapshot?.screenShare.slideIndex || 0}
+                screenStream={screenStream}
+                whiteboardStrokes={snapshot?.whiteboardStrokes || []}
+                isTeacher
+                onChangeSlide={(nextIndex) => act("SET_STAGE_VIEW", { slideIndex: nextIndex })}
+                onAddStroke={(stroke: WhiteboardStroke) => act("WHITEBOARD_STROKE", { stroke })}
+                onClearWhiteboard={() => act("CLEAR_WHITEBOARD")}
+                onAskNova={() => setIsNovaOpen(true)}
+              />
+            </div>
           </div>
 
           {/* Teacher Studio Toolbar */}
-          <div className="rounded-2xl border border-white/10 bg-[#0B1F3A] p-3 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="rounded-2xl border border-white/10 bg-[#0D1438] p-3 flex flex-wrap items-center justify-between gap-2.5">
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleToggleMic}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                   snapshot?.hostMicOn
                     ? "bg-white/10 hover:bg-white/15 text-white"
                     : "bg-rose-600 text-white"
@@ -526,7 +529,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
               <button
                 onClick={handleToggleCam}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                   snapshot?.hostVideoOn && !snapshot?.hostAudioOnly
                     ? "bg-white/10 hover:bg-white/15 text-white"
                     : "bg-rose-600 text-white"
@@ -542,7 +545,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
               <button
                 onClick={handleAudioOnlyToggle}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
                   snapshot?.hostAudioOnly
                     ? "bg-[#D97706] text-white"
                     : "bg-white/10 hover:bg-white/15 text-slate-200"
@@ -556,7 +559,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                 value={quality}
                 onChange={(e) => setQuality(e.target.value as VideoQualityPreset)}
                 aria-label="Broadcast Video Quality"
-                className="h-9 px-2.5 rounded-xl border border-white/15 bg-[#091529] text-xs font-semibold text-white"
+                className="h-9 px-2.5 rounded-xl border border-white/15 bg-[#121A4A] text-xs font-semibold text-white"
               >
                 <option value="low">Data Saver 240p</option>
                 <option value="medium">Balanced 360p</option>
@@ -567,10 +570,10 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => handleStageMode("slide")}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
                   snapshot?.screenShare.type === "slide"
-                    ? "bg-[#0D9488] text-white"
-                    : "bg-white/10 text-slate-200"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                    : "bg-white/10 text-slate-200 hover:bg-white/15"
                 }`}
               >
                 <Presentation size={14} />
@@ -578,10 +581,10 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
               </button>
               <button
                 onClick={() => handleStageMode("whiteboard")}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
                   snapshot?.screenShare.type === "whiteboard"
-                    ? "bg-[#0D9488] text-white"
-                    : "bg-white/10 text-slate-200"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                    : "bg-white/10 text-slate-200 hover:bg-white/15"
                 }`}
               >
                 <Pencil size={14} />
@@ -589,10 +592,10 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
               </button>
               <button
                 onClick={() => handleStageMode("window")}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition ${
                   snapshot?.screenShare.type === "window"
-                    ? "bg-[#0D9488] text-white"
-                    : "bg-white/10 text-slate-200"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                    : "bg-white/10 text-slate-200 hover:bg-white/15"
                 }`}
               >
                 <Monitor size={14} />
@@ -600,14 +603,14 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
               </button>
               <button
                 onClick={() => setIsAnnouncementOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F59E0B]"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold text-[#F59E0B] whitespace-nowrap transition"
               >
                 <Megaphone size={14} />
                 Announce
               </button>
               <button
                 onClick={() => setIsNovaOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0D9488]/20 hover:bg-[#0D9488]/30 border border-[#0D9488]/40 text-xs font-bold text-teal-200"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#7C3AED]/25 hover:bg-[#7C3AED]/35 border border-[#7C3AED]/50 text-xs font-bold text-[#C4B5FD] whitespace-nowrap transition"
               >
                 <Sparkles size={14} />
                 Nova Co-Teacher
@@ -616,7 +619,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
           </div>
 
           {/* Lower Interactive Tabs */}
-          <div className="rounded-2xl border border-white/10 bg-[#0B1F3A] p-4 space-y-4">
+          <div className="rounded-2xl border border-white/10 bg-[#0D1438] p-4 space-y-4">
             <div className="flex flex-wrap gap-1.5 border-b border-white/10 pb-3">
               {[
                 { id: "polls", label: "Live Polls" },
@@ -630,7 +633,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                   onClick={() => setBottomTab(t.id as any)}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                     bottomTab === t.id
-                      ? "bg-[#0D9488] text-white"
+                      ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
                       : "text-slate-300 hover:bg-white/10"
                   }`}
                 >
@@ -667,12 +670,14 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
         </div>
 
         {/* RIGHT COLUMN: Avatar Student Roster + Raised Hands + Live Chat + Attendance */}
-        <aside className="rounded-2xl border border-white/10 bg-[#0B1F3A] flex flex-col h-[720px] overflow-hidden">
-          <div className="p-3 border-b border-white/10 grid grid-cols-3 gap-1 bg-[#091529]">
+        <aside className="rounded-2xl border border-white/10 bg-[#0D1438] flex flex-col h-[540px] lg:h-[720px] overflow-hidden min-w-0">
+          <div className="p-3 border-b border-white/10 grid grid-cols-3 gap-1 bg-[#121A4A]">
             <button
               onClick={() => setRightTab("roster")}
-              className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 ${
-                rightTab === "roster" ? "bg-[#0D9488] text-white" : "text-slate-300"
+              className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 whitespace-nowrap transition ${
+                rightTab === "roster"
+                  ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                  : "text-slate-300 hover:text-white"
               }`}
             >
               <Users size={13} />
@@ -680,16 +685,20 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
             </button>
             <button
               onClick={() => setRightTab("chat")}
-              className={`py-2 rounded-lg text-xs font-bold ${
-                rightTab === "chat" ? "bg-[#0D9488] text-white" : "text-slate-300"
+              className={`py-2 rounded-lg text-xs font-bold whitespace-nowrap transition ${
+                rightTab === "chat"
+                  ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                  : "text-slate-300 hover:text-white"
               }`}
             >
               Chat ({snapshot?.messages.length || 0})
             </button>
             <button
               onClick={() => setRightTab("attendance")}
-              className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 ${
-                rightTab === "attendance" ? "bg-[#0D9488] text-white" : "text-slate-300"
+              className={`py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 whitespace-nowrap transition ${
+                rightTab === "attendance"
+                  ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                  : "text-slate-300 hover:text-white"
               }`}
             >
               <ClipboardCheck size={13} />
@@ -705,12 +714,12 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
               {participants.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded-xl border border-white/10 bg-[#091529] p-3 flex items-center justify-between gap-2.5"
+                  className="rounded-xl border border-white/10 bg-[#121A4A] p-3 flex items-center justify-between gap-2.5"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     {p.avatar ? (
                       <div className="relative w-9 h-9 rounded-full overflow-hidden border border-white/15 shrink-0">
-                        <Image src={p.avatar} alt={p.name} fill className="object-cover" />
+                        <Image src={p.avatar} alt={p.name} fill referrerPolicy="no-referrer" className="object-cover" />
                       </div>
                     ) : (
                       <div
@@ -740,14 +749,14 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                       <>
                         <button
                           onClick={() => act("APPROVE_STAGE", { targetUserId: p.id })}
-                          className="p-1.5 rounded-lg bg-[#0D9488] hover:bg-[#0F766E] text-white"
+                          className="p-1.5 rounded-lg bg-[#4F46E5] hover:bg-[#7C3AED] text-white transition"
                           title="Approve to stage"
                         >
                           <Check size={13} />
                         </button>
                         <button
                           onClick={() => act("REJECT_STAGE", { targetUserId: p.id })}
-                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200"
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 transition"
                           title="Decline request"
                         >
                           <X size={13} />
@@ -759,14 +768,14 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                           onClick={() =>
                             act("MUTE_STUDENT", { targetUserId: p.id, micOn: !p.micOn })
                           }
-                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200"
+                          className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-200 transition"
                           title={p.micOn ? "Mute" : "Unmute"}
                         >
                           {p.micOn ? <Mic size={13} /> : <MicOff size={13} />}
                         </button>
                         <button
                           onClick={() => act("REMOVE_STAGE", { targetUserId: p.id })}
-                          className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200"
+                          className="p-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 transition"
                           title="Remove from stage"
                         >
                           <UserMinus size={13} />
@@ -775,7 +784,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                     ) : (
                       <button
                         onClick={() => act("INVITE_STAGE", { targetUserId: p.id })}
-                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-[#0D9488] text-[11px] font-bold text-slate-100 transition"
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-[#4F46E5] text-[11px] font-bold text-slate-100 transition whitespace-nowrap"
                         title="Invite student onto stage"
                       >
                         <UserPlus size={12} />
@@ -798,13 +807,13 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                       msg.role === "system"
                         ? "bg-white/5 text-slate-300 text-center text-[11px]"
                         : msg.role === "teacher"
-                        ? "bg-[#0D9488]/20 border border-[#0D9488]/30"
-                        : "bg-[#091529] border border-white/10"
+                        ? "bg-[#4F46E5]/25 border border-[#7C3AED]/40"
+                        : "bg-[#121A4A] border border-white/10"
                     }`}
                   >
                     {msg.role !== "system" && (
                       <div className="flex items-center justify-between text-[11px] mb-0.5">
-                        <span className="font-bold text-teal-300">{msg.sender}</span>
+                        <span className="font-bold text-[#22D3EE]">{msg.sender}</span>
                         <span className="text-slate-400 tabular-nums">{msg.timestamp}</span>
                       </div>
                     )}
@@ -824,18 +833,18 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                   });
                   setChatInput("");
                 }}
-                className="p-3 border-t border-white/10 flex gap-2 bg-[#091529]"
+                className="p-3 border-t border-white/10 flex gap-2 bg-[#121A4A]"
               >
                 <input
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Message your class..."
-                  className="flex-1 h-9 px-3 rounded-xl border border-white/15 bg-[#060E1B] text-xs text-white"
+                  className="flex-1 h-9 px-3 rounded-xl border border-white/15 bg-[#070D24] text-xs text-white placeholder-slate-400 focus:outline-none focus:border-[#7C3AED]"
                 />
                 <button
                   type="submit"
-                  className="px-3.5 h-9 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white inline-flex items-center justify-center"
+                  className="px-3.5 h-9 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white inline-flex items-center justify-center transition shrink-0"
                 >
                   <Send size={14} />
                 </button>
@@ -854,7 +863,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                   className="flex items-center justify-between py-2 border-b border-white/10"
                 >
                   <span className="font-semibold text-white">{p.name}</span>
-                  <span className="text-teal-300 font-mono tabular-nums">
+                  <span className="text-[#22D3EE] font-mono tabular-nums">
                     Present · {p.joinedAt}
                   </span>
                 </div>
@@ -866,7 +875,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
       {/* Broadcast Announcement Modal */}
       {isAnnouncementOpen && (
-        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-[#070D24]/75 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={async (e) => {
               e.preventDefault();
@@ -877,28 +886,28 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
               setIsAnnouncementOpen(false);
               setAnnouncementText("");
             }}
-            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white text-[#0B1F3A] p-6 space-y-4"
+            className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white text-[#0B1230] p-6 space-y-4 shadow-2xl"
           >
-            <h3 className="text-base font-extrabold">Broadcast Classroom Announcement</h3>
+            <h3 className="landing-display text-base font-extrabold">Broadcast Classroom Announcement</h3>
             <textarea
               rows={3}
               required
               value={announcementText}
               onChange={(e) => setAnnouncementText(e.target.value)}
               placeholder="e.g. Copy formula 2 into your notebooks before our WAEC drill!"
-              className="w-full rounded-xl border border-slate-200 bg-[#F7F8FA] p-3 text-xs text-[#0B1F3A]"
+              className="w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-3 text-xs text-[#0B1230] focus:outline-none focus:border-[#7C3AED]"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsAnnouncementOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600"
+                className="px-4 py-2 rounded-xl border border-[#E4E1F5] text-xs font-bold text-[#4A5073] hover:bg-[#FAF8FF]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold"
               >
                 Pin to Class
               </button>
@@ -909,16 +918,16 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
       {/* End Class Confirmation Modal */}
       {isEndModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/65 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white text-[#0B1F3A] p-6 space-y-4">
-            <h3 className="text-base font-extrabold">End Live Classroom?</h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
+        <div className="fixed inset-0 z-50 bg-[#070D24]/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm rounded-2xl border border-[#E4E1F5] bg-white text-[#0B1230] p-6 space-y-4 shadow-2xl">
+            <h3 className="landing-display text-base font-extrabold">End Live Classroom?</h3>
+            <p className="text-xs text-[#4A5073] leading-relaxed">
               This will end the live broadcast for all connected students and lock the stage.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsEndModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700"
+                className="px-4 py-2 rounded-xl border border-[#E4E1F5] text-xs font-bold text-[#4A5073] hover:bg-[#FAF8FF]"
               >
                 Stay in Class
               </button>

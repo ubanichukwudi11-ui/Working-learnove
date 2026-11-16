@@ -108,11 +108,11 @@ export default function TeacherApplicationsPage() {
     <ProtectedRoute roles={["TEACHER"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div className="bg-[#0B1F3A] text-white rounded-3xl p-6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#F59E0B]">
-              Educator Accreditation & Teaching Scope
+          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
+              Educator Accreditation &amp; Teaching Scope
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold mt-1">
+            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold mt-1">
               Subject Teaching Applications
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
@@ -126,8 +126,8 @@ export default function TeacherApplicationsPage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-teal-50 text-[#0D9488] border-teal-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -136,20 +136,20 @@ export default function TeacherApplicationsPage() {
           )}
 
           {loading ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-sm text-slate-500">
+            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
               Loading teaching applications...
             </div>
           ) : (
             <div className="grid lg:grid-cols-3 gap-6">
               {/* New / Edit Application Form */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 h-fit">
-                <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2">
-                  <FileBadge2 size={16} className="text-[#0D9488]" />
+              <div className="learnova-card p-5 space-y-4 h-fit">
+                <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
+                  <FileBadge2 size={16} className="text-[#4F46E5]" />
                   {editingId ? "Update Application" : "Apply to Teach a Subject"}
                 </h2>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
                     Subject
                   </label>
                   <select
@@ -158,7 +158,7 @@ export default function TeacherApplicationsPage() {
                       setSubjectId(e.target.value);
                       setSelectedLevels([]);
                     }}
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm bg-white"
+                    className="learnova-input w-full px-3 py-2 text-sm"
                   >
                     {subjects.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -169,7 +169,7 @@ export default function TeacherApplicationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-1.5">
                     Class Levels You Can Teach
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -182,8 +182,8 @@ export default function TeacherApplicationsPage() {
                           onClick={() => toggleLevel(lvl.id)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
                             active
-                              ? "bg-[#0D9488] text-white border-[#0D9488]"
-                              : "bg-slate-50 text-slate-600 border-slate-200"
+                              ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white border-[#4F46E5]"
+                              : "bg-[#FAF8FF] text-[#43466E] border-[#E4E1F5] hover:bg-[#F5F3FF]"
                           }`}
                         >
                           {lvl.code}
@@ -194,63 +194,63 @@ export default function TeacherApplicationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
                     Highest Qualification
                   </label>
                   <input
                     value={qualification}
                     onChange={(e) => setQualification(e.target.value)}
                     placeholder="e.g. B.Sc. (Ed.) Mathematics, PGDE"
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    className="learnova-input w-full px-3 py-2 text-sm"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
                       Institution
                     </label>
                     <input
                       value={institution}
                       onChange={(e) => setInstitution(e.target.value)}
                       placeholder="University of Lagos"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                      className="learnova-input w-full px-3 py-2 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
                       Experience
                     </label>
                     <input
                       value={experience}
                       onChange={(e) => setExperience(e.target.value)}
                       placeholder="5 years"
-                      className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                      className="learnova-input w-full px-3 py-2 text-sm"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
                     TRCN / Teaching License Number (Optional)
                   </label>
                   <input
                     value={licenseNumber}
                     onChange={(e) => setLicenseNumber(e.target.value)}
                     placeholder="TRCN/LAG/..."
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    className="learnova-input w-full px-3 py-2 text-sm"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
+                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
                     Teaching Notes / Bio
                   </label>
                   <textarea
                     rows={2}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
+                    className="learnova-input w-full px-3 py-2 text-sm"
                   />
                 </div>
 
@@ -259,7 +259,7 @@ export default function TeacherApplicationsPage() {
                     type="button"
                     disabled={saving || selectedLevels.length === 0}
                     onClick={() => submitForm("SAVE_DRAFT")}
-                    className="flex-1 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold hover:bg-slate-50 inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="flex-1 py-2.5 rounded-xl border border-[#DCD7F5] text-[#43466E] text-xs font-semibold hover:bg-[#FAF8FF] inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition"
                   >
                     <Save size={13} /> Save Draft
                   </button>
@@ -267,7 +267,7 @@ export default function TeacherApplicationsPage() {
                     type="button"
                     disabled={saving || selectedLevels.length === 0}
                     onClick={() => submitForm("SUBMIT_APPLICATION")}
-                    className="flex-1 py-2.5 rounded-xl bg-[#0D9488] text-white text-xs font-semibold hover:bg-teal-700 inline-flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition shadow-sm"
                   >
                     <Send size={13} /> Submit for Approval
                   </button>
@@ -275,75 +275,75 @@ export default function TeacherApplicationsPage() {
               </div>
 
               {/* Applications History & Approved Badges */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-6 min-w-0">
                 {/* Approved Authorizations */}
-                <div className="bg-white border border-slate-200 rounded-2xl p-5">
-                  <h2 className="text-base font-bold text-[#0F1F38] flex items-center gap-2 mb-3">
-                    <Award size={16} className="text-[#0D9488]" />
-                    Approved Subjects & Class Levels ({approvals.filter((a) => a.status === "APPROVED").length})
+                <div className="learnova-card p-5">
+                  <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2 mb-3">
+                    <Award size={16} className="text-[#4F46E5]" />
+                    Approved Subjects &amp; Class Levels ({approvals.filter((a) => a.status === "APPROVED").length})
                   </h2>
                   {approvals.filter((a) => a.status === "APPROVED").length === 0 ? (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#6B6F94]">
                       You have no approved subject-level authorizations yet. Submit an
                       application on the left for School Admin review.
                     </p>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="grid sm:grid-cols-2 gap-2.5">
                       {approvals
                         .filter((a) => a.status === "APPROVED")
                         .map((ap) => (
-                          <span
+                          <div
                             key={ap.id}
-                            className="px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-[#0D9488] text-xs font-bold"
+                            className="px-3.5 py-2.5 rounded-xl bg-[#F5F3FF] border border-[#DCD7F5] text-[#4F46E5] text-xs font-bold"
                           >
-                            {ap.subjectName} — {ap.classLevelName}
-                          </span>
+                            {ap.subjectName} · {ap.classLevelName}
+                          </div>
                         ))}
                     </div>
                   )}
                 </div>
 
                 {/* Application History */}
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
-                  <div className="px-5 py-4 border-b border-slate-100">
-                    <h2 className="text-base font-bold text-[#0F1F38]">
+                <div className="learnova-card overflow-hidden">
+                  <div className="px-5 py-4 border-b border-[#E4E1F5]">
+                    <h2 className="landing-display text-base font-bold text-[#0B1230]">
                       Submitted Applications ({applications.length})
                     </h2>
                   </div>
                   {applications.length === 0 ? (
-                    <div className="p-10 text-center text-xs text-slate-500">
+                    <div className="p-10 text-center text-xs text-[#6B6F94]">
                       No subject applications recorded yet.
                     </div>
                   ) : (
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-[#E4E1F5]">
                       {applications.map((app) => (
                         <div key={app.id} className="p-4 space-y-2">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div>
-                              <p className="font-bold text-[#0B1F3A]">{app.subjectName}</p>
-                              <p className="text-xs text-slate-500">
+                              <p className="font-bold text-[#0B1230]">{app.subjectName}</p>
+                              <p className="text-xs text-[#6B6F94]">
                                 Requested Levels:{" "}
                                 {(app.classLevelIds || []).map(levelCode).join(", ")} ·{" "}
                                 {app.qualification}
                               </p>
                             </div>
                             <span
-                              className={`text-xs font-bold px-2.5 py-1 rounded-lg w-fit ${
+                              className={`text-xs font-bold shrink-0 ${
                                 app.status === "APPROVED"
-                                  ? "bg-teal-50 text-[#0D9488]"
+                                  ? "text-emerald-700"
                                   : app.status === "PENDING_REVIEW"
-                                  ? "bg-amber-50 text-amber-800"
+                                  ? "text-amber-700"
                                   : app.status === "DRAFT"
-                                  ? "bg-slate-100 text-slate-600"
-                                  : "bg-red-50 text-red-700"
+                                  ? "text-[#6B6F94]"
+                                  : "text-rose-700"
                               }`}
                             >
                               {app.status.replace(/_/g, " ")}
                             </span>
                           </div>
                           {app.adminExplanation && (
-                            <p className="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-700">
-                              <strong>Admin Note:</strong> {app.adminExplanation}
+                            <p className="text-xs bg-[#FAF8FF] border border-[#E4E1F5] rounded-xl px-3 py-2 text-[#43466E]">
+                              <strong className="text-[#0B1230]">Admin Note:</strong> {app.adminExplanation}
                             </p>
                           )}
                           {(app.status === "DRAFT" || app.status === "RESUBMISSION_REQUIRED") && (
@@ -358,9 +358,9 @@ export default function TeacherApplicationsPage() {
                                 setLicenseNumber(app.licenseNumber || "");
                                 setBio(app.bio || "");
                               }}
-                              className="text-xs font-bold text-[#0D9488] hover:underline"
+                              className="text-xs font-bold text-[#4F46E5] hover:underline"
                             >
-                              Edit & Resubmit Application →
+                              Edit &amp; Resubmit Application →
                             </button>
                           )}
                         </div>

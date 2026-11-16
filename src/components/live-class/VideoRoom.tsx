@@ -1,13 +1,12 @@
 "use client";
 
 import {
-LiveKitRoom,
-VideoConference
+  LiveKitRoom,
+  VideoConference,
 } from "@livekit/components-react";
+import { Video } from "lucide-react";
 
 import "@livekit/components-styles";
-
-
 
 export default function VideoRoom() {
   const token = "";
@@ -15,12 +14,12 @@ export default function VideoRoom() {
 
   if (!token || !serverUrl) {
     return (
-      <div className="h-full min-h-[360px] rounded-2xl bg-slate-900 border border-slate-800 flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center mb-3 text-xl">
-          📹
+      <div className="h-full min-h-[360px] rounded-2xl bg-[#0D1438] border border-white/12 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center mb-3">
+          <Video size={22} />
         </div>
-        <h3 className="text-lg font-semibold text-white">Live Classroom Stream</h3>
-        <p className="text-slate-400 text-sm mt-1 max-w-sm">
+        <h3 className="landing-display text-lg font-bold text-white">Live Classroom Stream</h3>
+        <p className="text-slate-300 text-sm mt-1 max-w-sm">
           Interactive live class session is ready. Configure LiveKit room token and URL to stream audio and video.
         </p>
       </div>

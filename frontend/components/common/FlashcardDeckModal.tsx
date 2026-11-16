@@ -79,17 +79,17 @@ export default function FlashcardDeckModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="w-full max-w-xl rounded-3xl bg-white border border-slate-200 shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-[#070D24]/70 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="w-full max-w-xl rounded-3xl bg-white border border-[#E4E1F5] shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#0B1F3A] text-white flex items-center justify-between gap-4">
+        <div className="learnova-banner-dark px-6 py-4 text-white flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-[#F59E0B] flex items-center gap-1.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#22D3EE] flex items-center gap-1.5">
               <Layers size={13} />
               Study Flashcards · {subject}
               {generatedByAi ? " · Nova AI" : ""}
             </p>
-            <h3 className="text-base font-extrabold truncate mt-0.5">{title}</h3>
+            <h3 className="landing-display text-base font-extrabold truncate mt-0.5">{title}</h3>
           </div>
           <button
             type="button"
@@ -110,25 +110,25 @@ export default function FlashcardDeckModal({
         <div className="p-6 space-y-5">
           {loading ? (
             <div className="py-16 text-center space-y-3">
-              <Loader2 size={28} className="animate-spin text-[#0D9488] mx-auto" />
-              <p className="text-sm font-semibold text-[#0B1F3A]">
+              <Loader2 size={28} className="animate-spin text-[#4F46E5] mx-auto" />
+              <p className="text-sm font-semibold text-[#0B1230]">
                 Creating interactive revision flashcards...
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#6B6F94]">
                 Distilling key definitions, formulas, and exam recall prompts.
               </p>
             </div>
           ) : !currentCard ? (
-            <div className="py-12 text-center text-sm text-slate-500">
+            <div className="py-12 text-center text-sm text-[#6B6F94]">
               No flashcard items available for this note yet.
             </div>
           ) : (
             <>
-              <div className="flex items-center justify-between text-xs text-slate-500">
-                <span className="font-bold text-[#0B1F3A] tabular-nums">
+              <div className="flex items-center justify-between text-xs text-[#6B6F94]">
+                <span className="font-bold text-[#0B1230] tabular-nums">
                   Card {index + 1} of {activeDeck.length}
                 </span>
-                <span className="tabular-nums text-[#0D9488] font-semibold">
+                <span className="tabular-nums text-[#4F46E5] font-semibold">
                   {masteredIds.length} / {activeDeck.length} Mastered
                 </span>
               </div>
@@ -139,26 +139,26 @@ export default function FlashcardDeckModal({
                 onClick={() => setFlipped((f) => !f)}
                 className={`w-full min-h-[220px] rounded-2xl border p-6 sm:p-8 text-left flex flex-col justify-between transition ${
                   flipped
-                    ? "bg-teal-50/70 border-[#0D9488]"
-                    : "bg-[#F7F8FA] border-slate-200 hover:border-[#0B1F3A]"
+                    ? "bg-[#F5F3FF] border-[#7C3AED]"
+                    : "bg-[#FAF8FF] border-[#E4E1F5] hover:border-[#4F46E5]"
                 }`}
               >
                 <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
-                  <span className={flipped ? "text-[#0D9488]" : "text-slate-500"}>
+                  <span className={flipped ? "text-[#6D28D9]" : "text-[#6B6F94]"}>
                     {flipped ? "Answer / Concept Explanation" : "Prompt / Recall Question"}
                   </span>
                   {currentCard.hint && (
-                    <span className="text-slate-400 font-semibold normal-case">
+                    <span className="text-[#6B6F94] font-semibold normal-case">
                       {currentCard.hint}
                     </span>
                   )}
                 </div>
 
-                <p className="text-lg sm:text-xl font-bold text-[#0B1F3A] leading-relaxed my-4">
+                <p className="text-lg sm:text-xl font-bold text-[#0B1230] leading-relaxed my-4">
                   {flipped ? currentCard.back : currentCard.front}
                 </p>
 
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0D9488]">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5]">
                   <RotateCcw size={13} />
                   Click card to flip {flipped ? "to question" : "to reveal answer"}
                 </span>
@@ -170,21 +170,21 @@ export default function FlashcardDeckModal({
                   <button
                     type="button"
                     onClick={handlePrev}
-                    className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-[#0B1F3A] inline-flex items-center gap-1"
+                    className="px-3.5 py-2 rounded-xl border border-[#DCD7F5] bg-white hover:bg-[#FAF8FF] text-xs font-bold text-[#0B1230] inline-flex items-center gap-1 transition"
                   >
                     <ChevronLeft size={14} /> Prev
                   </button>
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-[#0B1F3A] inline-flex items-center gap-1"
+                    className="px-3.5 py-2 rounded-xl border border-[#DCD7F5] bg-white hover:bg-[#FAF8FF] text-xs font-bold text-[#0B1230] inline-flex items-center gap-1 transition"
                   >
                     Next <ChevronRight size={14} />
                   </button>
                   <button
                     type="button"
                     onClick={handleShuffle}
-                    className="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-600 inline-flex items-center gap-1"
+                    className="px-3 py-2 rounded-xl border border-[#DCD7F5] bg-white hover:bg-[#FAF8FF] text-xs font-semibold text-[#43466E] inline-flex items-center gap-1 transition"
                   >
                     <Shuffle size={13} /> Shuffle
                   </button>
@@ -195,8 +195,8 @@ export default function FlashcardDeckModal({
                   onClick={toggleMastered}
                   className={`px-4 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition ${
                     masteredIds.includes(currentCard.id)
-                      ? "bg-[#0D9488] text-white"
-                      : "bg-[#0B1F3A] text-white hover:bg-[#143258]"
+                      ? "bg-[#059669] text-white"
+                      : "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white"
                   }`}
                 >
                   <CheckCircle2 size={14} />

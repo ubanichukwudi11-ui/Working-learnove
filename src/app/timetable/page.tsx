@@ -74,21 +74,21 @@ export default function TimetablePlannerPage() {
     <ProtectedRoute roles={["STUDENT", "PARENT", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Official Timetable · {TIMEZONE_LABEL}
             </p>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
               Class Timetable &amp; Study Planner
             </h1>
           </div>
 
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
             {/* Official Weekly Timetable */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+            <div className="learnova-card p-6 space-y-5 min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                  <CalendarDays size={18} className="text-[#0D9488]" />
+                <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
+                  <CalendarDays size={18} className="text-[#4F46E5]" />
                   Weekly Official Schedule (WAT)
                 </h2>
 
@@ -99,8 +99,8 @@ export default function TimetablePlannerPage() {
                       onClick={() => setSelectedDay(day)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                         selectedDay === day
-                          ? "bg-[#0B1F3A] text-white"
-                          : "bg-[#F7F8FA] text-slate-600 hover:bg-slate-200"
+                          ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-sm"
+                          : "bg-[#FAF8FF] border border-[#E4E1F5] text-[#43466E] hover:bg-[#F5F3FF]"
                       }`}
                     >
                       {day}
@@ -110,17 +110,17 @@ export default function TimetablePlannerPage() {
               </div>
 
               {loading ? (
-                <div className="py-10 text-center text-xs text-slate-500">
+                <div className="py-10 text-center text-xs text-[#6B6F94]">
                   Loading published timetable...
                 </div>
               ) : visibleSlots.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-10 text-center space-y-2">
-                  <p className="text-sm font-bold text-[#0F1F38]">
+                <div className="rounded-2xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-10 text-center space-y-2">
+                  <p className="text-sm font-bold text-[#0B1230]">
                     No Published Lessons for Your Class Level Yet
                   </p>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  <p className="text-xs text-[#6B6F94] max-w-md mx-auto">
                     Ensure you have selected your class level and activated your subscription in{" "}
-                    <Link href="/subscriptions" className="text-[#0D9488] font-bold underline">
+                    <Link href="/subscriptions" className="text-[#4F46E5] font-bold underline">
                       Subscriptions
                     </Link>
                     . School Admin will publish your official schedule here.
@@ -134,10 +134,10 @@ export default function TimetablePlannerPage() {
                     return (
                       <div
                         key={slot.id}
-                        className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                       >
-                        <div>
-                          <div className="flex items-center gap-2 text-xs font-bold text-[#0D9488]">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 text-xs font-bold text-[#4F46E5]">
                             <span>{slot.dayOfWeek}</span>
                             <span>·</span>
                             <span>{slot.mode}</span>
@@ -148,25 +148,25 @@ export default function TimetablePlannerPage() {
                               </>
                             )}
                           </div>
-                          <h3 className="text-base font-bold text-[#0B1F3A] mt-0.5">
+                          <h3 className="text-base font-bold text-[#0B1230] mt-0.5">
                             {subName(slot.subjectId)} ({lvlCode(slot.classLevelId)})
                           </h3>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          <p className="text-xs text-[#6B6F94] mt-0.5">
                             {myGroup
                               ? `Assigned Teacher: ${myGroup.teacherName}`
                               : "Teacher allocation pending"}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs font-semibold text-slate-600 inline-flex items-center gap-1 tabular-nums">
-                            <Clock size={14} className="text-[#D97706]" />
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs font-semibold text-[#43466E] inline-flex items-center gap-1 tabular-nums">
+                            <Clock size={14} className="text-[#0891B2]" />
                             {slot.startTime}–{slot.endTime} WAT
                           </span>
                           {myRoom && (
                             <Link
                               href={`/live-classes/${myRoom.id}`}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition whitespace-nowrap"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition whitespace-nowrap shadow-sm"
                             >
                               <Video size={13} />
                               {myRoom.status === "LIVE" ? "Join Live" : "Open Room"}
@@ -181,9 +181,9 @@ export default function TimetablePlannerPage() {
             </div>
 
             {/* Study Planner Checklist */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
-              <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                <CheckSquare size={18} className="text-[#D97706]" />
+            <div className="learnova-card p-6 space-y-4">
+              <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
+                <CheckSquare size={18} className="text-[#7C3AED]" />
                 Personal Revision Goals
               </h2>
 
@@ -192,11 +192,11 @@ export default function TimetablePlannerPage() {
                   value={newGoal}
                   onChange={(e) => setNewGoal(e.target.value)}
                   placeholder="Add study goal (e.g. Organic Chemistry notes)"
-                  className="flex-1 rounded-xl border border-slate-300 bg-[#F7F8FA] px-3 py-2 text-xs text-[#0F1F38] focus:outline-none focus:border-[#0B1F3A] focus:bg-white"
+                  className="learnova-input flex-1 px-3 py-2 text-xs"
                 />
                 <button
                   type="submit"
-                  className="px-3.5 py-2 rounded-xl bg-[#0D9488] hover:bg-[#0F766E] text-white text-xs font-bold inline-flex items-center gap-1"
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold inline-flex items-center gap-1 transition shadow-sm"
                 >
                   <Plus size={14} />
                   Add
@@ -204,7 +204,7 @@ export default function TimetablePlannerPage() {
               </form>
 
               {goals.length === 0 ? (
-                <p className="text-xs text-slate-400 text-center py-6">
+                <p className="text-xs text-[#6B6F94] text-center py-6">
                   Add your personal study targets for this week above.
                 </p>
               ) : (
@@ -212,7 +212,7 @@ export default function TimetablePlannerPage() {
                   {goals.map((g) => (
                     <label
                       key={g.id}
-                      className="flex items-start gap-3 rounded-xl border border-slate-200 bg-[#F7F8FA] p-3 cursor-pointer hover:bg-white transition"
+                      className="flex items-start gap-3 rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3 cursor-pointer hover:bg-white transition"
                     >
                       <input
                         type="checkbox"
@@ -224,11 +224,11 @@ export default function TimetablePlannerPage() {
                             )
                           )
                         }
-                        className="mt-0.5 rounded accent-[#0D9488]"
+                        className="mt-0.5 rounded accent-[#4F46E5]"
                       />
                       <span
                         className={`text-xs font-medium leading-relaxed ${
-                          g.done ? "line-through text-slate-400" : "text-[#0F1F38]"
+                          g.done ? "line-through text-[#6B6F94]" : "text-[#0B1230]"
                         }`}
                       >
                         {g.text}

@@ -10,9 +10,11 @@ import {
   Sparkles,
   Users,
   CalendarCheck,
+  CalendarDays,
   MonitorCheck,
   FileBadge2,
   ShieldCheck,
+  User,
 } from "lucide-react";
 
 export default function MobileBottomNav({ role = "STUDENT" }: { role?: string }) {
@@ -43,6 +45,13 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
           { name: "Rooms", href: "/admin/classrooms", icon: MonitorCheck },
           { name: "Schedule", href: "/admin/timetable", icon: CalendarCheck },
         ]
+      : role === "PARENT"
+      ? [
+          { name: "Overview", href: "/parent", icon: LayoutDashboard },
+          { name: "Timetable", href: "/timetable", icon: CalendarDays },
+          { name: "Live", href: "/live-classes", icon: Video },
+          { name: "Account", href: "/profile", icon: User },
+        ]
       : [
           { name: "Home", href: "/dashboard", icon: LayoutDashboard },
           { name: "Plans", href: "/subscriptions", icon: CreditCard },
@@ -52,7 +61,7 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
         ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 md:hidden h-16 bg-white/95 backdrop-blur border-t border-slate-200 z-50 flex items-center justify-around px-2">
+    <nav className="fixed bottom-0 left-0 right-0 md:hidden h-16 bg-white/95 backdrop-blur-md border-t border-[#E4E1F5] z-50 flex items-center justify-around px-2">
       {items.map((item) => {
         const Icon = item.icon;
         const active =
@@ -60,18 +69,21 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
           (item.href !== "/teacher" &&
             item.href !== "/admin" &&
             item.href !== "/super-admin" &&
+            item.href !== "/parent" &&
             pathname.startsWith(item.href + "/"));
 
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center justify-center gap-0.5 px-3 py-1 rounded-xl text-[11px] font-semibold transition ${
-              active ? "text-[#0D9488]" : "text-slate-500 hover:text-[#0B1F3A]"
+            className={`relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold transition min-w-0 ${
+              active
+                ? "text-[#6D28D9] bg-[#F5F3FF]"
+                : "text-[#6B6F94] hover:text-[#0B1230]"
             }`}
           >
-            <Icon size={19} />
-            <span>{item.name}</span>
+            <Icon size={18} />
+            <span className="truncate">{item.name}</span>
           </Link>
         );
       })}

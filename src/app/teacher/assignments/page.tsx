@@ -54,18 +54,18 @@ export default function TeacherAssignmentsPage() {
     <ProtectedRoute roles={["TEACHER", "ADMIN"]}>
       <AppLayout>
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#0D9488]">
+          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
                 Assessments &amp; Marking
               </p>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0B1F3A] mt-1">
+              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
                 Assignments &amp; Grading Queue
               </h1>
             </div>
             <button
               onClick={() => setShowForm((v) => !v)}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white text-xs font-bold transition"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm shrink-0 self-start sm:self-auto"
             >
               <Plus size={15} />
               Create Assignment
@@ -75,21 +75,23 @@ export default function TeacherAssignmentsPage() {
           {showForm && (
             <form
               onSubmit={handleCreate}
-              className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-xs"
+              className="learnova-card p-6 space-y-4"
             >
-              <h2 className="text-base font-bold text-[#0B1F3A]">New Class Assignment</h2>
+              <h2 className="landing-display text-base font-bold text-[#0B1230]">
+                New Class Assignment
+              </h2>
               <div className="grid sm:grid-cols-3 gap-3">
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
                   placeholder="Assignment title"
-                  className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm"
+                  className="learnova-input px-3.5 py-2.5 text-sm"
                 />
                 <select
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm"
+                  className="learnova-input px-3.5 py-2.5 text-sm"
                 >
                   <option>Mathematics</option>
                   <option>Physics</option>
@@ -101,7 +103,7 @@ export default function TeacherAssignmentsPage() {
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   placeholder="Due date (WAT)"
-                  className="rounded-xl border border-slate-300 bg-[#F7F8FA] px-3.5 py-2.5 text-sm"
+                  className="learnova-input px-3.5 py-2.5 text-sm"
                 />
               </div>
               <textarea
@@ -110,19 +112,19 @@ export default function TeacherAssignmentsPage() {
                 rows={3}
                 required
                 placeholder="Instructions & marking guide..."
-                className="w-full rounded-xl border border-slate-300 bg-[#F7F8FA] p-3.5 text-sm"
+                className="learnova-input w-full p-3.5 text-sm"
               />
               <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold"
+                  className="px-4 py-2 rounded-xl border border-[#DCD7F5] text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#0D9488] text-white text-xs font-bold"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                 >
                   Publish to Class
                 </button>
@@ -131,47 +133,47 @@ export default function TeacherAssignmentsPage() {
           )}
 
           <div className="grid lg:grid-cols-[1.2fr_1fr] gap-6 items-start">
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-0">
               {tasks.map((t) => (
                 <div
                   key={t.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs"
+                  className="learnova-card p-5"
                 >
                   <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-[#0D9488]">{t.subject} · {t.classLevel}</span>
-                    <span className="text-slate-500 tabular-nums">
+                    <span className="text-[#4F46E5]">{t.subject} · {t.classLevel}</span>
+                    <span className="text-[#6B6F94] tabular-nums">
                       {t.submissions}/{t.total} submitted
                     </span>
                   </div>
-                  <h3 className="text-base font-bold text-[#0B1F3A] mt-1.5">
+                  <h3 className="landing-display text-base font-bold text-[#0B1230] mt-1.5">
                     {t.title}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-2">{t.instructions}</p>
-                  <p className="text-[11px] text-[#D97706] font-semibold mt-3">
+                  <p className="text-xs text-[#43466E] mt-2 leading-relaxed">{t.instructions}</p>
+                  <p className="text-[11px] text-amber-600 font-semibold mt-3">
                     Due: {t.dueDate}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs space-y-4">
-              <h2 className="text-base font-bold text-[#0B1F3A] flex items-center gap-2">
-                <ClipboardList size={17} className="text-[#D97706]" />
+            <div className="learnova-card p-6 space-y-4 min-w-0">
+              <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
+                <ClipboardList size={17} className="text-[#7C3AED]" />
                 Submissions to Grade
               </h2>
               <div className="space-y-3">
                 {gradingQueue.map((sub) => (
                   <div
                     key={sub.id}
-                    className="rounded-xl border border-slate-200 bg-[#F7F8FA] p-4 space-y-2.5"
+                    className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-2.5"
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-bold text-[#0B1F3A]">{sub.student}</p>
-                        <p className="text-xs text-slate-500">{sub.task}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-[#0B1230] truncate">{sub.student}</p>
+                        <p className="text-xs text-[#6B6F94] truncate">{sub.task}</p>
                       </div>
                       {sub.graded && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 shrink-0 tabular-nums">
                           <CheckCircle2 size={14} /> {sub.score}/100
                         </span>
                       )}
@@ -192,7 +194,7 @@ export default function TeacherAssignmentsPage() {
                             )
                           }
                           placeholder="Score / 100"
-                          className="w-28 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs"
+                          className="learnova-input w-28 px-2.5 py-1.5 text-xs tabular-nums"
                         />
                         <button
                           onClick={() =>
@@ -204,7 +206,7 @@ export default function TeacherAssignmentsPage() {
                               )
                             )
                           }
-                          className="px-3.5 py-1.5 rounded-lg bg-[#0D9488] text-white text-xs font-bold"
+                          className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
                         >
                           Record Grade
                         </button>

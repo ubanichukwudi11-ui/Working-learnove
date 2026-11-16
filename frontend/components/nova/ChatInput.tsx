@@ -182,29 +182,29 @@ export default function ChatInput({
 
   return (
     <div className="space-y-1.5">
-      <div className="rounded-2xl border border-slate-300 focus-within:border-[#0D9488] bg-[#F7F8FA] focus-within:bg-white transition p-2.5 shadow-2xs">
+      <div className="rounded-2xl border border-[#DCD7F5] focus-within:border-[#7C3AED] focus-within:ring-3 focus-within:ring-[#7C3AED]/10 bg-[#FAF8FF] focus-within:bg-white transition p-2.5 shadow-2xs">
         {attachedImage && (
           <div className="mb-2 px-2 flex items-center gap-3">
             <div className="relative inline-block">
               <img
                 src={attachedImage.previewUrl}
                 alt={attachedImage.fileName}
-                className="h-16 w-16 object-cover rounded-xl border border-slate-200 bg-white"
+                className="h-16 w-16 object-cover rounded-xl border border-[#DCD7F5] bg-white"
               />
               <button
                 type="button"
                 onClick={() => setAttachedImage(null)}
                 aria-label="Remove attached photo"
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#0B1F3A] text-white flex items-center justify-center shadow"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#0B1230] text-white flex items-center justify-center shadow"
               >
                 <X size={11} />
               </button>
             </div>
             <div className="min-w-0 text-xs">
-              <p className="font-bold text-[#0B1F3A] truncate">
+              <p className="font-bold text-[#0B1230] truncate">
                 Snap &amp; Solve Photo Attached
               </p>
-              <p className="text-[11px] text-slate-500 truncate">
+              <p className="text-[11px] text-[#4A5073] truncate">
                 {attachedImage.fileName}
               </p>
             </div>
@@ -226,18 +226,18 @@ export default function ChatInput({
             recording
               ? `Recording voice (${seconds}s)... Click stop to transcribe`
               : transcribing
-              ? "Transcribing your speech with Gemini 3.5 Transcribe..."
+              ? "Transcribing your speech..."
               : attachedImage
               ? "Add a question about this photo (or click Send to solve)..."
               : subjectLabel
               ? `Ask Nova about ${subjectLabel} — or snap a homework photo...`
               : "Ask Nova Classroom AI to explain a topic, solve a snapped photo, or draft notes..."
           }
-          className="w-full resize-none bg-transparent px-2 py-1.5 text-sm text-[#0F1F38] placeholder:text-slate-400 outline-none leading-relaxed max-h-40"
+          className="w-full resize-none bg-transparent px-2 py-1.5 text-sm text-[#0B1230] placeholder:text-[#7C82A1] outline-none leading-relaxed max-h-40"
         />
 
         <div className="flex items-center justify-between gap-2 pt-1.5 px-1">
-          <p className="text-[11px] text-slate-400 hidden sm:block">
+          <p className="text-[11px] text-[#7C82A1] hidden sm:block">
             Press Enter to send · Attach textbook or homework photo (PNG/JPG/WEBP)
           </p>
 
@@ -254,9 +254,9 @@ export default function ChatInput({
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || recording || transcribing}
               title="Snap & Solve: upload homework or equation photo"
-              className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition border bg-white hover:bg-slate-100 text-[#0B1F3A] border-slate-200"
+              className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition border bg-white hover:bg-[#F5F3FF] text-[#0B1230] border-[#DCD7F5] whitespace-nowrap"
             >
-              <ImagePlus size={14} className="text-[#0D9488]" />
+              <ImagePlus size={14} className="text-[#6D28D9]" />
               <span className="hidden sm:inline">Snap Photo</span>
             </button>
 
@@ -269,12 +269,12 @@ export default function ChatInput({
                   ? "Stop recording and transcribe"
                   : "Dictate question with microphone"
               }
-              className={`h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition border ${
+              className={`h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition border whitespace-nowrap ${
                 recording
                   ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
                   : transcribing
                   ? "bg-amber-50 text-amber-800 border-amber-200"
-                  : "bg-white hover:bg-slate-100 text-[#0B1F3A] border-slate-200"
+                  : "bg-white hover:bg-[#F5F3FF] text-[#0B1230] border-[#DCD7F5]"
               }`}
             >
               {transcribing ? (
@@ -282,7 +282,7 @@ export default function ChatInput({
               ) : recording ? (
                 <Square size={13} />
               ) : (
-                <Mic size={14} />
+                <Mic size={14} className="text-[#0891B2]" />
               )}
               <span>
                 {recording ? `${seconds}s` : transcribing ? "Transcribing" : "Dictate"}
@@ -299,7 +299,7 @@ export default function ChatInput({
                 transcribing
               }
               aria-label="Send message"
-              className="w-9 h-9 rounded-xl bg-[#0B1F3A] hover:bg-[#143258] text-white flex items-center justify-center transition disabled:opacity-40"
+              className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:opacity-95 text-white flex items-center justify-center transition disabled:opacity-40 shadow-[0_4px_12px_rgba(79,70,229,0.28)] shrink-0"
             >
               <ArrowUp size={16} />
             </button>

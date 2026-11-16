@@ -26,10 +26,10 @@ export default function SubjectStrengthChart({
   const chartData = data && data.length > 0 ? data : DEFAULT_DATA;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
+    <div className="learnova-card p-6 min-w-0">
       <div>
-        <h3 className="font-bold text-base text-[#0B1F3A]">Subject Mastery</h3>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <h3 className="font-bold text-base text-[#0B1230]">Subject Mastery</h3>
+        <p className="text-xs text-[#6B6F94] mt-0.5">
           Term continuous assessment &amp; quiz estimate (%)
         </p>
       </div>
@@ -37,19 +37,19 @@ export default function SubjectStrengthChart({
       <div className="h-[240px] mt-5">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-            <XAxis dataKey="subject" stroke="#64748B" fontSize={12} />
-            <YAxis domain={[0, 100]} stroke="#64748B" fontSize={12} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#E4E1F5" vertical={false} />
+            <XAxis dataKey="subject" stroke="#6B6F94" fontSize={12} />
+            <YAxis domain={[0, 100]} stroke="#6B6F94" fontSize={12} />
             <Tooltip
               contentStyle={{
                 backgroundColor: "#FFFFFF",
-                borderColor: "#E2E8F0",
+                borderColor: "#E4E1F5",
                 borderRadius: "12px",
-                color: "#0F1F38",
+                color: "#0B1230",
                 fontSize: "12px",
               }}
             />
-            <Bar dataKey="score" fill="#0B1F3A" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="score" fill="#4F46E5" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
