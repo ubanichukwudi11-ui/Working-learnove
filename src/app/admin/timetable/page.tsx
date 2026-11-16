@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import Link from "next/link";
-import AdminAiCopilot, { type AiTimetableSuggestion } from "@/components/admin/AdminAiCopilot";
+import AdminAiCopilot, { type AiTimetableSuggestion } from "@frontend/components/admin/AdminAiCopilot";
 import {
   CalendarDays,
   Plus,

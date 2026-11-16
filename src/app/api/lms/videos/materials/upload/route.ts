@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import { getSupabaseServerClient } from "@backend/services/supabaseServer";
 
 const MATERIALS_BUCKET = "learnova-lesson-materials";

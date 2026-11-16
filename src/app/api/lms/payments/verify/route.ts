@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
-import { appendAuditLog, appendNotification, mutateLmsState } from "@/lib/lmsDb";
+import { requireApiAuth } from "@backend/services/serverAuth";
+import { appendAuditLog, appendNotification, mutateLmsState } from "@backend/services/lmsDb";
 
 /**
  * Server-side Paystack transaction verification.

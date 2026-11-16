@@ -2,7 +2,7 @@
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import AdminAiCopilot from "@/components/admin/AdminAiCopilot";
+import AdminAiCopilot from "@frontend/components/admin/AdminAiCopilot";
 import Link from "next/link";
 import { CalendarDays, GraduationCap, CreditCard } from "lucide-react";
 

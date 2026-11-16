@@ -1,4 +1,8 @@
-import { getSupabaseServerClient } from "./supabaseServer";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+  SUPABASE_SERVER_CONFIG_ERROR,
+} from "./supabaseServer";
 import {
   LmsStateData,
   LmsUserRole,
@@ -183,9 +187,10 @@ export async function loadLmsState(): Promise<LmsStateData> {
     return g.__learnovaLmsCache;
   }
 
-  try {
-    const sb = getSupabaseServerClient();
-    const { data, error } = await sb.storage.from(BUCKET_ID).download(STATE_OBJECT_PATH);
+  if (isSupabaseServerConfigured) {
+    try {
+      const sb = getSupabaseServerClient();
+      const { data, error } = await sb.storage.from(BUCKET_ID).download(STATE_OBJECT_PATH);
     if (!error && data) {
       const text = await data.text();
       const parsed = JSON.parse(text) as Partial<LmsStateData>;
@@ -225,9 +230,10 @@ export async function loadLmsState(): Promise<LmsStateData> {
       g.__learnovaLmsCache = merged;
       await syncTeacherApplicationsFromSupabase(g.__learnovaLmsCache);
       return g.__learnovaLmsCache;
+      }
+    } catch (err) {
+      console.warn("Loading LMS state from storage fell back to clean baseline:", err);
     }
-  } catch (err) {
-    console.warn("Loading LMS state from storage fell back to clean baseline:", err);
   }
 
   const initial = createInitialLmsState();
@@ -238,6 +244,7 @@ export async function loadLmsState(): Promise<LmsStateData> {
 }
 
 async function syncTeacherApplicationsFromSupabase(state: LmsStateData) {
+  if (!isSupabaseServerConfigured) return;
   try {
     const sb = getSupabaseServerClient();
     const { data: profiles } = await sb.from("profiles").select("*").eq("role", "TEACHER");
@@ -303,6 +310,7 @@ async function syncTeacherApplicationsFromSupabase(state: LmsStateData) {
 
 export async function saveLmsState(state: LmsStateData): Promise<void> {
   g.__learnovaLmsCache = state;
+  if (!isSupabaseServerConfigured) return;
   try {
     const sb = getSupabaseServerClient();
     const { data: buckets } = await sb.storage.listBuckets();
@@ -341,6 +349,9 @@ export async function mutateLmsState<T>(
 }
 
 export async function fetchDirectoryUsers(): Promise<DirectoryUser[]> {
+  if (!isSupabaseServerConfigured) {
+    throw new Error(SUPABASE_SERVER_CONFIG_ERROR);
+  }
   const sb = getSupabaseServerClient();
   const [{ data: profiles }, { data: teachers }, { data: students }, state] =
     await Promise.all([

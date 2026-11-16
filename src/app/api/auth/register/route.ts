@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient, isSupabaseServerConfigured } from "@/lib/supabaseServer";
-import { mutateLmsState, appendNotification, appendAuditLog } from "@/lib/lmsDb";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+  SUPABASE_SERVER_CONFIG_ERROR,
+} from "@backend/services/supabaseServer";
+import {
+  mutateLmsState,
+  appendNotification,
+  appendAuditLog,
+} from "@backend/services/lmsDb";
 
 export async function POST(req: Request) {
   try {
@@ -65,10 +73,9 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Supabase Auth is not configured. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+          error: SUPABASE_SERVER_CONFIG_ERROR,
         },
-        { status: 400 }
+        { status: 503 }
       );
     }
 

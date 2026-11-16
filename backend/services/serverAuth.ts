@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseServerClient } from "./supabaseServer";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+  SUPABASE_SERVER_CONFIG_ERROR,
+} from "./supabaseServer";
 import { loadLmsState } from "./lmsDb";
 import type { LmsUserRole } from "./lmsTypes";
 
@@ -25,6 +29,8 @@ function extractToken(req: NextRequest): string | null {
 export async function getAuthenticatedUser(
   req: NextRequest
 ): Promise<AuthenticatedSessionUser | null> {
+  if (!isSupabaseServerConfigured) return null;
+
   const token = extractToken(req);
   if (!token) return null;
 
@@ -71,6 +77,16 @@ export async function requireApiAuth(
   | { user: AuthenticatedSessionUser; errorResponse: null }
   | { user: null; errorResponse: NextResponse }
 > {
+  if (!isSupabaseServerConfigured) {
+    return {
+      user: null,
+      errorResponse: NextResponse.json(
+        { error: SUPABASE_SERVER_CONFIG_ERROR },
+        { status: 503 }
+      ),
+    };
+  }
+
   const user = await getAuthenticatedUser(req);
   if (!user) {
     return {

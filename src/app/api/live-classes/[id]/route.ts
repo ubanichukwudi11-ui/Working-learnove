@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import {
   applyAuthenticatedRoomAction,
   getRoomSnapshotFromRecord,
   getSignalsSince,
   verifyLiveRoomAccess,
-} from "@/lib/liveRoomServer";
+} from "@backend/services/liveRoomServer";
 
 export async function GET(
   req: NextRequest,

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseServerClient } from "@/lib/supabaseServer";
-import { loadLmsState } from "@/lib/lmsDb";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+  SUPABASE_SERVER_CONFIG_ERROR,
+} from "@backend/services/supabaseServer";
+import { loadLmsState } from "@backend/services/lmsDb";
 
 /**
  * Exchanges a client Supabase access_token (e.g. after OAuth callback) for
@@ -8,6 +12,13 @@ import { loadLmsState } from "@/lib/lmsDb";
  */
 export async function POST(req: NextRequest) {
   try {
+    if (!isSupabaseServerConfigured) {
+      return NextResponse.json(
+        { error: SUPABASE_SERVER_CONFIG_ERROR },
+        { status: 503 }
+      );
+    }
+
     const body = await req.json();
     const accessToken = String(body.accessToken || "").trim();
     if (!accessToken) {

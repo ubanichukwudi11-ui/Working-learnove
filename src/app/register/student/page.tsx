@@ -16,7 +16,11 @@ import {
 } from "lucide-react";
 
 import { registerStudent, login as authLogin } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  SUPABASE_CONFIG_ERROR,
+} from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/branding/Logo";
 
@@ -57,6 +61,11 @@ export default function StudentRegistrationPage() {
     if (!file) return;
 
     setPreview(URL.createObjectURL(file));
+
+    if (!isSupabaseConfigured) {
+      setError(SUPABASE_CONFIG_ERROR);
+      return;
+    }
 
     const fileName = `${Date.now()}-${file.name}`;
 

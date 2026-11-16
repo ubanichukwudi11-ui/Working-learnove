@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { getCurrentUser, UserRole } from "@/lib/auth";
 
 export type UserStatus =
@@ -110,6 +110,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     loadUser();
 
+    if (!isSupabaseConfigured) return;
+
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === "SIGNED_OUT") {
@@ -130,7 +132,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      await supabase.auth.signOut();
+      if (isSupabaseConfigured) {
+        await supabase.auth.signOut();
+      }
     } catch {}
   }
 

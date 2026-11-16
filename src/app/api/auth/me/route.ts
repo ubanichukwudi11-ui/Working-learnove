@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser } from "@/lib/serverAuth";
+import { getAuthenticatedUser } from "@backend/services/serverAuth";
 
 export async function GET(req: NextRequest) {
   try {

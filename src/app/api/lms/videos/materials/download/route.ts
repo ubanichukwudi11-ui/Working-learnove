@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "fs/promises";
 import path from "path";
-import { requireApiAuth } from "@/lib/serverAuth";
-import { loadLmsState } from "@/lib/lmsDb";
+import { requireApiAuth } from "@backend/services/serverAuth";
+import { loadLmsState } from "@backend/services/lmsDb";
 import { buildSimplePdfBuffer } from "@backend/services/videoLessonsService";
 
 const CONTENT_TYPES: Record<string, string> = {

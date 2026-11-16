@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import {
   appendAuditLog,
   appendNotification,
@@ -7,13 +7,13 @@ import {
   isStudentEntitledForSubject,
   loadLmsState,
   mutateLmsState,
-} from "@/lib/lmsDb";
+} from "@backend/services/lmsDb";
 import {
   allocateGroupsForTimetableEntry,
   getEligibleStudentsForLesson,
   validateTimetableEntry,
-} from "@/lib/allocationEngine";
-import type { TimetableEntryRecord } from "@/lib/lmsTypes";
+} from "@backend/services/allocationEngine";
+import type { TimetableEntryRecord } from "@backend/services/lmsTypes";
 
 export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);

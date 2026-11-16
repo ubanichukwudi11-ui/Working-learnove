@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import {
   appendAuditLog,
   appendNotification,
   fetchDirectoryUsers,
   loadLmsState,
   mutateLmsState,
-} from "@/lib/lmsDb";
+} from "@backend/services/lmsDb";
 import { normalizeVideoSourceInput } from "@backend/services/videoLessonsService";
 import type {
   CurriculumTopicRecord,

@@ -16,17 +16,6 @@ Check
 
 
 
-type Note = {
-
-id:string;
-
-title:string;
-
-content:string;
-
-};
-
-
 
 
 export default function NoteEditor({

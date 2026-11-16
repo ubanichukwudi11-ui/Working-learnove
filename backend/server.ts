@@ -5,7 +5,15 @@ import { WebSocketServer } from "ws";
 import { handleNovaLiveConnection } from "./ai/novaLiveBridge";
 
 const dev = process.env.NODE_ENV !== "production";
-const hostname = process.env.HOSTNAME || "0.0.0.0";
+const rawHost = (process.env.HOST || process.env.HOSTNAME || "").trim();
+const hostname =
+  rawHost === "localhost" ||
+  rawHost === "127.0.0.1" ||
+  rawHost === "0.0.0.0" ||
+  rawHost === "::" ||
+  /^\d{1,3}(\.\d{1,3}){3}$/.test(rawHost)
+    ? rawHost
+    : "0.0.0.0";
 const port = Number(process.env.PORT || 3000);
 
 const app = next({ dev, hostname, port });

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
-import { getSupabaseServerClient, isSupabaseServerConfigured } from "@/lib/supabaseServer";
-import { loadLmsState } from "@/lib/lmsDb";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+  SUPABASE_SERVER_CONFIG_ERROR,
+} from "@backend/services/supabaseServer";
+import { loadLmsState } from "@backend/services/lmsDb";
 
 export async function POST(req: Request) {
   try {
@@ -18,10 +22,9 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            "Supabase Auth is not configured. Please check your Supabase URL and keys.",
+          error: SUPABASE_SERVER_CONFIG_ERROR,
         },
-        { status: 400 }
+        { status: 503 }
       );
     }
 

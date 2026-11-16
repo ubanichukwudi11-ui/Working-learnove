@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import {
   appendAuditLog,
   appendNotification,
@@ -7,8 +7,8 @@ import {
   isStudentEntitledForSubject,
   loadLmsState,
   mutateLmsState,
-} from "@/lib/lmsDb";
-import { getSupabaseServerClient } from "@/lib/supabaseServer";
+} from "@backend/services/lmsDb";
+import { getSupabaseServerClient } from "@backend/services/supabaseServer";
 
 export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);

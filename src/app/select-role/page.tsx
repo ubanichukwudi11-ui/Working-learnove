@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Users, School } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  SUPABASE_CONFIG_ERROR,
+} from "@/lib/supabase";
 import Logo from "@/components/branding/Logo";
 
 type Role = "STUDENT" | "TEACHER" | "PARENT";
@@ -16,6 +20,10 @@ export default function SelectRolePage() {
   async function chooseRole(role: Role) {
     try {
       setErrorMsg(null);
+      if (!isSupabaseConfigured) {
+        setErrorMsg(SUPABASE_CONFIG_ERROR);
+        return;
+      }
       setLoading(true);
 
       const {

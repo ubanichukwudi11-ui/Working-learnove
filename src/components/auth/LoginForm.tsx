@@ -11,7 +11,11 @@ import {
 } from "lucide-react";
 
 import { login } from "@/lib/auth";
-import { supabase } from "@/lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  SUPABASE_CONFIG_ERROR,
+} from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
@@ -131,6 +135,9 @@ export default function LoginForm() {
   async function loginWithGoogle() {
     try {
       setErrors({});
+      if (!isSupabaseConfigured) {
+        throw new Error(SUPABASE_CONFIG_ERROR);
+      }
       await supabase.auth.signOut();
 
       const { error } = await supabase.auth.signInWithOAuth({

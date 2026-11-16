@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
-import { appendAuditLog, loadLmsState, mutateLmsState } from "@/lib/lmsDb";
+import { requireApiAuth } from "@backend/services/serverAuth";
+import { appendAuditLog, loadLmsState, mutateLmsState } from "@backend/services/lmsDb";
 
 export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);

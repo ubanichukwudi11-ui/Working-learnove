@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import fs from "fs/promises";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import { getSupabaseServerClient } from "@backend/services/supabaseServer";
 
 const VIDEO_BUCKET = "learnova-video-lessons";

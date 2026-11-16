@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@/lib/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import {
   appendAuditLog,
   appendNotification,
   fetchDirectoryUsers,
   loadLmsState,
   mutateLmsState,
-} from "@/lib/lmsDb";
-import { getSupabaseServerClient } from "@/lib/supabaseServer";
-import type { TeacherApplicationStatus } from "@/lib/lmsTypes";
+} from "@backend/services/lmsDb";
+import { getSupabaseServerClient } from "@backend/services/supabaseServer";
+import type { TeacherApplicationStatus } from "@backend/services/lmsTypes";
 
 export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req, ["TEACHER", "ADMIN", "SUPER_ADMIN"]);
