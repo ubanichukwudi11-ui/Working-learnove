@@ -1,8 +1,31 @@
+import crypto from "crypto";
+import fs from "fs";
+import { mkdir, readFile, writeFile } from "fs/promises";
+import path from "path";
+import {
+  appendAuditLog,
+  appendNotification,
+  fetchDirectoryUsers,
+  loadLmsState,
+  mutateLmsState,
+} from "./lmsDb";
+import { getSupabaseServerClient } from "./supabaseServer";
+import type { AuthenticatedSessionUser } from "./serverAuth";
 import type {
   CurriculumTopicRecord,
   VideoLessonMaterialRecord,
   VideoLessonRecord,
+  VideoPublishStatus,
+  VideoUploadRequestRecord,
 } from "./lmsTypes";
+
+export class VideoServiceError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.status = status;
+  }
+}
 
 export function extractYouTubeVideoId(rawUrl: string): string | null {
   const input = String(rawUrl || "").trim();
@@ -719,5 +742,1087 @@ MARKING SCHEME WEIGHTS (50 MARKS)
     curriculumTopics: topics,
     videoLessons: videos,
   };
+}
+
+export async function getVideoLessonsOverview(user: AuthenticatedSessionUser) {
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  const isTeacher = user.role === "TEACHER";
+
+  const [state, users] = await Promise.all([
+    loadLmsState(),
+    isAdmin ? fetchDirectoryUsers() : Promise.resolve([]),
+  ]);
+
+  const classLevels = isAdmin
+    ? state.classLevels
+    : state.classLevels.filter((c) => c.isActive);
+  const subjects = isAdmin
+    ? state.subjects
+    : state.subjects.filter((s) => s.isActive);
+
+  const topics = (state.curriculumTopics || [])
+    .filter((t) => isAdmin || isTeacher || t.isPublished)
+    .sort((a, b) => a.topicOrder - b.topicOrder);
+
+  const videos = (state.videoLessons || []).filter((v) => {
+    if (isAdmin) return true;
+    if (isTeacher) {
+      return v.status === "PUBLISHED" || v.uploadedByUserId === user.id;
+    }
+    return v.status === "PUBLISHED";
+  });
+
+  const requests = isAdmin
+    ? state.videoUploadRequests || []
+    : isTeacher
+    ? (state.videoUploadRequests || []).filter(
+        (r) => r.teacherUserId === user.id
+      )
+    : [];
+
+  const enrolment =
+    user.role === "STUDENT"
+      ? state.studentEnrolments.find((e) => e.studentUserId === user.id) ||
+        null
+      : null;
+  const entitlement =
+    user.role === "STUDENT"
+      ? state.studentEntitlements.find((e) => e.studentUserId === user.id) ||
+        null
+      : null;
+
+  const approvedPairs = isTeacher
+    ? state.teacherApprovals.filter(
+        (a) => a.teacherUserId === user.id && a.status === "APPROVED"
+      )
+    : [];
+
+  const teachers = isAdmin
+    ? users
+        .filter((u) => u.role === "TEACHER" && u.status !== "REJECTED")
+        .map((u) => ({
+          id: u.id,
+          fullName: u.fullName,
+          email: u.email,
+          status: u.status,
+          approvals: state.teacherApprovals
+            .filter((a) => a.teacherUserId === u.id && a.status === "APPROVED")
+            .map((a) => ({
+              subjectId: a.subjectId,
+              subjectName: a.subjectName,
+              classLevelId: a.classLevelId,
+              classLevelName: a.classLevelName,
+            })),
+        }))
+    : [];
+
+  return {
+    role: user.role,
+    classLevels,
+    subjects,
+    terms: state.terms,
+    sessions: state.sessions,
+    topics,
+    videos,
+    requests,
+    teachers,
+    approvedPairs,
+    enrolment,
+    entitlement,
+  };
+}
+
+export async function handleVideoLessonsMutation(
+  user: AuthenticatedSessionUser,
+  body: Record<string, unknown>
+) {
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  const isTeacher = user.role === "TEACHER";
+  const action = String(body.action || "");
+
+  if (action === "RECORD_VIDEO_VIEW") {
+    const videoId = String(body.videoId || "");
+    const updated = await mutateLmsState((state) => {
+      const video = (state.videoLessons || []).find((v) => v.id === videoId);
+      if (!video) throw new VideoServiceError("Video lesson not found.", 400);
+      video.viewCount = (video.viewCount || 0) + 1;
+      return video;
+    });
+    return { success: true, video: updated };
+  }
+
+  if (!isAdmin && !isTeacher) {
+    throw new VideoServiceError(
+      "Only teachers and administrators can modify video lessons.",
+      403
+    );
+  }
+
+  const result = await mutateLmsState(async (state) => {
+    if (!Array.isArray(state.curriculumTopics)) state.curriculumTopics = [];
+    if (!Array.isArray(state.videoLessons)) state.videoLessons = [];
+    if (!Array.isArray(state.videoUploadRequests))
+      state.videoUploadRequests = [];
+
+    switch (action) {
+      case "CREATE_TOPIC": {
+        const subjectId = String(body.subjectId || "").trim();
+        const termId = String(body.termId || "").trim();
+        const classLevelId = String(body.classLevelId || "").trim();
+        const title = String(body.title || "").trim();
+        const description = String(body.description || "").trim();
+        const weekLabel = String(body.weekLabel || "").trim();
+
+        if (!subjectId || !termId || !classLevelId || !title) {
+          throw new Error(
+            "Subject, term, class level, and topic title are required."
+          );
+        }
+
+        if (isTeacher && !isAdmin) {
+          const hasApproval = state.teacherApprovals.some(
+            (a) =>
+              a.teacherUserId === user.id &&
+              a.subjectId === subjectId &&
+              a.status === "APPROVED"
+          );
+          if (
+            state.teacherApprovals.some((a) => a.teacherUserId === user.id) &&
+            !hasApproval
+          ) {
+            throw new Error(
+              "You can only add topics for subjects you are approved to teach."
+            );
+          }
+        }
+
+        const existingCount = state.curriculumTopics.filter(
+          (t) =>
+            t.subjectId === subjectId &&
+            t.termId === termId &&
+            t.classLevelId === classLevelId
+        ).length;
+
+        const now = new Date().toISOString();
+        const created: CurriculumTopicRecord = {
+          id: `top-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          subjectId,
+          termId,
+          classLevelId,
+          topicOrder: Number(body.topicOrder) || existingCount + 1,
+          weekLabel: weekLabel || `Topic ${existingCount + 1}`,
+          title,
+          description:
+            description ||
+            "Structured curriculum topic with recorded walkthroughs and curated resources.",
+          isPublished: true,
+          createdBy: user.id,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        state.curriculumTopics.push(created);
+        appendAuditLog(state, {
+          actorUserId: user.id,
+          actorEmail: user.email,
+          actorRole: user.role,
+          action: "CREATE_CURRICULUM_TOPIC",
+          entityType: "curriculum_topic",
+          entityId: created.id,
+          metadata: { subjectId, termId, classLevelId, title },
+        });
+
+        return { topic: created };
+      }
+
+      case "DELETE_TOPIC": {
+        if (!isAdmin) {
+          throw new Error("Only administrators can remove curriculum topics.");
+        }
+        const topicId = String(body.topicId || "");
+        const before = state.curriculumTopics.length;
+        state.curriculumTopics = state.curriculumTopics.filter(
+          (t) => t.id !== topicId
+        );
+        if (state.curriculumTopics.length === before) {
+          throw new Error("Topic not found.");
+        }
+        state.videoLessons = state.videoLessons.filter(
+          (v) => v.topicId !== topicId
+        );
+        state.videoUploadRequests = state.videoUploadRequests.filter(
+          (r) => r.topicId !== topicId
+        );
+        return { deletedTopicId: topicId };
+      }
+
+      case "CREATE_VIDEO_LESSON": {
+        const topicId = String(body.topicId || "").trim();
+        const title = String(body.title || "").trim();
+        const description = String(body.description || "").trim();
+        const durationLabel = String(body.durationLabel || "").trim();
+        const requestId = String(body.requestId || "").trim() || undefined;
+        const rawSourceType = String(body.sourceType || "YOUTUBE");
+        const rawVideoUrl = String(body.videoUrl || "").trim();
+
+        const topic = state.curriculumTopics.find((t) => t.id === topicId);
+        if (!topic) {
+          throw new Error("Selected curriculum topic was not found.");
+        }
+        if (!title) {
+          throw new Error("Video lesson title is required.");
+        }
+
+        const normalized = normalizeVideoSourceInput({
+          sourceType: rawSourceType,
+          videoUrl: rawVideoUrl,
+        });
+
+        const rawMaterials = Array.isArray(body.materials) ? body.materials : [];
+        const incomingMaterials: VideoLessonMaterialRecord[] = rawMaterials
+          .filter(
+            (m): m is Record<string, unknown> =>
+              Boolean(m && typeof m === "object" && "title" in m && "url" in m && m.title && m.url)
+          )
+          .map((m) => ({
+            id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            title: String(m.title).trim(),
+            type: (["PDF", "WORKSHEET", "SLIDES", "NOTES", "LINK"].includes(
+              String(m.type)
+            )
+              ? m.type
+              : "PDF") as VideoLessonMaterialRecord["type"],
+            url: String(m.url).trim(),
+            fileName: m.fileName ? String(m.fileName) : undefined,
+            mimeType: m.mimeType ? String(m.mimeType) : undefined,
+            fileSizeBytes: m.fileSizeBytes
+              ? Number(m.fileSizeBytes)
+              : undefined,
+            contentText: m.contentText ? String(m.contentText) : undefined,
+            createdAt: new Date().toISOString(),
+          }));
+
+        const now = new Date().toISOString();
+        const created: VideoLessonRecord = {
+          id: `vid-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          topicId: topic.id,
+          subjectId: topic.subjectId,
+          termId: topic.termId,
+          classLevelId: topic.classLevelId,
+          title,
+          description:
+            description ||
+            `${topic.title} video lesson curated for Nigerian curriculum learners.`,
+          sourceType: normalized.sourceType,
+          videoUrl: normalized.videoUrl,
+          youtubeVideoId: normalized.youtubeVideoId,
+          storagePath: body.storagePath ? String(body.storagePath) : undefined,
+          mimeType: body.mimeType ? String(body.mimeType) : undefined,
+          fileSizeBytes: body.fileSizeBytes
+            ? Number(body.fileSizeBytes)
+            : undefined,
+          durationLabel: durationLabel || undefined,
+          materials: incomingMaterials,
+          uploadedByUserId: user.id,
+          uploadedByName: user.fullName,
+          uploadedByRole: user.role,
+          status: "PUBLISHED",
+          requestId,
+          viewCount: 0,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        state.videoLessons.unshift(created);
+
+        if (requestId) {
+          const reqRecord = state.videoUploadRequests.find(
+            (r) => r.id === requestId
+          );
+          if (reqRecord) {
+            reqRecord.fulfilledVideoId = created.id;
+            reqRecord.status = isAdmin ? "APPROVED" : "SUBMITTED";
+            reqRecord.updatedAt = now;
+
+            if (!isAdmin) {
+              appendNotification(state, {
+                recipientUserId: reqRecord.requestedByUserId,
+                recipientRole: "ALL_ADMINS",
+                category: "VIDEO_LESSON",
+                title: `Video Lesson Submitted: ${topic.title}`,
+                message: `${user.fullName} uploaded "${created.title}" in response to your topic video request.`,
+                href: "/admin/videos",
+              });
+            }
+          }
+        }
+
+        appendAuditLog(state, {
+          actorUserId: user.id,
+          actorEmail: user.email,
+          actorRole: user.role,
+          action: "CREATE_VIDEO_LESSON",
+          entityType: "video_lesson",
+          entityId: created.id,
+          metadata: {
+            topicId: topic.id,
+            sourceType: created.sourceType,
+            requestId,
+          },
+        });
+
+        return { video: created };
+      }
+
+      case "DELETE_VIDEO_LESSON": {
+        const videoId = String(body.videoId || "");
+        const existing = state.videoLessons.find((v) => v.id === videoId);
+        if (!existing) throw new Error("Video lesson not found.");
+        if (!isAdmin && existing.uploadedByUserId !== user.id) {
+          throw new Error(
+            "You can only delete video lessons that you uploaded."
+          );
+        }
+        state.videoLessons = state.videoLessons.filter(
+          (v) => v.id !== videoId
+        );
+        return { deletedVideoId: videoId };
+      }
+
+      case "UPDATE_VIDEO_STATUS": {
+        if (!isAdmin) {
+          throw new Error("Only administrators can moderate video status.");
+        }
+        const videoId = String(body.videoId || "");
+        const status = String(body.status || "PUBLISHED") as VideoPublishStatus;
+        const reviewNotes = String(body.reviewNotes || "").trim();
+
+        const video = state.videoLessons.find((v) => v.id === videoId);
+        if (!video) throw new Error("Video lesson not found.");
+
+        video.status = status;
+        if (reviewNotes) video.reviewNotes = reviewNotes;
+        video.updatedAt = new Date().toISOString();
+
+        if (
+          status === "REVISION_REQUESTED" &&
+          video.uploadedByUserId !== user.id
+        ) {
+          appendNotification(state, {
+            recipientUserId: video.uploadedByUserId,
+            recipientRole: "TEACHER",
+            category: "VIDEO_LESSON",
+            title: `Revision Requested: ${video.title}`,
+            message:
+              reviewNotes ||
+              "An administrator requested an update to your uploaded topic video.",
+            href: "/teacher/videos",
+          });
+        }
+
+        return { video };
+      }
+
+      case "ASSIGN_VIDEO_REQUEST": {
+        if (!isAdmin) {
+          throw new Error(
+            "Only administrators can assign teacher video upload requests."
+          );
+        }
+        const topicId = String(body.topicId || "").trim();
+        const teacherUserId = String(body.teacherUserId || "").trim();
+        const instructions = String(body.instructions || "").trim();
+        const dueDate = String(body.dueDate || "").trim() || undefined;
+
+        const topic = state.curriculumTopics.find((t) => t.id === topicId);
+        if (!topic) throw new Error("Please select a valid curriculum topic.");
+        if (!teacherUserId) throw new Error("Please select a teacher.");
+
+        const users = await fetchDirectoryUsers();
+        const teacher = users.find((u) => u.id === teacherUserId);
+        if (!teacher) throw new Error("Selected teacher account not found.");
+
+        const subject = state.subjects.find((s) => s.id === topic.subjectId);
+        const term = state.terms.find((t) => t.id === topic.termId);
+
+        const now = new Date().toISOString();
+        const created: VideoUploadRequestRecord = {
+          id: `vreq-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          topicId: topic.id,
+          subjectId: topic.subjectId,
+          termId: topic.termId,
+          classLevelId: topic.classLevelId,
+          teacherUserId: teacher.id,
+          teacherName: teacher.fullName,
+          requestedByUserId: user.id,
+          requestedByName: user.fullName,
+          instructions:
+            instructions ||
+            `Please record and upload a clear video lesson covering "${topic.title}".`,
+          dueDate,
+          status: "REQUESTED",
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        state.videoUploadRequests.unshift(created);
+
+        appendNotification(state, {
+          recipientUserId: teacher.id,
+          recipientRole: "TEACHER",
+          category: "VIDEO_LESSON",
+          title: `Video Upload Requested: ${topic.title}`,
+          message: `${subject?.name || "Subject"} (${term?.name || "Term"}): ${created.instructions}`,
+          href: "/teacher/videos",
+        });
+
+        appendAuditLog(state, {
+          actorUserId: user.id,
+          actorEmail: user.email,
+          actorRole: user.role,
+          action: "ASSIGN_VIDEO_UPLOAD_REQUEST",
+          entityType: "video_upload_request",
+          entityId: created.id,
+          metadata: {
+            topicId: topic.id,
+            teacherUserId: teacher.id,
+            dueDate,
+          },
+        });
+
+        return { request: created };
+      }
+
+      case "REVIEW_VIDEO_REQUEST": {
+        if (!isAdmin) {
+          throw new Error("Only administrators can review upload requests.");
+        }
+        const requestId = String(body.requestId || "");
+        const decision = String(body.decision || "APPROVED") as
+          | "APPROVED"
+          | "REVISION_REQUESTED";
+        const adminReviewNotes = String(body.adminReviewNotes || "").trim();
+
+        const reqRecord = state.videoUploadRequests.find(
+          (r) => r.id === requestId
+        );
+        if (!reqRecord) throw new Error("Upload request not found.");
+
+        reqRecord.status = decision;
+        if (adminReviewNotes) reqRecord.adminReviewNotes = adminReviewNotes;
+        reqRecord.updatedAt = new Date().toISOString();
+
+        if (reqRecord.fulfilledVideoId) {
+          const vid = state.videoLessons.find(
+            (v) => v.id === reqRecord.fulfilledVideoId
+          );
+          if (vid) {
+            vid.status =
+              decision === "APPROVED" ? "PUBLISHED" : "REVISION_REQUESTED";
+            if (adminReviewNotes) vid.reviewNotes = adminReviewNotes;
+            vid.updatedAt = reqRecord.updatedAt;
+          }
+        }
+
+        const topic = state.curriculumTopics.find(
+          (t) => t.id === reqRecord.topicId
+        );
+
+        appendNotification(state, {
+          recipientUserId: reqRecord.teacherUserId,
+          recipientRole: "TEACHER",
+          category: "VIDEO_LESSON",
+          title:
+            decision === "APPROVED"
+              ? `Video Approved: ${topic?.title || "Topic Lesson"}`
+              : `Revision Needed: ${topic?.title || "Topic Lesson"}`,
+          message:
+            adminReviewNotes ||
+            (decision === "APPROVED"
+              ? "Your video submission has been approved and is live for students."
+              : "Please review the admin feedback and upload an updated video."),
+          href: "/teacher/videos",
+        });
+
+        return { request: reqRecord };
+      }
+
+      case "ATTACH_VIDEO_MATERIAL": {
+        const videoId = String(body.videoId || "").trim();
+        const title = String(body.title || "").trim();
+        const url = String(body.url || "").trim();
+        const contentText = String(body.contentText || "").trim();
+        const type = (["PDF", "WORKSHEET", "SLIDES", "NOTES", "LINK"].includes(
+          String(body.type)
+        )
+          ? body.type
+          : "PDF") as VideoLessonMaterialRecord["type"];
+
+        const video = state.videoLessons.find((v) => v.id === videoId);
+        if (!video) throw new Error("Video lesson not found.");
+        if (!isAdmin && video.uploadedByUserId !== user.id) {
+          throw new Error(
+            "You can only attach study materials to your own uploaded videos."
+          );
+        }
+        if (!title) throw new Error("Material title is required.");
+        if (!url && !contentText) {
+          throw new Error("Attach a file/link or provide study notes text.");
+        }
+
+        const matId = `mat-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        const now = new Date().toISOString();
+        const resolvedUrl =
+          url ||
+          `/api/lms/videos/materials/download?videoId=${encodeURIComponent(
+            video.id
+          )}&materialId=${encodeURIComponent(matId)}`;
+
+        const createdMat: VideoLessonMaterialRecord = {
+          id: matId,
+          title,
+          type,
+          url: resolvedUrl,
+          fileName: body.fileName ? String(body.fileName) : `${title}.pdf`,
+          mimeType: body.mimeType ? String(body.mimeType) : "application/pdf",
+          fileSizeBytes: body.fileSizeBytes
+            ? Number(body.fileSizeBytes)
+            : undefined,
+          contentText: contentText || undefined,
+          createdAt: now,
+        };
+
+        if (!Array.isArray(video.materials)) video.materials = [];
+        video.materials.push(createdMat);
+        video.updatedAt = now;
+        return { video, material: createdMat };
+      }
+
+      case "REMOVE_VIDEO_MATERIAL": {
+        const videoId = String(body.videoId || "").trim();
+        const materialId = String(body.materialId || "").trim();
+        const video = state.videoLessons.find((v) => v.id === videoId);
+        if (!video) throw new Error("Video lesson not found.");
+        if (!isAdmin && video.uploadedByUserId !== user.id) {
+          throw new Error("You can only remove materials from your own videos.");
+        }
+        video.materials = (video.materials || []).filter(
+          (m) => m.id !== materialId
+        );
+        video.updatedAt = new Date().toISOString();
+        return { video };
+      }
+
+      default:
+        throw new Error("Unsupported video lessons action.");
+    }
+  });
+
+  return { success: true, ...result };
+}
+
+const VIDEO_BUCKET = "learnova-video-lessons";
+const MAX_VIDEO_BYTES = 85 * 1024 * 1024;
+const ALLOWED_VIDEO_MIME_EXT: Record<string, string> = {
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
+  "video/x-m4v": ".m4v",
+  "video/ogg": ".ogv",
+};
+
+export async function uploadVideoLessonFile(
+  user: AuthenticatedSessionUser,
+  file: FormDataEntryValue | null
+) {
+  if (!file || !(file instanceof File)) {
+    throw new VideoServiceError(
+      "Please select a video file (.mp4, .webm, or .mov) to upload.",
+      400
+    );
+  }
+  if (file.size === 0) {
+    throw new VideoServiceError("Uploaded video file appears empty.", 400);
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    throw new VideoServiceError(
+      "Video file exceeds the 85 MB browser upload limit. Compress the video or attach a YouTube link instead.",
+      400
+    );
+  }
+
+  const mimeType = (file.type || "video/mp4").split(";")[0].trim().toLowerCase();
+  const rawExt = path.extname(file.name || "").toLowerCase();
+  const ext =
+    ALLOWED_VIDEO_MIME_EXT[mimeType] ||
+    ([".mp4", ".webm", ".mov", ".m4v", ".ogv"].includes(rawExt)
+      ? rawExt
+      : ".mp4");
+
+  if (
+    !mimeType.startsWith("video/") &&
+    ![".mp4", ".webm", ".mov", ".m4v", ".ogv"].includes(rawExt)
+  ) {
+    throw new VideoServiceError(
+      "Only video files (.mp4, .webm, .mov, .m4v) are accepted.",
+      400
+    );
+  }
+
+  const safeBase = (file.name || "lesson")
+    .replace(/\.[^.]+$/, "")
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 48);
+  const filename = `${Date.now()}_${user.id.slice(0, 8)}_${safeBase}${ext}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+
+  try {
+    const sb = getSupabaseServerClient();
+    const { data: buckets } = await sb.storage.listBuckets();
+    if (!buckets?.some((b) => b.id === VIDEO_BUCKET)) {
+      await sb.storage.createBucket(VIDEO_BUCKET, { public: true });
+    }
+    const { error: uploadErr } = await sb.storage
+      .from(VIDEO_BUCKET)
+      .upload(filename, bytes, {
+        contentType: mimeType || "video/mp4",
+        upsert: false,
+      });
+
+    if (!uploadErr) {
+      const { data: pub } = sb.storage.from(VIDEO_BUCKET).getPublicUrl(filename);
+      if (pub?.publicUrl) {
+        return {
+          success: true,
+          videoUrl: pub.publicUrl,
+          storagePath: `supabase://${VIDEO_BUCKET}/${filename}`,
+          mimeType: mimeType || "video/mp4",
+          fileSizeBytes: file.size,
+        };
+      }
+    }
+  } catch (sbErr) {
+    console.warn("Supabase video storage upload fallback to local disk:", sbErr);
+  }
+
+  const uploadDir = path.join(process.cwd(), ".aistudio", "uploads", "videos");
+  await mkdir(uploadDir, { recursive: true });
+  await writeFile(path.join(uploadDir, filename), bytes);
+
+  return {
+    success: true,
+    videoUrl: `/api/lms/videos/stream/${encodeURIComponent(filename)}`,
+    storagePath: `local://${filename}`,
+    mimeType: mimeType || "video/mp4",
+    fileSizeBytes: file.size,
+  };
+}
+
+const MATERIALS_BUCKET = "learnova-lesson-materials";
+const MAX_MATERIAL_BYTES = 25 * 1024 * 1024;
+const ALLOWED_MATERIAL_EXTS = new Set([
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".ppt",
+  ".pptx",
+  ".txt",
+  ".md",
+  ".csv",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".webp",
+]);
+
+function inferMaterialType(
+  ext: string
+): "PDF" | "SLIDES" | "WORKSHEET" | "NOTES" {
+  if (ext === ".pdf") return "PDF";
+  if (ext === ".ppt" || ext === ".pptx") return "SLIDES";
+  if (ext === ".doc" || ext === ".docx" || ext === ".csv") return "WORKSHEET";
+  return "NOTES";
+}
+
+export async function uploadVideoMaterialFile(
+  file: FormDataEntryValue | null
+) {
+  if (!file || !(file instanceof File)) {
+    throw new VideoServiceError(
+      "Please attach a document, slide deck, or study sheet file.",
+      400
+    );
+  }
+  if (file.size === 0) {
+    throw new VideoServiceError("Uploaded file is empty.", 400);
+  }
+  if (file.size > MAX_MATERIAL_BYTES) {
+    throw new VideoServiceError(
+      "Study material file must be 25MB or smaller.",
+      400
+    );
+  }
+
+  const ext = path.extname(file.name || "").toLowerCase() || ".pdf";
+  if (!ALLOWED_MATERIAL_EXTS.has(ext)) {
+    throw new VideoServiceError(
+      "Unsupported material format. Upload .pdf, .doc, .docx, .ppt, .pptx, .txt, .md, .csv, or image files.",
+      400
+    );
+  }
+
+  const safeBase = path
+    .basename(file.name, ext)
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 48);
+  const uniqueName = `${Date.now()}_${crypto.randomBytes(4).toString("hex")}_${safeBase || "material"}${ext}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const mimeType = file.type || "application/octet-stream";
+
+  try {
+    const sb = getSupabaseServerClient();
+    const { data: buckets } = await sb.storage.listBuckets();
+    if (!buckets?.some((b) => b.name === MATERIALS_BUCKET)) {
+      await sb.storage.createBucket(MATERIALS_BUCKET, {
+        public: true,
+        fileSizeLimit: MAX_MATERIAL_BYTES,
+      });
+    }
+
+    const { error: uploadErr } = await sb.storage
+      .from(MATERIALS_BUCKET)
+      .upload(uniqueName, buffer, {
+        contentType: mimeType,
+        upsert: false,
+      });
+
+    if (!uploadErr) {
+      const { data: publicUrlData } = sb.storage
+        .from(MATERIALS_BUCKET)
+        .getPublicUrl(uniqueName);
+
+      return {
+        success: true,
+        url: publicUrlData.publicUrl,
+        fileName: file.name,
+        mimeType,
+        fileSizeBytes: file.size,
+        materialType: inferMaterialType(ext),
+        storage: "supabase",
+      };
+    }
+  } catch {
+    // Fall back to persistent local disk directory
+  }
+
+  const dir = path.join(process.cwd(), ".aistudio", "uploads", "materials");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, uniqueName), buffer);
+
+  return {
+    success: true,
+    url: `/api/lms/videos/materials/download?file=${encodeURIComponent(uniqueName)}`,
+    fileName: file.name,
+    mimeType,
+    fileSizeBytes: file.size,
+    materialType: inferMaterialType(ext),
+    storage: "local",
+  };
+}
+
+const MATERIAL_CONTENT_TYPES: Record<string, string> = {
+  ".pdf": "application/pdf",
+  ".doc": "application/msword",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".ppt": "application/vnd.ms-powerpoint",
+  ".pptx":
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".txt": "text/plain; charset=utf-8",
+  ".md": "text/markdown; charset=utf-8",
+  ".csv": "text/csv; charset=utf-8",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+};
+
+function sanitizeDownloadName(
+  raw: string,
+  fallback = "learnova-study-material.pdf"
+): string {
+  const cleaned = raw.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-");
+  return cleaned || fallback;
+}
+
+export async function resolveVideoMaterialDownload(params: {
+  localFileParam?: string | null;
+  videoId?: string;
+  materialId?: string;
+}): Promise<
+  | { kind: "redirect"; url: string }
+  | { kind: "bytes"; data: Uint8Array; contentType: string; fileName: string }
+> {
+  const { localFileParam, videoId = "", materialId = "" } = params;
+
+  if (localFileParam) {
+    const safeName = path.basename(localFileParam);
+    const fullPath = path.join(
+      process.cwd(),
+      ".aistudio",
+      "uploads",
+      "materials",
+      safeName
+    );
+    try {
+      const buf = await readFile(fullPath);
+      const ext = path.extname(safeName).toLowerCase();
+      return {
+        kind: "bytes",
+        data: new Uint8Array(buf),
+        contentType: MATERIAL_CONTENT_TYPES[ext] || "application/octet-stream",
+        fileName: sanitizeDownloadName(safeName),
+      };
+    } catch {
+      throw new VideoServiceError("Material file not found.", 404);
+    }
+  }
+
+  if (!videoId) {
+    throw new VideoServiceError(
+      "Specify videoId or file to download lesson material.",
+      400
+    );
+  }
+
+  const state = await loadLmsState();
+  const video = (state.videoLessons || []).find((v) => v.id === videoId);
+  if (!video) {
+    throw new VideoServiceError("Video lesson not found.", 404);
+  }
+
+  const subject = state.subjects.find((s) => s.id === video.subjectId);
+  const term = state.terms.find((t) => t.id === video.termId);
+  const topic = (state.curriculumTopics || []).find(
+    (t) => t.id === video.topicId
+  );
+
+  const material = materialId
+    ? (video.materials || []).find((m) => m.id === materialId)
+    : undefined;
+
+  if (
+    material &&
+    material.url &&
+    !material.url.startsWith("/api/lms/videos/materials/download")
+  ) {
+    if (material.type === "LINK") {
+      return { kind: "redirect", url: material.url };
+    }
+    try {
+      const remoteRes = await fetch(material.url);
+      if (remoteRes.ok) {
+        const arrBuf = await remoteRes.arrayBuffer();
+        const fileName = sanitizeDownloadName(
+          material.fileName || `${material.title}.pdf`
+        );
+        return {
+          kind: "bytes",
+          data: new Uint8Array(arrBuf),
+          contentType:
+            material.mimeType ||
+            remoteRes.headers.get("content-type") ||
+            "application/octet-stream",
+          fileName,
+        };
+      }
+    } catch {
+      // Fall back to generating a clean PDF study guide below if remote fetch fails
+    }
+  }
+
+  const subtitle = `${subject?.name || "Subject"} · ${term?.name || "Academic Term"} · ${topic?.title || "Topic"}`;
+  const pdfTitle =
+    material?.title || `${video.title} — Lesson Summary Sheet`;
+  const bodyText =
+    material?.contentText ||
+    `TOPIC OVERVIEW\n${topic?.title || video.title}\n${topic?.description || ""}\n\nVIDEO LESSON SUMMARY\n${video.title}\nPresenter: ${video.uploadedByName}\nDuration: ${video.durationLabel || "Self-paced"}\n\nLESSON NOTES\n${video.description}\n\nSTUDY CHECKLIST\n1. Watch the complete video walkthrough and pause to replicate worked steps.\n2. Save key formulas and definitions to your Learnova Study Notebook.\n3. Ask Nova AI for 3 WAEC/JAMB practice questions on this topic to test mastery.`;
+
+  const pdfBuffer = buildSimplePdfBuffer(pdfTitle, subtitle, bodyText);
+  const downloadFileName = sanitizeDownloadName(
+    material?.fileName || `${video.title}-Study-Sheet.pdf`
+  );
+
+  return {
+    kind: "bytes",
+    data: new Uint8Array(pdfBuffer),
+    contentType: "application/pdf",
+    fileName: downloadFileName,
+  };
+}
+
+const STREAM_MIME_BY_EXT: Record<string, string> = {
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
+  ".m4v": "video/x-m4v",
+  ".ogv": "video/ogg",
+};
+
+export function resolveLocalVideoStreamFile(rawFilename: string) {
+  const safeName = path.basename(decodeURIComponent(rawFilename || ""));
+  if (!safeName) {
+    throw new VideoServiceError("Invalid filename.", 400);
+  }
+
+  const filePath = path.join(
+    process.cwd(),
+    ".aistudio",
+    "uploads",
+    "videos",
+    safeName
+  );
+  if (!fs.existsSync(filePath)) {
+    throw new VideoServiceError("Video file not found.", 404);
+  }
+
+  const stat = fs.statSync(filePath);
+  const ext = path.extname(safeName).toLowerCase();
+  return {
+    filePath,
+    totalSize: stat.size,
+    contentType: STREAM_MIME_BY_EXT[ext] || "video/mp4",
+  };
+}
+
+export async function listVideoQuestions(filters: {
+  videoId?: string;
+  topicId?: string;
+}) {
+  const state = await loadLmsState();
+  const items = (state.videoQuestions || []).filter((q) => {
+    if (filters.videoId && q.videoId !== filters.videoId) return false;
+    if (filters.topicId && q.topicId !== filters.topicId) return false;
+    return true;
+  });
+
+  return items.sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export async function askVideoQuestion(
+  user: AuthenticatedSessionUser,
+  input: {
+    videoId?: string;
+    topicId?: string;
+    question?: string;
+    timestampLabel?: string;
+  }
+) {
+  const videoId = String(input.videoId || "").trim();
+  const topicId = String(input.topicId || "").trim();
+  const question = String(input.question || "").trim();
+  const timestampLabel = String(input.timestampLabel || "").trim() || undefined;
+
+  if (!videoId || !topicId || !question) {
+    throw new VideoServiceError(
+      "Video ID, topic ID, and question text are required.",
+      400
+    );
+  }
+
+  return mutateLmsState((state) => {
+    const video = state.videoLessons.find((v) => v.id === videoId);
+    const item = {
+      id: `vqa-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      videoId,
+      topicId,
+      timestampLabel,
+      authorUserId: user.id,
+      authorName: user.fullName,
+      authorRole: user.role,
+      question,
+      replies: [],
+      createdAt: new Date().toISOString(),
+    };
+    state.videoQuestions.unshift(item);
+
+    if (video && video.uploadedByUserId !== user.id) {
+      appendNotification(state, {
+        recipientUserId:
+          video.uploadedByUserId === "system-seed"
+            ? "ALL_ADMINS"
+            : video.uploadedByUserId,
+        recipientRole:
+          video.uploadedByUserId === "system-seed" ? "ALL_ADMINS" : undefined,
+        category: "VIDEO_LESSON",
+        title: "New Topic Question Posted",
+        message: `${user.fullName} asked on "${video.title}"${
+          timestampLabel ? ` (${timestampLabel})` : ""
+        }: "${question.slice(0, 80)}"`,
+        href: `/videos?videoId=${encodeURIComponent(video.id)}&topicId=${encodeURIComponent(
+          topicId
+        )}`,
+      });
+    }
+
+    return item;
+  });
+}
+
+export async function replyToVideoQuestion(
+  user: AuthenticatedSessionUser,
+  input: {
+    questionId?: string;
+    body?: string;
+    isAiAssisted?: boolean;
+  }
+) {
+  const questionId = String(input.questionId || "").trim();
+  const replyBody = String(input.body || "").trim();
+  const isAiAssisted = Boolean(input.isAiAssisted);
+
+  if (!questionId || !replyBody) {
+    throw new VideoServiceError(
+      "Question ID and reply body are required.",
+      400
+    );
+  }
+
+  try {
+    return await mutateLmsState((state) => {
+      const q = state.videoQuestions.find((item) => item.id === questionId);
+      if (!q) throw new Error("Question thread not found.");
+      const reply = {
+        id: `vqr-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        authorUserId: user.id,
+        authorName: user.fullName,
+        authorRole: user.role,
+        body: replyBody,
+        isAiAssisted,
+        createdAt: new Date().toISOString(),
+      };
+      q.replies.push(reply);
+
+      if (q.authorUserId !== user.id) {
+        appendNotification(state, {
+          recipientUserId: q.authorUserId,
+          category: "VIDEO_LESSON",
+          title: "Reply to Your Video Question",
+          message: `${user.fullName} replied to your question on this lesson.`,
+          href: `/videos?videoId=${encodeURIComponent(q.videoId)}&topicId=${encodeURIComponent(
+            q.topicId
+          )}`,
+        });
+      }
+
+      return q;
+    });
+  } catch (err: unknown) {
+    const msg = (err as { message?: string })?.message;
+    throw new VideoServiceError(msg || "Failed to post reply.", 404);
+  }
 }
 

@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
 import fs from "fs";
-
-const MIME_BY_EXT: Record<string, string> = {
-  ".mp4": "video/mp4",
-  ".webm": "video/webm",
-  ".mov": "video/quicktime",
-  ".m4v": "video/x-m4v",
-  ".ogv": "video/ogg",
-};
+import {
+  resolveLocalVideoStreamFile,
+  VideoServiceError,
+} from "@backend/services/videoLessonsService";
 
 export async function GET(
   req: NextRequest,
@@ -16,33 +11,17 @@ export async function GET(
 ) {
   try {
     const { filename } = await context.params;
-    const safeName = path.basename(decodeURIComponent(filename || ""));
-    if (!safeName) {
-      return NextResponse.json({ error: "Invalid filename." }, { status: 400 });
-    }
-
-    const filePath = path.join(
-      process.cwd(),
-      ".aistudio",
-      "uploads",
-      "videos",
-      safeName
-    );
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: "Video file not found." }, { status: 404 });
-    }
-
-    const stat = fs.statSync(filePath);
-    const totalSize = stat.size;
-    const ext = path.extname(safeName).toLowerCase();
-    const contentType = MIME_BY_EXT[ext] || "video/mp4";
+    const { filePath, totalSize, contentType } =
+      resolveLocalVideoStreamFile(filename);
     const range = req.headers.get("range");
 
     if (range) {
       const match = /bytes=(\d+)-(\d*)/.exec(range);
       const start = match ? Number(match[1]) : 0;
       const end =
-        match && match[2] ? Math.min(Number(match[2]), totalSize - 1) : totalSize - 1;
+        match && match[2]
+          ? Math.min(Number(match[2]), totalSize - 1)
+          : totalSize - 1;
 
       if (start >= totalSize || end >= totalSize || start > end) {
         return new NextResponse(null, {
@@ -84,7 +63,10 @@ export async function GET(
         "Content-Type": contentType,
       },
     });
-  } catch (err) {
+  } catch (err: unknown) {
+    if (err instanceof VideoServiceError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("Video stream error:", err);
     return NextResponse.json({ error: "Unable to stream video." }, { status: 500 });
   }
