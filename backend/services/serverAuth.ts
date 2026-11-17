@@ -11,22 +11,20 @@ import {
   mutateLmsState,
 } from "./lmsDb";
 import type { LmsUserRole } from "./lmsTypes";
+import { sendWelcomeEmail } from "./emailService";
+import {
+  AuthServiceError,
+  authenticateAccessToken,
+  getSessionUserById,
+  type AuthenticatedSessionUser,
+} from "./authCore";
 
-export class AuthServiceError extends Error {
-  status: number;
-  constructor(message: string, status = 400) {
-    super(message);
-    this.status = status;
-  }
-}
-
-export interface AuthenticatedSessionUser {
-  id: string;
-  email: string;
-  fullName: string;
-  role: LmsUserRole;
-  status: "ACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
-}
+export {
+  AuthServiceError,
+  authenticateAccessToken,
+  getSessionUserById,
+  type AuthenticatedSessionUser,
+};
 
 function extractToken(req: NextRequest): string | null {
   const authHeader = req.headers.get("authorization");
@@ -43,44 +41,9 @@ export async function getAuthenticatedUser(
   req: NextRequest
 ): Promise<AuthenticatedSessionUser | null> {
   if (!isSupabaseServerConfigured) return null;
-
   const token = extractToken(req);
   if (!token) return null;
-
-  const sb = getSupabaseServerClient();
-  const {
-    data: { user: authUser },
-    error,
-  } = await sb.auth.getUser(token);
-  if (error || !authUser) return null;
-
-  const [{ data: profile }, state] = await Promise.all([
-    sb.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
-    loadLmsState(),
-  ]);
-
-  let role = (profile?.role || authUser.user_metadata?.role || "STUDENT") as LmsUserRole;
-  const email = (authUser.email || profile?.email || "").toLowerCase();
-
-  const superAdminSet = new Set(
-    (state.platformSettings.superAdminEmails || []).map((e) => e.toLowerCase())
-  );
-  if (role === "ADMIN" && superAdminSet.has(email)) {
-    role = "SUPER_ADMIN";
-  }
-
-  return {
-    id: authUser.id,
-    email: authUser.email || profile?.email || "",
-    fullName:
-      profile?.full_name ||
-      authUser.user_metadata?.full_name ||
-      authUser.user_metadata?.name ||
-      email.split("@")[0] ||
-      "User",
-    role,
-    status: (profile?.status || "ACTIVE") as AuthenticatedSessionUser["status"],
-  };
+  return authenticateAccessToken(token);
 }
 
 export async function requireApiAuth(
@@ -413,6 +376,12 @@ export async function registerLearnovaAccount(body: Record<string, unknown>) {
     classLevel,
     studentName,
   };
+
+  sendWelcomeEmail({
+    to: user.email,
+    fullName: user.fullName,
+    role: user.role,
+  }).catch((err) => console.warn("Welcome email dispatch warning:", err));
 
   return {
     session: data.session,

@@ -16,10 +16,12 @@ export async function POST(req: Request) {
     });
 
     try {
+      const isProd = process.env.NODE_ENV === "production";
       response.cookies.set("learnova_user", JSON.stringify(user), {
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
         sameSite: "lax",
+        secure: isProd,
       });
       if (session?.access_token) {
         response.cookies.set("learnova_access_token", session.access_token, {
@@ -27,6 +29,7 @@ export async function POST(req: Request) {
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
           sameSite: "lax",
+          secure: isProd,
         });
       }
     } catch {}

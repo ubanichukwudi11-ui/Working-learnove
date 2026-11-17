@@ -1,27 +1,92 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
 import { useAuth } from "@/context/AuthContext";
 import { CURRENT_ACADEMIC_TERM, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
-import { Check, User } from "lucide-react";
+import { Check, ShieldCheck, User, X } from "lucide-react";
+
+interface GuardianRequestItem {
+  linkId: string;
+  parentUserId: string;
+  parentName: string;
+  parentEmail: string;
+  relationship: string;
+  status: "PENDING_VERIFICATION" | "VERIFIED" | "REJECTED";
+  verificationCode?: string;
+  linkedAt: string;
+}
 
 export default function ProfilePage() {
-  const { user } = useAuth();
-  const [classLevel, setClassLevel] = useState("SSS 2 Science");
+  const { user, refreshUser } = useAuth();
+  const [classLevel, setClassLevel] = useState(user?.classLevel || "SSS 2 Science");
   const [examFocus, setExamFocus] = useState("WAEC & JAMB");
   const [lowDataDefault, setLowDataDefault] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const [guardianRequests, setGuardianRequests] = useState<GuardianRequestItem[]>([]);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+
+  const loadGuardianRequests = useCallback(async () => {
+    if (user?.role !== "STUDENT") return;
+    try {
+      const res = await fetch("/api/lms/parent?scope=student", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setGuardianRequests(data.requests || []);
+    } catch {}
+  }, [user?.role]);
+
+  useEffect(() => {
+    if (user?.classLevel) {
+      setClassLevel(user.classLevel);
+    }
+    loadGuardianRequests();
+  }, [user?.classLevel, loadGuardianRequests]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setSaving(true);
+    try {
+      const res = await fetch("/api/auth/me", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          classLevel,
+          examPreparation: examFocus,
+        }),
+      });
+      if (res.ok) {
+        await refreshUser();
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRespondGuardian = async (
+    linkId: string,
+    decision: "APPROVE" | "REJECT"
+  ) => {
+    setRespondingId(linkId);
+    try {
+      await fetch("/api/lms/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "RESPOND_LINK", linkId, decision }),
+      });
+      await loadGuardianRequests();
+    } finally {
+      setRespondingId(null);
+    }
   };
 
   return (
-    <ProtectedRoute roles={["STUDENT", "PARENT", "TEACHER", "ADMIN"]}>
+    <ProtectedRoute roles={["STUDENT", "PARENT", "TEACHER", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="max-w-3xl space-y-6">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
@@ -47,6 +112,68 @@ export default function ProfilePage() {
               </p>
             </div>
           </div>
+
+          {user?.role === "STUDENT" && guardianRequests.length > 0 && (
+            <div className="learnova-card p-6 space-y-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={18} className="text-[#4F46E5]" />
+                <h2 className="landing-display text-base font-bold text-[#0B1230]">
+                  Parent / Guardian Link Requests
+                </h2>
+              </div>
+              <p className="text-xs text-[#6B6F94]">
+                Approve only parents or guardians you authorize to view your attendance, quiz scores, and report cards.
+              </p>
+              <div className="space-y-3">
+                {guardianRequests.map((reqItem) => (
+                  <div
+                    key={reqItem.linkId}
+                    className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div>
+                      <p className="text-sm font-bold text-[#0B1230]">
+                        {reqItem.parentName} ({reqItem.relationship})
+                      </p>
+                      <p className="text-xs text-[#6B6F94]">
+                        {reqItem.parentEmail} · Status:{" "}
+                        <span className="font-semibold text-[#4F46E5]">
+                          {reqItem.status.replace(/_/g, " ")}
+                        </span>
+                      </p>
+                      {reqItem.verificationCode && (
+                        <p className="text-xs font-mono font-bold text-[#0B1230] mt-1">
+                          Verification Code: {reqItem.verificationCode}
+                        </p>
+                      )}
+                    </div>
+
+                    {reqItem.status === "PENDING_VERIFICATION" && (
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          disabled={respondingId === reqItem.linkId}
+                          onClick={() => handleRespondGuardian(reqItem.linkId, "APPROVE")}
+                          className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition disabled:opacity-50"
+                        >
+                          <Check size={13} />
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          disabled={respondingId === reqItem.linkId}
+                          onClick={() => handleRespondGuardian(reqItem.linkId, "REJECT")}
+                          className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition disabled:opacity-50"
+                        >
+                          <X size={13} />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <form
             onSubmit={handleSave}
@@ -108,9 +235,10 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3">
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
+                disabled={saving}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm disabled:opacity-50"
               >
-                Save Preferences
+                {saving ? "Saving..." : "Save Preferences"}
               </button>
               {saved && (
                 <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700">

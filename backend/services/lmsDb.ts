@@ -8,12 +8,9 @@ import {
   LmsUserRole,
   PersistentNotification,
   AuditLogRecord,
-  TeacherSubjectApplication,
 } from "./lmsTypes";
 import { createInitialVideoCurriculum } from "./videoLessonsService";
-
-const BUCKET_ID = "learnova-lms-state";
-const STATE_OBJECT_PATH = "lms_state_v1.json";
+import { loadLmsStateFromPg, saveLmsStateToPg } from "./pgRepository";
 
 export interface DirectoryUser {
   id: string;
@@ -39,11 +36,10 @@ export interface DirectoryUser {
 }
 
 const g = globalThis as unknown as {
-  __learnovaLmsCache?: LmsStateData;
   __learnovaLmsWriteChain?: Promise<unknown>;
 };
 
-function createInitialLmsState(): LmsStateData {
+export function createInitialLmsState(): LmsStateData {
   const schoolId = "school-learnova-ng";
   const sessionId = "sess-2025-2026";
   const termId = "term-second-2026";
@@ -121,25 +117,25 @@ function createInitialLmsState(): LmsStateData {
     subscriptionPlans: [
       {
         id: "plan-term-full",
-        name: "Second Term Full Access",
+        name: "Scholar Term Plan",
         billingCycle: "TERM",
-        priceNgn: 15000,
+        priceNgn: 12000,
         allSubjectsIncluded: true,
         includedSubjectIds: subjects.map((s) => s.id),
         durationDays: 90,
         isActive: true,
-        description: "All subjects in your enrolled class level, live interactive classrooms, materials & CBT practice.",
+        description: "Full access for an entire term: live classes, all topic videos, unlimited Nova AI & PDF report cards.",
       },
       {
         id: "plan-monthly-full",
-        name: "Monthly Learning Pass",
+        name: "Monthly Scholar Pass",
         billingCycle: "MONTHLY",
-        priceNgn: 5500,
+        priceNgn: 4500,
         allSubjectsIncluded: true,
         includedSubjectIds: subjects.map((s) => s.id),
         durationDays: 30,
         isActive: true,
-        description: "30-day access to all enrolled subjects, live classrooms, and study materials.",
+        description: "30-day access to all enrolled subjects, live classrooms, topic videos, and Nova AI study tools.",
       },
       {
         id: "plan-single-subject",
@@ -160,7 +156,10 @@ function createInitialLmsState(): LmsStateData {
       paystackPublicKeyConfigured: Boolean(process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY),
       paystackServerEnabled: Boolean(process.env.PAYSTACK_SECRET_KEY),
       allowManualBankTransfer: true,
-      superAdminEmails: ["ubanichukwudi11@gmail.com"],
+      superAdminEmails: (process.env.SUPER_ADMIN_EMAILS || "")
+        .split(",")
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean),
     },
     teacherApplications: [],
     teacherApprovals: [],
@@ -183,155 +182,24 @@ function createInitialLmsState(): LmsStateData {
 }
 
 export async function loadLmsState(): Promise<LmsStateData> {
-  if (g.__learnovaLmsCache) {
-    return g.__learnovaLmsCache;
+  if (!isSupabaseServerConfigured) {
+    throw new Error(SUPABASE_SERVER_CONFIG_ERROR);
   }
-
-  if (isSupabaseServerConfigured) {
-    try {
-      const sb = getSupabaseServerClient();
-      const { data, error } = await sb.storage.from(BUCKET_ID).download(STATE_OBJECT_PATH);
-    if (!error && data) {
-      const text = await data.text();
-      const parsed = JSON.parse(text) as Partial<LmsStateData>;
-      const base = createInitialLmsState();
-      const mergedVideos =
-        Array.isArray(parsed.videoLessons) && parsed.videoLessons.length > 0
-          ? parsed.videoLessons.map((vid) => {
-              if (Array.isArray(vid.materials) && vid.materials.length > 0) {
-                return vid;
-              }
-              const seedMatch = base.videoLessons.find((sv) => sv.id === vid.id);
-              return seedMatch?.materials
-                ? { ...vid, materials: seedMatch.materials }
-                : vid;
-            })
-          : base.videoLessons;
-
-      const merged: LmsStateData = {
-        ...base,
-        ...parsed,
-        curriculumTopics:
-          Array.isArray(parsed.curriculumTopics) && parsed.curriculumTopics.length > 0
-            ? parsed.curriculumTopics
-            : base.curriculumTopics,
-        videoLessons: mergedVideos,
-        videoUploadRequests: Array.isArray(parsed.videoUploadRequests)
-          ? parsed.videoUploadRequests
-          : [],
-        quizAttempts: Array.isArray(parsed.quizAttempts) ? parsed.quizAttempts : [],
-        videoQuestions: Array.isArray(parsed.videoQuestions)
-          ? parsed.videoQuestions
-          : [],
-        parentStudentLinks: Array.isArray(parsed.parentStudentLinks)
-          ? parsed.parentStudentLinks
-          : [],
-      };
-      g.__learnovaLmsCache = merged;
-      await syncTeacherApplicationsFromSupabase(g.__learnovaLmsCache);
-      return g.__learnovaLmsCache;
-      }
-    } catch (err) {
-      console.warn("Loading LMS state from storage fell back to clean baseline:", err);
-    }
-  }
-
-  const initial = createInitialLmsState();
-  await syncTeacherApplicationsFromSupabase(initial);
-  g.__learnovaLmsCache = initial;
-  await saveLmsState(initial);
-  return initial;
+  return loadLmsStateFromPg(createInitialLmsState);
 }
 
-async function syncTeacherApplicationsFromSupabase(state: LmsStateData) {
-  if (!isSupabaseServerConfigured) return;
-  try {
-    const sb = getSupabaseServerClient();
-    const { data: profiles } = await sb.from("profiles").select("*").eq("role", "TEACHER");
-    const { data: teacherProfiles } = await sb.from("teacher_profiles").select("*");
-    if (!profiles || profiles.length === 0) return;
-
-    const tpMap = new Map<string, any>();
-    for (const tp of teacherProfiles || []) {
-      tpMap.set(tp.user_id, tp);
-    }
-
-    for (const p of profiles) {
-      const existing = state.teacherApplications.some((a) => a.teacherUserId === p.id);
-      if (existing) continue;
-      const tp = tpMap.get(p.id);
-      const subjectName = tp?.subject || "Mathematics";
-      const matchedSubject =
-        state.subjects.find(
-          (s) => s.name.toLowerCase() === String(subjectName).trim().toLowerCase()
-        ) || state.subjects[0];
-
-      const appStatus =
-        p.status === "ACTIVE"
-          ? "APPROVED"
-          : p.status === "REJECTED"
-          ? "REJECTED"
-          : p.status === "SUSPENDED"
-          ? "SUSPENDED"
-          : "PENDING_REVIEW";
-
-      const appId = `app-sb-${p.id.slice(0, 8)}`;
-      const app: TeacherSubjectApplication = {
-        id: appId,
-        teacherUserId: p.id,
-        teacherName: p.full_name || p.email,
-        teacherEmail: p.email,
-        subjectId: matchedSubject.id,
-        subjectName: matchedSubject.name,
-        classLevelIds: matchedSubject.classLevelIds.slice(0, 3),
-        qualification: tp?.qualification || "Not yet specified",
-        institution: tp?.institution || "Not specified",
-        experience: tp?.experience || "Not specified",
-        licenseNumber: tp?.license_number || "",
-        bio: "",
-        documentUrls: {
-          profilePhoto: tp?.profile_photo || undefined,
-          teachingCertificate: tp?.teaching_certificate || undefined,
-          degreeCertificate: tp?.degree_certificate || undefined,
-          governmentId: tp?.government_id || undefined,
-          cv: tp?.cv || undefined,
-        },
-        status: appStatus,
-        adminExplanation: tp?.admin_notes || undefined,
-        createdAt: p.created_at || new Date().toISOString(),
-        updatedAt: p.updated_at || new Date().toISOString(),
-      };
-      state.teacherApplications.push(app);
-    }
-  } catch {
-    // non-fatal
+export async function saveLmsState(
+  state: LmsStateData,
+  prevState?: LmsStateData
+): Promise<void> {
+  if (!isSupabaseServerConfigured) {
+    throw new Error(SUPABASE_SERVER_CONFIG_ERROR);
   }
-}
-
-export async function saveLmsState(state: LmsStateData): Promise<void> {
-  g.__learnovaLmsCache = state;
-  if (!isSupabaseServerConfigured) return;
-  try {
-    const sb = getSupabaseServerClient();
-    const { data: buckets } = await sb.storage.listBuckets();
-    if (!buckets?.some((b) => b.id === BUCKET_ID)) {
-      await sb.storage.createBucket(BUCKET_ID, { public: false });
-    }
-    const payload = Buffer.from(JSON.stringify(state), "utf-8");
-    const { error } = await sb.storage.from(BUCKET_ID).upload(STATE_OBJECT_PATH, payload, {
-      contentType: "application/json",
-      upsert: true,
-    });
-    if (error) {
-      console.warn("Supabase LMS state save warning:", error.message);
-    }
-  } catch (err) {
-    console.warn("Supabase LMS state upload skipped:", err);
-  }
+  await saveLmsStateToPg(state, prevState);
 }
 
 /**
- * Serialized mutation helper to preserve write atomicity across concurrent requests.
+ * Serialized mutation helper that loads fresh state from PostgreSQL and persists normalized changes.
  */
 export async function mutateLmsState<T>(
   fn: (state: LmsStateData) => Promise<T> | T
@@ -340,8 +208,9 @@ export async function mutateLmsState<T>(
   let result!: T;
   const next = prev.then(async () => {
     const state = await loadLmsState();
+    const snapshotBefore = structuredClone(state);
     result = await fn(state);
-    await saveLmsState(state);
+    await saveLmsState(state, snapshotBefore);
   });
   g.__learnovaLmsWriteChain = next.catch(() => {});
   await next;
@@ -353,12 +222,12 @@ export async function fetchDirectoryUsers(): Promise<DirectoryUser[]> {
     throw new Error(SUPABASE_SERVER_CONFIG_ERROR);
   }
   const sb = getSupabaseServerClient();
-  const [{ data: profiles }, { data: teachers }, { data: students }, state] =
+  const [{ data: profiles }, { data: teachers }, { data: students }, { data: settingsRow }] =
     await Promise.all([
       sb.from("profiles").select("*").order("created_at", { ascending: false }),
       sb.from("teacher_profiles").select("*"),
       sb.from("student_profiles").select("*"),
-      loadLmsState(),
+      sb.from("platform_settings").select("super_admin_emails").eq("id", "global").maybeSingle(),
     ]);
 
   const tMap = new Map<string, any>();
@@ -366,8 +235,13 @@ export async function fetchDirectoryUsers(): Promise<DirectoryUser[]> {
   const sMap = new Map<string, any>();
   for (const s of students || []) sMap.set(s.user_id, s);
 
-  const superEmails = new Set(
-    (state.platformSettings.superAdminEmails || []).map((e) => e.toLowerCase())
+  const superEmails = new Set<string>(
+    [
+      ...((settingsRow?.super_admin_emails as string[]) || []),
+      ...(process.env.SUPER_ADMIN_EMAILS || "").split(","),
+    ]
+      .map((e) => String(e).trim().toLowerCase())
+      .filter(Boolean)
   );
 
   return (profiles || []).map((p: any) => {

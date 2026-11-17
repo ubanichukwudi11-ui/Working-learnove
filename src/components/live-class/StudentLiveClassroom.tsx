@@ -24,12 +24,18 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import {
+  ChatMessage,
   ClassroomSnapshot,
   classroomSync,
+  Participant,
   StageStatus,
   VideoQualityPreset,
 } from "@/lib/classroomSync";
-import { webrtcManager } from "@/lib/webrtcManager";
+import {
+  LiveKitClassroomProvider,
+  LiveKitParticipantVideoTile,
+  useLiveKitClassroom,
+} from "./VideoRoom";
 import PresentationStage from "./PresentationStage";
 import ClassroomTools from "./ClassroomTools";
 import NovaClassAssistantModal from "./NovaClassAssistantModal";
@@ -43,8 +49,6 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
 
   const [snapshot, setSnapshot] = useState<ClassroomSnapshot | null>(null);
   const [accessError, setAccessError] = useState<{ message: string; code: string } | null>(null);
-  const [teacherStream, setTeacherStream] = useState<MediaStream | null>(null);
-  const [localStageStream, setLocalStageStream] = useState<MediaStream | null>(null);
   const [audioOnly, setAudioOnly] = useState(false);
   const [quality, setQuality] = useState<VideoQualityPreset>("low");
   const [connectionState, setConnectionState] = useState<"connecting" | "connected">("connecting");
@@ -58,8 +62,6 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
   const [novaPrompt, setNovaPrompt] = useState("");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  const localPreviewRef = useRef<HTMLVideoElement | null>(null);
-  const teacherVideoRef = useRef<HTMLVideoElement | null>(null);
   const prevStageRef = useRef<StageStatus>("audience");
   const prevHandRef = useRef<boolean>(false);
   const seqRef = useRef(0);
@@ -76,20 +78,6 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
     setConnectionState("connected");
     seqRef.current = res.latestSeq ?? seqRef.current;
     setSnapshot(res.snapshot);
-
-    for (const sig of res.signals || []) {
-      await webrtcManager.handleSignal(
-        classId,
-        studentId,
-        "STUDENT",
-        sig.fromPeerId,
-        sig.kind,
-        sig.payload,
-        (stream) => {
-          setTeacherStream(stream);
-        }
-      );
-    }
   }, [classId, studentId]);
 
   useEffect(() => {
@@ -117,7 +105,6 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
     return () => {
       unsub();
       clearInterval(pollTimer);
-      webrtcManager.closeAll();
       classroomSync.dispatchAction(classId, "LEAVE_ROOM", {
         userId: studentId,
         actorRole: "STUDENT",
@@ -134,41 +121,22 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
   const isHandRaised = Boolean(selfParticipant?.handRaised);
   const isOnStage = stageStatus === "approved";
 
-  // React to teacher stage permission changes & acquire/release student media strictly
+  // React to teacher stage permission changes
   useEffect(() => {
     const prevStage = prevStageRef.current;
     const prevHand = prevHandRef.current;
 
     if (prevStage !== "approved" && stageStatus === "approved") {
       setStageBanner("Teacher approved you onto the stage — Mic & Camera are now unlocked.");
-      webrtcManager
-        .startLocalMedia(!audioOnly, true, quality)
-        .then((res) => {
-          if (res.stream) setLocalStageStream(res.stream);
-        });
     } else if (prevStage === "pending" && prevHand && stageStatus === "audience" && !isHandRaised) {
       setStageBanner("Your raised-hand request was declined or cleared by the teacher.");
     } else if (prevStage === "approved" && stageStatus !== "approved") {
       setStageBanner("You were returned to the audience by the teacher.");
-      webrtcManager.closeAll();
-      setLocalStageStream(null);
     }
 
     prevStageRef.current = stageStatus;
     prevHandRef.current = isHandRaised;
-  }, [stageStatus, isHandRaised, audioOnly, quality]);
-
-  useEffect(() => {
-    if (localPreviewRef.current && localStageStream) {
-      localPreviewRef.current.srcObject = localStageStream;
-    }
-  }, [localStageStream]);
-
-  useEffect(() => {
-    if (teacherVideoRef.current && teacherStream) {
-      teacherVideoRef.current.srcObject = teacherStream;
-    }
-  }, [teacherStream]);
+  }, [stageStatus, isHandRaised]);
 
   useEffect(() => {
     if (!snapshot?.startedAt || snapshot.sessionStatus !== "live") return;
@@ -180,14 +148,17 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
     return () => clearInterval(t);
   }, [snapshot?.startedAt, snapshot?.sessionStatus]);
 
-  const act = async (action: string, payload: Record<string, any> = {}) => {
-    const next = await classroomSync.dispatchAction(classId, action, {
-      actorRole: "STUDENT",
-      userId: studentId,
-      ...payload,
-    });
-    if (next) setSnapshot(next);
-  };
+  const act = useCallback(
+    async (action: string, payload: Record<string, any> = {}) => {
+      const next = await classroomSync.dispatchAction(classId, action, {
+        actorRole: "STUDENT",
+        userId: studentId,
+        ...payload,
+      });
+      if (next) setSnapshot(next);
+    },
+    [classId, studentId]
+  );
 
   const handleToggleHand = async () => {
     if (isHandRaised) {
@@ -202,14 +173,12 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
   const handleToggleMic = async () => {
     if (!isOnStage) return;
     const nextMic = !selfParticipant?.micOn;
-    webrtcManager.toggleMute(!nextMic);
     await act("TOGGLE_STUDENT_MEDIA", { micOn: nextMic });
   };
 
   const handleToggleCam = async () => {
     if (!isOnStage || audioOnly) return;
     const nextCam = !selfParticipant?.videoOn;
-    webrtcManager.toggleVideo(!nextCam);
     await act("TOGGLE_STUDENT_MEDIA", { videoOn: nextCam });
   };
 
@@ -221,7 +190,6 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
 
   const handleLeave = async () => {
     await act("LEAVE_ROOM");
-    webrtcManager.closeAll();
     router.push("/live-classes");
   };
 
@@ -298,6 +266,125 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
       </div>
     );
   }
+
+  return (
+    <LiveKitClassroomProvider
+      classId={classId}
+      canPublish={isOnStage}
+      micOn={Boolean(isOnStage && selfParticipant?.micOn)}
+      videoOn={Boolean(isOnStage && selfParticipant?.videoOn)}
+      audioOnly={audioOnly}
+      quality={quality}
+      onMediaNotice={setStageBanner}
+    >
+      <StudentClassroomStageContent
+        classId={classId}
+        studentId={studentId}
+        studentName={studentName}
+        snapshot={snapshot}
+        audioOnly={audioOnly}
+        quality={quality}
+        setQuality={setQuality}
+        connectionState={connectionState}
+        stageBanner={stageBanner}
+        setStageBanner={setStageBanner}
+        activeToolTab={activeToolTab}
+        setActiveToolTab={setActiveToolTab}
+        chatInput={chatInput}
+        setChatInput={setChatInput}
+        isNovaOpen={isNovaOpen}
+        setIsNovaOpen={setIsNovaOpen}
+        novaPrompt={novaPrompt}
+        setNovaPrompt={setNovaPrompt}
+        elapsedSeconds={elapsedSeconds}
+        formatDuration={formatDuration}
+        selfParticipant={selfParticipant}
+        stageStatus={stageStatus}
+        isHandRaised={isHandRaised}
+        isOnStage={isOnStage}
+        stageGuests={stageGuests}
+        audiencePeers={audiencePeers}
+        act={act}
+        handleToggleHand={handleToggleHand}
+        handleToggleMic={handleToggleMic}
+        handleToggleCam={handleToggleCam}
+        handleToggleAudioOnly={handleToggleAudioOnly}
+        handleLeave={handleLeave}
+      />
+    </LiveKitClassroomProvider>
+  );
+}
+
+interface StudentClassroomStageContentProps {
+  classId: string;
+  studentId: string;
+  studentName: string;
+  snapshot: ClassroomSnapshot | null;
+  audioOnly: boolean;
+  quality: VideoQualityPreset;
+  setQuality: (q: VideoQualityPreset) => void;
+  connectionState: "connecting" | "connected";
+  stageBanner: string | null;
+  setStageBanner: (msg: string | null) => void;
+  activeToolTab: "polls" | "qa" | "resources" | "assignments" | "notes";
+  setActiveToolTab: (tab: "polls" | "qa" | "resources" | "assignments" | "notes") => void;
+  chatInput: string;
+  setChatInput: (v: string) => void;
+  isNovaOpen: boolean;
+  setIsNovaOpen: (open: boolean) => void;
+  novaPrompt: string;
+  setNovaPrompt: (prompt: string) => void;
+  elapsedSeconds: number;
+  formatDuration: (sec: number) => string;
+  selfParticipant?: Participant;
+  stageStatus: StageStatus;
+  isHandRaised: boolean;
+  isOnStage: boolean;
+  stageGuests: Participant[];
+  audiencePeers: Participant[];
+  act: (action: string, payload?: Record<string, unknown>) => Promise<void>;
+  handleToggleHand: () => void;
+  handleToggleMic: () => void;
+  handleToggleCam: () => void;
+  handleToggleAudioOnly: () => void;
+  handleLeave: () => void;
+}
+
+function StudentClassroomStageContent({
+  classId,
+  studentId,
+  studentName,
+  snapshot,
+  audioOnly,
+  quality,
+  setQuality,
+  connectionState,
+  stageBanner,
+  setStageBanner,
+  activeToolTab,
+  setActiveToolTab,
+  chatInput,
+  setChatInput,
+  isNovaOpen,
+  setIsNovaOpen,
+  novaPrompt,
+  setNovaPrompt,
+  elapsedSeconds,
+  formatDuration,
+  selfParticipant,
+  stageStatus,
+  isHandRaised,
+  isOnStage,
+  stageGuests,
+  audiencePeers,
+  act,
+  handleToggleHand,
+  handleToggleMic,
+  handleToggleCam,
+  handleToggleAudioOnly,
+  handleLeave,
+}: StudentClassroomStageContentProps) {
+  const { screenShareTrack } = useLiveKitClassroom();
 
   return (
     <div className="min-h-screen bg-[#070D24] text-white flex flex-col">
@@ -408,12 +495,18 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
               {/* Prominent Teacher Video + Stage Guests */}
               <div className="space-y-3 flex flex-col min-w-0">
                 <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-[#0D1438] aspect-[4/3] shadow-sm">
-                  {teacherStream && !audioOnly && snapshot?.hostVideoOn && !snapshot?.hostAudioOnly ? (
-                    <video
-                      ref={teacherVideoRef}
-                      autoPlay
-                      playsInline
-                      className="w-full h-full object-cover"
+                  {!audioOnly && snapshot?.hostVideoOn && !snapshot?.hostAudioOnly ? (
+                    <LiveKitParticipantVideoTile
+                      matchTeacher
+                      fallback={
+                        <Image
+                          src={snapshot?.hostPoster || "/images/teacher-live-poster.jpg"}
+                          alt={snapshot?.teacherName || "Teacher"}
+                          fill
+                          referrerPolicy="no-referrer"
+                          className="object-cover opacity-90"
+                        />
+                      }
                     />
                   ) : (
                     <Image
@@ -448,26 +541,27 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
                 {/* Stage-Approved Students Only */}
                 {stageGuests.length > 0 && (
                   <div className="space-y-2">
-                    {stageGuests.map((guest) => {
+                    {stageGuests.map((guest: any) => {
                       const isSelf = guest.id === studentId;
                       return (
                         <div
                           key={guest.id}
                           className="rounded-xl border border-[#7C3AED] bg-[#121A4A] p-3 flex items-center justify-between gap-3"
                         >
-                          {isSelf && localStageStream && guest.videoOn && !audioOnly ? (
+                          {guest.videoOn && !audioOnly ? (
                             <div className="w-full space-y-2">
                               <div className="relative rounded-lg overflow-hidden aspect-video bg-black">
-                                <video
-                                  ref={localPreviewRef}
-                                  autoPlay
-                                  muted
-                                  playsInline
-                                  className="w-full h-full object-cover"
+                                <LiveKitParticipantVideoTile
+                                  participantIdentity={guest.id}
+                                  fallback={
+                                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-300">
+                                      {guest.name}
+                                    </div>
+                                  }
                                 />
                               </div>
                               <p className="text-[11px] font-bold text-[#22D3EE]">
-                                {guest.name} (You · On Stage)
+                                {guest.name} {isSelf ? "(You · On Stage)" : "(On Stage)"}
                               </p>
                             </div>
                           ) : (
@@ -531,7 +625,7 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
                   subject={snapshot?.subject}
                   type={snapshot?.screenShare.type || "slide"}
                   slideIndex={snapshot?.screenShare.slideIndex || 0}
-                  screenStream={null}
+                  screenTrackRef={screenShareTrack}
                   whiteboardStrokes={snapshot?.whiteboardStrokes || []}
                   isTeacher={false}
                   onAskNova={() => {
@@ -717,7 +811,7 @@ export default function StudentLiveClassroom({ classId = "" }: { classId?: strin
           </div>
 
           <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5">
-            {(snapshot?.messages || []).map((msg) => (
+            {(snapshot?.messages || []).map((msg: ChatMessage) => (
               <div
                 key={msg.id}
                 className={`rounded-xl p-2.5 text-xs ${

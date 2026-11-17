@@ -165,6 +165,17 @@ export default function NovaLiveVoicePanel() {
         throw new Error("Microphone access is not available in this browser.");
       }
 
+      const ticketRes = await fetch("/api/nova/quota", { method: "POST" });
+      const ticketData = await ticketRes.json().catch(() => ({}));
+      if (!ticketRes.ok || !ticketData?.ticket) {
+        throw new Error(
+          ticketData?.error ||
+            (ticketRes.status === 401
+              ? "Please sign in to start a Live Voice Tutor session."
+              : "Unable to authorize Live Voice session.")
+        );
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -181,7 +192,11 @@ export default function NovaLiveVoicePanel() {
       nextStartTimeRef.current = outputCtx.currentTime;
 
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const params = new URLSearchParams({ subject, voice });
+      const params = new URLSearchParams({
+        subject,
+        voice,
+        ticket: ticketData.ticket,
+      });
       const ws = new WebSocket(
         `${protocol}//${window.location.host}/ws/nova-live?${params.toString()}`
       );

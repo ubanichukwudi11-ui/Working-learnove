@@ -7,7 +7,11 @@ import {
 } from "./lmsDb";
 import type { TeacherApplicationStatus } from "./lmsTypes";
 import type { AuthenticatedSessionUser } from "./serverAuth";
-import { getSupabaseServerClient } from "./supabaseServer";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+} from "./supabaseServer";
+import { sendTeacherApplicationStatusEmail } from "./emailService";
 
 export class TeacherApplicationServiceError extends Error {
   status: number;
@@ -15,6 +19,44 @@ export class TeacherApplicationServiceError extends Error {
     super(message);
     this.status = status;
   }
+}
+
+async function resolveSignedPrivateDocumentUrl(
+  rawValue?: string
+): Promise<string | undefined> {
+  if (!rawValue) return undefined;
+  if (!isSupabaseServerConfigured) return rawValue;
+
+  const clean = rawValue.trim();
+  let bucket = "teacher-documents";
+  let objectPath = "";
+
+  if (clean.startsWith("storage://") || clean.startsWith("supabase://")) {
+    const rest = clean.replace(/^(storage|supabase):\/\//, "");
+    const idx = rest.indexOf("/");
+    if (idx > 0) {
+      bucket = rest.slice(0, idx);
+      objectPath = rest.slice(idx + 1);
+    }
+  } else if (clean.includes("/storage/v1/object/public/teacher-documents/")) {
+    objectPath = clean.split("/storage/v1/object/public/teacher-documents/")[1] || "";
+  } else {
+    return clean;
+  }
+
+  if (!objectPath) return clean;
+  try {
+    const sb = getSupabaseServerClient();
+    const { data, error } = await sb.storage
+      .from(bucket)
+      .createSignedUrl(objectPath, 3600);
+    if (!error && data?.signedUrl) {
+      return data.signedUrl;
+    }
+  } catch {
+    // keep raw ref if storage signing fails transiently
+  }
+  return clean;
 }
 
 export async function getTeacherApplicationsOverview(
@@ -26,14 +68,52 @@ export async function getTeacherApplicationsOverview(
   ]);
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
+  const rawApplications = isAdmin
+    ? state.teacherApplications
+    : state.teacherApplications.filter((a) => a.teacherUserId === user.id);
+
+  const applications = await Promise.all(
+    rawApplications.map(async (app) => ({
+      ...app,
+      documentUrls: {
+        profilePhoto: await resolveSignedPrivateDocumentUrl(app.documentUrls?.profilePhoto),
+        teachingCertificate: await resolveSignedPrivateDocumentUrl(
+          app.documentUrls?.teachingCertificate
+        ),
+        degreeCertificate: await resolveSignedPrivateDocumentUrl(
+          app.documentUrls?.degreeCertificate
+        ),
+        governmentId: await resolveSignedPrivateDocumentUrl(app.documentUrls?.governmentId),
+        cv: await resolveSignedPrivateDocumentUrl(app.documentUrls?.cv),
+      },
+    }))
+  );
+
+  const teachers = isAdmin
+    ? await Promise.all(
+        users
+          .filter((u) => u.role === "TEACHER")
+          .map(async (t) => ({
+            ...t,
+            profilePhoto: await resolveSignedPrivateDocumentUrl(t.profilePhoto),
+            teachingCertificate: await resolveSignedPrivateDocumentUrl(
+              t.teachingCertificate
+            ),
+            degreeCertificate: await resolveSignedPrivateDocumentUrl(
+              t.degreeCertificate
+            ),
+            governmentId: await resolveSignedPrivateDocumentUrl(t.governmentId),
+            cv: await resolveSignedPrivateDocumentUrl(t.cv),
+          }))
+      )
+    : [];
+
   return {
-    applications: isAdmin
-      ? state.teacherApplications
-      : state.teacherApplications.filter((a) => a.teacherUserId === user.id),
+    applications,
     approvals: isAdmin
       ? state.teacherApprovals
       : state.teacherApprovals.filter((a) => a.teacherUserId === user.id),
-    teachers: isAdmin ? users.filter((u) => u.role === "TEACHER") : [],
+    teachers,
     subjects: state.subjects.filter((s) => s.isActive),
     classLevels: state.classLevels.filter((c) => c.isActive),
   };
@@ -349,6 +429,19 @@ export async function handleTeacherApplicationMutation(
         throw new Error("Unsupported teacher application action.");
     }
   });
+
+  if (action === "REVIEW_APPLICATION" && result && "application" in result) {
+    const reviewedApp = (result as { application: { teacherEmail: string; teacherName: string; subjectName: string; status: string; adminExplanation?: string } }).application;
+    if (reviewedApp?.teacherEmail) {
+      sendTeacherApplicationStatusEmail({
+        to: reviewedApp.teacherEmail,
+        teacherName: reviewedApp.teacherName,
+        subjectName: reviewedApp.subjectName,
+        decision: reviewedApp.status,
+        explanation: reviewedApp.adminExplanation,
+      }).catch((err) => console.warn("Teacher status email warning:", err));
+    }
+  }
 
   return { success: true, ...result };
 }

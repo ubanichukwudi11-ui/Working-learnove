@@ -11,6 +11,11 @@ import {
   ChevronRight,
   Monitor,
 } from "lucide-react";
+import {
+  VideoTrack,
+  isTrackReference,
+  type TrackReference,
+} from "@livekit/components-react";
 import { DEFAULT_SLIDES_BY_ID, SlideItem } from "@/lib/liveClasses";
 import { WhiteboardStroke } from "@/lib/classroomSync";
 
@@ -20,6 +25,7 @@ interface PresentationStageProps {
   type: "slide" | "window" | "whiteboard";
   slideIndex: number;
   screenStream?: MediaStream | null;
+  screenTrackRef?: TrackReference | null;
   whiteboardStrokes?: WhiteboardStroke[];
   isTeacher?: boolean;
   onChangeSlide?: (nextIndex: number) => void;
@@ -34,6 +40,7 @@ export default function PresentationStage({
   type,
   slideIndex,
   screenStream,
+  screenTrackRef,
   whiteboardStrokes = [],
   isTeacher = false,
   onChangeSlide,
@@ -219,7 +226,14 @@ export default function PresentationStage({
 
       {/* Main Content Area */}
       {type === "window" ? (
-        screenStream ? (
+        screenTrackRef && isTrackReference(screenTrackRef) ? (
+          <div className="w-full flex-1 flex items-center justify-center bg-[#070D24] min-h-[260px]">
+            <VideoTrack
+              trackRef={screenTrackRef}
+              className="w-full h-full max-h-[380px] object-contain"
+            />
+          </div>
+        ) : screenStream ? (
           <div className="w-full flex-1 flex items-center justify-center bg-[#070D24] min-h-[260px]">
             <video
               ref={videoRef}

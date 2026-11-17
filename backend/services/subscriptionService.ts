@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import {
   appendAuditLog,
   appendNotification,
@@ -6,7 +7,8 @@ import {
   mutateLmsState,
 } from "./lmsDb";
 import type { AuthenticatedSessionUser } from "./serverAuth";
-import { getSupabaseServerClient } from "./supabaseServer";
+import { getSupabaseServerClient, isSupabaseServerConfigured } from "./supabaseServer";
+import { sendPaystackReceiptEmail } from "./emailService";
 
 export class SubscriptionServiceError extends Error {
   status: number;
@@ -546,6 +548,299 @@ export async function handleSubscriptionMutation(
   return { success: true, ...result };
 }
 
+export async function initializePaystackCheckout(
+  user: AuthenticatedSessionUser,
+  input: {
+    planId: string;
+    classLevelId: string;
+    subjectIds?: string[];
+    callbackUrl: string;
+  }
+) {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) {
+    throw new SubscriptionServiceError(
+      "Paystack online gateway is not configured on the server (missing PAYSTACK_SECRET_KEY). Submit a bank transfer reference for School Admin verification instead.",
+      503
+    );
+  }
+
+  const state = await loadLmsState();
+  const plan = state.subscriptionPlans.find(
+    (p) => p.id === input.planId && p.isActive
+  );
+  if (!plan) {
+    throw new SubscriptionServiceError(
+      "Selected subscription plan was not found or is inactive.",
+      400
+    );
+  }
+
+  const classLevel = state.classLevels.find(
+    (c) => c.id === input.classLevelId && c.isActive
+  );
+  if (!classLevel) {
+    throw new SubscriptionServiceError(
+      "Please confirm a valid class level (JSS1–SS3) before checkout.",
+      400
+    );
+  }
+
+  const coveredSubjects = plan.allSubjectsIncluded
+    ? state.subjects
+        .filter((s) => s.classLevelIds.includes(classLevel.id))
+        .map((s) => s.id)
+    : (input.subjectIds || []).length > 0
+    ? input.subjectIds || []
+    : state.studentEnrolments.find((e) => e.studentUserId === user.id)?.subjectIds ||
+      [];
+
+  if (!plan.allSubjectsIncluded && coveredSubjects.length === 0) {
+    throw new SubscriptionServiceError(
+      "Select at least one subject in Step 1 before initializing single-subject checkout.",
+      400
+    );
+  }
+
+  const amountKobo = Math.round(plan.priceNgn * 100);
+  const reference = `LNV-${Date.now()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+
+  const initRes = await fetch("https://api.paystack.co/transaction/initialize", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: user.email,
+      amount: amountKobo,
+      currency: "NGN",
+      reference,
+      callback_url: input.callbackUrl,
+      metadata: {
+        userId: user.id,
+        userEmail: user.email,
+        userName: user.fullName,
+        planId: plan.id,
+        classLevelId: classLevel.id,
+        subjectIds: coveredSubjects,
+      },
+    }),
+  });
+
+  const initJson = (await initRes.json()) as {
+    status?: boolean;
+    message?: string;
+    data?: {
+      authorization_url?: string;
+      access_code?: string;
+      reference?: string;
+    };
+  };
+
+  if (
+    !initRes.ok ||
+    !initJson.status ||
+    !initJson.data?.authorization_url ||
+    !initJson.data?.access_code
+  ) {
+    throw new SubscriptionServiceError(
+      initJson?.message || "Paystack failed to initialize checkout session.",
+      502
+    );
+  }
+
+  return {
+    success: true,
+    authorizationUrl: initJson.data.authorization_url,
+    accessCode: initJson.data.access_code,
+    reference: initJson.data.reference || reference,
+    amountNgn: plan.priceNgn,
+    planName: plan.name,
+  };
+}
+
+async function activateSubscriptionFromVerifiedPayment(params: {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  planId: string;
+  classLevelId: string;
+  subjectIds: string[];
+  reference: string;
+  paidAmountKobo: number;
+  verifiedByLabel: string;
+}) {
+  const result = await mutateLmsState((state) => {
+    const existingPayment = state.paymentRecords.find(
+      (p) => p.reference === params.reference && p.status === "VERIFIED"
+    );
+    if (existingPayment) {
+      const existingEnt =
+        state.studentEntitlements.find(
+          (e) => e.studentUserId === existingPayment.studentUserId
+        ) || null;
+      return {
+        payment: existingPayment,
+        entitlement: existingEnt,
+        planName: existingPayment.planName,
+        expiresAtIso: existingEnt?.expiresAt || new Date().toISOString(),
+        alreadyApplied: true,
+      };
+    }
+
+    const plan = state.subscriptionPlans.find(
+      (p) => p.id === params.planId && p.isActive
+    );
+    if (!plan) {
+      throw new SubscriptionServiceError(
+        "Selected subscription plan not found.",
+        400
+      );
+    }
+
+    if (params.paidAmountKobo < plan.priceNgn * 100) {
+      throw new SubscriptionServiceError(
+        "Paid amount does not match the selected plan price.",
+        400
+      );
+    }
+
+    const coveredSubjects = plan.allSubjectsIncluded
+      ? state.subjects
+          .filter((s) => s.classLevelIds.includes(params.classLevelId))
+          .map((s) => s.id)
+      : params.subjectIds;
+
+    const payment = {
+      id: `pay-${Date.now()}-${crypto.randomBytes(3).toString("hex")}`,
+      studentUserId: params.userId,
+      studentName: params.userName,
+      studentEmail: params.userEmail,
+      planId: plan.id,
+      planName: plan.name,
+      classLevelId: params.classLevelId,
+      subjectIds: coveredSubjects,
+      amountNgn: Math.round(params.paidAmountKobo / 100),
+      provider: "PAYSTACK" as const,
+      reference: params.reference,
+      status: "VERIFIED" as const,
+      verifiedBy: params.verifiedByLabel,
+      verifiedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+    };
+    state.paymentRecords.unshift(payment);
+
+    const startsAt = new Date();
+    const expiresAt = new Date(
+      startsAt.getTime() + (plan.durationDays || 90) * 24 * 60 * 60 * 1000
+    );
+
+    let ent = state.studentEntitlements.find(
+      (e) => e.studentUserId === params.userId
+    );
+    if (!ent) {
+      ent = {
+        id: `ent-${params.userId}`,
+        studentUserId: params.userId,
+        studentName: params.userName,
+        studentEmail: params.userEmail,
+        classLevelId: params.classLevelId,
+        subjectIds: coveredSubjects,
+        allSubjects: plan.allSubjectsIncluded,
+        accessStatus: "ACTIVE_PAID",
+        paymentId: payment.id,
+        startsAt: startsAt.toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        grantedBy: params.verifiedByLabel,
+        updatedAt: new Date().toISOString(),
+      };
+      state.studentEntitlements.push(ent);
+    } else {
+      ent.classLevelId = params.classLevelId;
+      ent.subjectIds = coveredSubjects;
+      ent.allSubjects = plan.allSubjectsIncluded;
+      ent.accessStatus = "ACTIVE_PAID";
+      ent.paymentId = payment.id;
+      ent.startsAt = startsAt.toISOString();
+      ent.expiresAt = expiresAt.toISOString();
+      ent.grantedBy = params.verifiedByLabel;
+      ent.updatedAt = new Date().toISOString();
+    }
+
+    const enr = state.studentEnrolments.find(
+      (e) => e.studentUserId === params.userId
+    );
+    if (!enr) {
+      state.studentEnrolments.push({
+        id: `enr-${params.userId}`,
+        studentUserId: params.userId,
+        studentName: params.userName,
+        studentEmail: params.userEmail,
+        classLevelId: params.classLevelId,
+        subjectIds: coveredSubjects,
+        status: "ENROLLED",
+        updatedAt: new Date().toISOString(),
+      });
+    } else {
+      enr.classLevelId = params.classLevelId;
+      enr.subjectIds = Array.from(
+        new Set([...enr.subjectIds, ...coveredSubjects])
+      );
+      enr.status = "ENROLLED";
+    }
+
+    appendNotification(state, {
+      recipientUserId: params.userId,
+      recipientRole: "STUDENT",
+      category: "SUBSCRIPTION",
+      title: "Subscription Activated via Paystack",
+      message: `Your ${plan.name} is active until ${expiresAt.toDateString()}.`,
+      href: "/subscriptions",
+    });
+
+    appendAuditLog(state, {
+      actorUserId: params.userId,
+      actorEmail: params.userEmail,
+      actorRole: "STUDENT",
+      action: "PAYSTACK_PAYMENT_VERIFIED",
+      entityType: "payment_record",
+      entityId: payment.id,
+      metadata: {
+        reference: params.reference,
+        amountNgn: payment.amountNgn,
+        via: params.verifiedByLabel,
+      },
+    });
+
+    return {
+      payment,
+      entitlement: ent,
+      planName: plan.name,
+      expiresAtIso: expiresAt.toISOString(),
+      alreadyApplied: false,
+    };
+  });
+
+  if (!result.alreadyApplied) {
+    sendPaystackReceiptEmail({
+      to: params.userEmail,
+      studentName: params.userName,
+      planName: result.planName,
+      amountNgn: result.payment.amountNgn,
+      reference: params.reference,
+      expiresAtIso: result.expiresAtIso,
+    }).catch((err) => console.warn("Paystack receipt email warning:", err));
+  }
+
+  return {
+    success: true,
+    payment: result.payment,
+    entitlement: result.entitlement,
+    alreadyApplied: result.alreadyApplied,
+  };
+}
+
 export async function verifyPaystackPaymentAndActivate(
   user: AuthenticatedSessionUser,
   body: Record<string, unknown>
@@ -559,17 +854,8 @@ export async function verifyPaystackPaymentAndActivate(
   }
 
   const reference = String(body.reference || "").trim();
-  const planId = String(body.planId || "");
-  const classLevelId = String(body.classLevelId || "");
-  const subjectIds: string[] = Array.isArray(body.subjectIds)
-    ? body.subjectIds.map(String)
-    : [];
-
-  if (!reference || !planId || !classLevelId) {
-    throw new SubscriptionServiceError(
-      "Reference, planId, and classLevelId are required.",
-      400
-    );
+  if (!reference) {
+    throw new SubscriptionServiceError("Transaction reference is required.", 400);
   }
 
   const verifyRes = await fetch(
@@ -583,7 +869,16 @@ export async function verifyPaystackPaymentAndActivate(
   const verifyData = (await verifyRes.json()) as {
     status?: boolean;
     message?: string;
-    data?: { status?: string; amount?: number };
+    data?: {
+      status?: string;
+      amount?: number;
+      metadata?: {
+        userId?: string;
+        planId?: string;
+        classLevelId?: string;
+        subjectIds?: string[];
+      };
+    };
   };
 
   if (
@@ -598,128 +893,223 @@ export async function verifyPaystackPaymentAndActivate(
     );
   }
 
+  const meta = verifyData.data.metadata;
+  const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+  if (meta?.userId && meta.userId !== user.id && !isAdmin) {
+    throw new SubscriptionServiceError(
+      "This payment reference belongs to a different Learnova student account.",
+      403
+    );
+  }
+
+  const planId = String(meta?.planId || body.planId || "").trim();
+  const classLevelId = String(
+    meta?.classLevelId || body.classLevelId || ""
+  ).trim();
+  const subjectIds: string[] = Array.isArray(meta?.subjectIds)
+    ? meta.subjectIds.map(String)
+    : Array.isArray(body.subjectIds)
+    ? body.subjectIds.map(String)
+    : [];
+
+  if (!planId || !classLevelId) {
+    throw new SubscriptionServiceError(
+      "Plan and class level are required to activate this transaction.",
+      400
+    );
+  }
+
   const paidAmountKobo = Number(verifyData.data.amount || 0);
 
-  const result = await mutateLmsState((state) => {
-    if (state.paymentRecords.some((p) => p.reference === reference)) {
-      throw new Error(
-        "This payment reference has already been verified and applied."
-      );
-    }
-
-    const plan = state.subscriptionPlans.find(
-      (p) => p.id === planId && p.isActive
-    );
-    if (!plan) throw new Error("Selected subscription plan not found.");
-
-    if (paidAmountKobo < plan.priceNgn * 100) {
-      throw new Error("Paid amount does not match the selected plan price.");
-    }
-
-    const coveredSubjects = plan.allSubjectsIncluded
-      ? state.subjects
-          .filter((s) => s.classLevelIds.includes(classLevelId))
-          .map((s) => s.id)
-      : subjectIds;
-
-    const payment = {
-      id: `pay-${Date.now()}`,
-      studentUserId: user.id,
-      studentName: user.fullName,
-      studentEmail: user.email,
-      planId: plan.id,
-      planName: plan.name,
-      classLevelId,
-      subjectIds: coveredSubjects,
-      amountNgn: Math.round(paidAmountKobo / 100),
-      provider: "PAYSTACK" as const,
-      reference,
-      status: "VERIFIED" as const,
-      verifiedBy: "Paystack Server Webhook/API",
-      verifiedAt: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-    };
-    state.paymentRecords.unshift(payment);
-
-    const startsAt = new Date();
-    const expiresAt = new Date(
-      startsAt.getTime() + (plan.durationDays || 90) * 24 * 60 * 60 * 1000
-    );
-
-    let ent = state.studentEntitlements.find(
-      (e) => e.studentUserId === user.id
-    );
-    if (!ent) {
-      ent = {
-        id: `ent-${user.id}`,
-        studentUserId: user.id,
-        studentName: user.fullName,
-        studentEmail: user.email,
-        classLevelId,
-        subjectIds: coveredSubjects,
-        allSubjects: plan.allSubjectsIncluded,
-        accessStatus: "ACTIVE_PAID",
-        paymentId: payment.id,
-        startsAt: startsAt.toISOString(),
-        expiresAt: expiresAt.toISOString(),
-        grantedBy: "Paystack Verified",
-        updatedAt: new Date().toISOString(),
-      };
-      state.studentEntitlements.push(ent);
-    } else {
-      ent.classLevelId = classLevelId;
-      ent.subjectIds = coveredSubjects;
-      ent.allSubjects = plan.allSubjectsIncluded;
-      ent.accessStatus = "ACTIVE_PAID";
-      ent.paymentId = payment.id;
-      ent.startsAt = startsAt.toISOString();
-      ent.expiresAt = expiresAt.toISOString();
-      ent.updatedAt = new Date().toISOString();
-    }
-
-    const enr = state.studentEnrolments.find(
-      (e) => e.studentUserId === user.id
-    );
-    if (!enr) {
-      state.studentEnrolments.push({
-        id: `enr-${user.id}`,
-        studentUserId: user.id,
-        studentName: user.fullName,
-        studentEmail: user.email,
-        classLevelId,
-        subjectIds: coveredSubjects,
-        status: "ENROLLED",
-        updatedAt: new Date().toISOString(),
-      });
-    } else {
-      enr.classLevelId = classLevelId;
-      enr.subjectIds = Array.from(
-        new Set([...enr.subjectIds, ...coveredSubjects])
-      );
-      enr.status = "ENROLLED";
-    }
-
-    appendNotification(state, {
-      recipientUserId: user.id,
-      recipientRole: "STUDENT",
-      category: "SUBSCRIPTION",
-      title: "Subscription Activated via Paystack",
-      message: `Your ${plan.name} is active until ${expiresAt.toDateString()}.`,
-      href: "/subscriptions",
-    });
-
-    appendAuditLog(state, {
-      actorUserId: user.id,
-      actorEmail: user.email,
-      actorRole: user.role,
-      action: "PAYSTACK_PAYMENT_VERIFIED",
-      entityType: "payment_record",
-      entityId: payment.id,
-      metadata: { reference, amountNgn: payment.amountNgn },
-    });
-
-    return { payment, entitlement: ent };
+  return activateSubscriptionFromVerifiedPayment({
+    userId: meta?.userId || user.id,
+    userName: user.fullName,
+    userEmail: user.email,
+    planId,
+    classLevelId,
+    subjectIds,
+    reference,
+    paidAmountKobo,
+    verifiedByLabel: "Paystack Verify API",
   });
+}
 
-  return { success: true, ...result };
+export async function handlePaystackWebhookEvent(
+  rawBody: string,
+  signatureHeader: string
+) {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+  if (!secretKey) {
+    throw new SubscriptionServiceError(
+      "PAYSTACK_SECRET_KEY is not configured.",
+      503
+    );
+  }
+
+  if (!signatureHeader) {
+    throw new SubscriptionServiceError("Missing x-paystack-signature header.", 401);
+  }
+
+  const expectedHex = crypto
+    .createHmac("sha512", secretKey)
+    .update(rawBody)
+    .digest("hex");
+
+  const sigBuf = Buffer.from(signatureHeader.trim().toLowerCase(), "utf8");
+  const expectedBuf = Buffer.from(expectedHex.toLowerCase(), "utf8");
+  if (
+    sigBuf.length !== expectedBuf.length ||
+    !crypto.timingSafeEqual(sigBuf, expectedBuf)
+  ) {
+    throw new SubscriptionServiceError("Invalid Paystack webhook signature.", 401);
+  }
+
+  const payload = JSON.parse(rawBody) as {
+    event?: string;
+    data?: Record<string, any>;
+  };
+  const eventType = String(payload.event || "");
+  const data = payload.data || {};
+  const reference = String(
+    data.reference || data.transaction_reference || ""
+  ).trim();
+  const eventKey = `${eventType}:${String(data.id || reference || crypto.createHash("sha256").update(rawBody).digest("hex"))}`;
+
+  if (isSupabaseServerConfigured) {
+    const sb = getSupabaseServerClient();
+    const { error: insertErr } = await sb
+      .from("paystack_webhook_events")
+      .insert({
+        event_id: eventKey,
+        event_type: eventType,
+        reference: reference || null,
+        payload,
+      });
+
+    if (insertErr) {
+      if (insertErr.code === "23505") {
+        return { received: true, duplicate: true };
+      }
+      console.warn("paystack_webhook_events insert warning:", insertErr.message);
+    }
+  }
+
+  if (eventType === "charge.success") {
+    if (String(data.status || "").toLowerCase() !== "success" || !reference) {
+      return { received: true, ignored: true };
+    }
+
+    const meta = (data.metadata || {}) as {
+      userId?: string;
+      userEmail?: string;
+      userName?: string;
+      planId?: string;
+      classLevelId?: string;
+      subjectIds?: string[];
+    };
+
+    const customerEmail = String(
+      meta.userEmail || data.customer?.email || ""
+    ).toLowerCase();
+
+    let targetUserId = String(meta.userId || "").trim();
+    let targetUserName = String(meta.userName || "");
+    let targetUserEmail = customerEmail;
+
+    if (!targetUserId && customerEmail) {
+      const users = await fetchDirectoryUsers();
+      const matched = users.find(
+        (u) => u.email.toLowerCase() === customerEmail
+      );
+      if (matched) {
+        targetUserId = matched.id;
+        targetUserName = matched.fullName;
+        targetUserEmail = matched.email;
+      }
+    }
+
+    const planId = String(meta.planId || "plan-term-full");
+    const classLevelId = String(meta.classLevelId || "");
+    const subjectIds = Array.isArray(meta.subjectIds)
+      ? meta.subjectIds.map(String)
+      : [];
+
+    if (!targetUserId || !classLevelId) {
+      return { received: true, skippedReason: "Missing student metadata." };
+    }
+
+    await activateSubscriptionFromVerifiedPayment({
+      userId: targetUserId,
+      userName: targetUserName || targetUserEmail || "Learnova Student",
+      userEmail: targetUserEmail,
+      planId,
+      classLevelId,
+      subjectIds,
+      reference,
+      paidAmountKobo: Number(data.amount || 0),
+      verifiedByLabel: "Paystack Webhook (HMAC-SHA512)",
+    });
+
+    return { received: true, activated: true, reference };
+  }
+
+  if (eventType === "charge.failed" && reference) {
+    const meta = (data.metadata || {}) as { userId?: string; userEmail?: string };
+    if (meta.userId) {
+      await mutateLmsState((state) => {
+        appendNotification(state, {
+          recipientUserId: String(meta.userId),
+          recipientRole: "STUDENT",
+          category: "SUBSCRIPTION",
+          title: "Paystack Payment Did Not Complete",
+          message: `Your payment attempt (${reference}) was not completed. No charge was applied.`,
+          href: "/subscriptions",
+        });
+      });
+    }
+    return { received: true, recordedFailure: true };
+  }
+
+  if (eventType === "refund.processed" && reference) {
+    await mutateLmsState((state) => {
+      const payment = state.paymentRecords.find(
+        (p) => p.reference === reference
+      );
+      if (!payment) return;
+      payment.status = "REFUNDED";
+      payment.notes = "Refund processed by Paystack";
+
+      const ent = state.studentEntitlements.find(
+        (e) =>
+          e.studentUserId === payment.studentUserId &&
+          e.paymentId === payment.id
+      );
+      if (ent) {
+        ent.accessStatus = "ENROLLED";
+        ent.reason = "Subscription refunded via Paystack";
+        ent.updatedAt = new Date().toISOString();
+      }
+
+      appendNotification(state, {
+        recipientUserId: payment.studentUserId,
+        recipientRole: "STUDENT",
+        category: "SUBSCRIPTION",
+        title: "Subscription Payment Refunded",
+        message: `Your payment (${reference}) was refunded and subscription access has been paused.`,
+        href: "/subscriptions",
+      });
+      appendAuditLog(state, {
+        actorUserId: payment.studentUserId,
+        actorEmail: payment.studentEmail,
+        actorRole: "SYSTEM",
+        action: "PAYSTACK_PAYMENT_REFUNDED",
+        entityType: "payment_record",
+        entityId: payment.id,
+        metadata: { reference },
+      });
+    });
+    return { received: true, refunded: true };
+  }
+
+  return { received: true, eventType };
 }

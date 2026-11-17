@@ -143,7 +143,18 @@ export default function AdminTeacherDetailPage() {
                         {doc.label}
                       </span>
                       {doc.url ? (
-                        <span className="text-emerald-700 font-bold shrink-0">On File</span>
+                        /^https?:\/\//i.test(doc.url) || doc.url.startsWith("/") ? (
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-emerald-700 hover:text-emerald-800 underline font-bold shrink-0"
+                          >
+                            View Document
+                          </a>
+                        ) : (
+                          <span className="text-emerald-700 font-bold shrink-0">On File</span>
+                        )
                       ) : (
                         <span className="text-[#6B6F94] shrink-0">Not uploaded</span>
                       )}

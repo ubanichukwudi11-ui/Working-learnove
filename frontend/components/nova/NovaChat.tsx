@@ -125,9 +125,23 @@ export default function NovaChat() {
   const [threads, setThreads] = useState<ClassroomThread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [quotaInfo, setQuotaInfo] = useState<{
+    remainingToday: number;
+    dailyLimit: number;
+    tierLabel: string;
+  } | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+
+  useEffect(() => {
+    fetch("/api/nova/quota", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.quota) setQuotaInfo(data.quota);
+      })
+      .catch(() => {});
+  }, []);
 
   // Hydrate persisted threads & handle deep-link query params (?subject=...&topic=...)
   useEffect(() => {
@@ -296,10 +310,20 @@ export default function NovaChat() {
       });
 
       const data = await res.json();
+      if (data?.quota) {
+        setQuotaInfo(data.quota);
+      }
+
+      const contentText =
+        res.status === 401
+          ? "Please sign in to your Learnova account to chat with Nova AI."
+          : res.status === 429
+          ? data.error || "You have reached your daily Nova AI quota. Visit Subscriptions to upgrade."
+          : data.response || data.error || "Sorry, I couldn't generate a response.";
+
       const assistantMessage: Message = {
         role: "assistant",
-        content:
-          data.response || data.error || "Sorry, I couldn't generate a response.",
+        content: contentText,
         modeLabel: data.modeLabel,
         sources: Array.isArray(data.sources) ? data.sources : [],
       };
@@ -556,6 +580,18 @@ export default function NovaChat() {
           </div>
 
           <div className="flex items-center gap-2">
+            {quotaInfo && (
+              <span
+                title={`Tier: ${quotaInfo.tierLabel.replace(/_/g, " ")}`}
+                className={`hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border whitespace-nowrap tabular-nums ${
+                  quotaInfo.remainingToday <= 1
+                    ? "bg-amber-50 text-amber-800 border-amber-200"
+                    : "bg-[#F5F3FF] text-[#4F46E5] border-[#DCD7F5]"
+                }`}
+              >
+                {quotaInfo.remainingToday}/{quotaInfo.dailyLimit} queries left today
+              </span>
+            )}
             {activeThread && (
               <span className="hidden xl:inline text-xs font-medium text-[#4A5073] whitespace-nowrap">
                 {activeThread.classLevel} · {activeThread.subject}

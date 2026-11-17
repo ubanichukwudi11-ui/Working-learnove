@@ -75,6 +75,7 @@ export default function TeacherVideoStudio() {
   const [durationLabel, setDurationLabel] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [uploadedMeta, setUploadedMeta] = useState<{
+    storageBucket?: string;
     storagePath?: string;
     mimeType?: string;
     fileSizeBytes?: number;
@@ -85,6 +86,8 @@ export default function TeacherVideoStudio() {
       title: string;
       type: VideoLessonMaterialItem["type"];
       url: string;
+      storageBucket?: string;
+      storageObjectPath?: string;
       fileName?: string;
       mimeType?: string;
       fileSizeBytes?: number;
@@ -178,6 +181,7 @@ export default function TeacherVideoStudio() {
 
       setVideoUrl(json.videoUrl);
       setUploadedMeta({
+        storageBucket: json.storageBucket,
         storagePath: json.storagePath,
         mimeType: json.mimeType,
         fileSizeBytes: json.fileSizeBytes,
@@ -219,6 +223,8 @@ export default function TeacherVideoStudio() {
           title: file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " "),
           type: json.materialType || "PDF",
           url: json.url,
+          storageBucket: json.storageBucket,
+          storageObjectPath: json.storageObjectPath,
           fileName: json.fileName,
           mimeType: json.mimeType,
           fileSizeBytes: json.fileSizeBytes,
@@ -307,6 +313,7 @@ export default function TeacherVideoStudio() {
           durationLabel: durationLabel.trim(),
           sourceType: sourceMode,
           videoUrl: videoUrl.trim(),
+          storageBucket: uploadedMeta?.storageBucket,
           storagePath: uploadedMeta?.storagePath,
           mimeType: uploadedMeta?.mimeType,
           fileSizeBytes: uploadedMeta?.fileSizeBytes,

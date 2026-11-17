@@ -286,6 +286,8 @@ export interface VideoLessonMaterialRecord {
   title: string;
   type: "PDF" | "WORKSHEET" | "SLIDES" | "NOTES" | "LINK";
   url: string;
+  storageBucket?: string;
+  storageObjectPath?: string;
   fileName?: string;
   mimeType?: string;
   fileSizeBytes?: number;
@@ -304,6 +306,7 @@ export interface VideoLessonRecord {
   sourceType: VideoSourceType;
   videoUrl: string;
   youtubeVideoId?: string;
+  storageBucket?: string;
   storagePath?: string;
   mimeType?: string;
   fileSizeBytes?: number;
@@ -439,6 +442,10 @@ export interface ParentStudentLinkRecord {
   studentUserId: string;
   studentEmail: string;
   relationship: string;
+  status: "PENDING_VERIFICATION" | "VERIFIED" | "REJECTED";
+  verificationCode?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
   linkedAt: string;
 }
 

@@ -37,6 +37,7 @@ export default function StudentSubscriptionsPage() {
   const [transferRef, setTransferRef] = useState("");
   const [transferNotes, setTransferNotes] = useState("");
   const [paystackRef, setPaystackRef] = useState("");
+  const [showManualVerify, setShowManualVerify] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -75,6 +76,51 @@ export default function StudentSubscriptionsPage() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const verifyReferenceOnServer = useCallback(
+    async (reference: string) => {
+      setSaving(true);
+      setFeedback(null);
+      try {
+        const res = await fetch("/api/lms/payments/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            reference,
+            planId: selectedPlanId,
+            classLevelId: selectedLevelId,
+            subjectIds: selectedSubjectIds,
+          }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Paystack verification failed.");
+        setFeedback({
+          type: "ok",
+          text: "Payment verified with Paystack! Your live classrooms are now unlocked and your receipt has been emailed.",
+        });
+        setPaystackRef("");
+        await loadData();
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error ? err.message : "Paystack verification failed.";
+        setFeedback({ type: "err", text: msg });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [selectedPlanId, selectedLevelId, selectedSubjectIds, loadData]
+  );
+
+  // Automatic verification when redirected back from Paystack hosted checkout (?reference= or ?trxref=)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("reference") || params.get("trxref");
+    if (ref) {
+      window.history.replaceState({}, "", window.location.pathname);
+      verifyReferenceOnServer(ref);
+    }
+  }, [verifyReferenceOnServer]);
 
   const levelSubjects = subjects.filter(
     (s) => !selectedLevelId || (s.classLevelIds || []).includes(selectedLevelId)
@@ -151,34 +197,82 @@ export default function StudentSubscriptionsPage() {
     }
   };
 
-  const handleVerifyPaystack = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleStartPaystackCheckout = async () => {
+    if (!selectedPlanId || !selectedLevelId) {
+      setFeedback({
+        type: "err",
+        text: "Please select your class level and subscription plan first.",
+      });
+      return;
+    }
+
     setSaving(true);
     setFeedback(null);
     try {
-      const res = await fetch("/api/lms/payments/verify", {
+      const subList =
+        selectedSubjectIds.length > 0
+          ? selectedSubjectIds
+          : levelSubjects.map((s) => s.id);
+      const res = await fetch("/api/lms/payments/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          reference: paystackRef,
           planId: selectedPlanId,
           classLevelId: selectedLevelId,
-          subjectIds: selectedSubjectIds,
+          subjectIds: subList,
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Paystack verification failed.");
-      setFeedback({
-        type: "ok",
-        text: "Payment verified with Paystack! Your live classrooms are now unlocked.",
-      });
-      setPaystackRef("");
-      await loadData();
-    } catch (err: any) {
-      setFeedback({ type: "err", text: err?.message || "Paystack verification failed." });
-    } finally {
+      if (!res.ok) {
+        throw new Error(json.error || "Could not start Paystack checkout.");
+      }
+
+      if (json.accessCode) {
+        try {
+          const PaystackPop = (await import("@paystack/inline-js")).default;
+          const popup = new PaystackPop();
+          popup.resumeTransaction(json.accessCode, {
+            onSuccess: (trx) => {
+              verifyReferenceOnServer(trx.reference || json.reference);
+            },
+            onCancel: () => {
+              setSaving(false);
+              setFeedback({
+                type: "err",
+                text: "Paystack checkout was closed before payment completed.",
+              });
+            },
+            onError: (err) => {
+              setSaving(false);
+              setFeedback({
+                type: "err",
+                text: err?.message || "Paystack checkout error.",
+              });
+            },
+          });
+          return;
+        } catch {
+          // Fall back to hosted Paystack checkout URL below
+        }
+      }
+
+      if (json.authorizationUrl) {
+        window.location.assign(json.authorizationUrl);
+        return;
+      }
+
+      throw new Error("Paystack checkout URL was not returned.");
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to launch Paystack checkout.";
+      setFeedback({ type: "err", text: msg });
       setSaving(false);
     }
+  };
+
+  const handleVerifyPaystack = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await verifyReferenceOnServer(paystackRef);
   };
 
   const statusText = entitlement?.accessStatus || enrolment?.status || "REGISTERED";
@@ -340,32 +434,54 @@ export default function StudentSubscriptionsPage() {
                   ))}
                 </div>
 
-                {/* Paystack Reference Verification (if configured) */}
+                {/* Paystack Instant Checkout + Callback Verification */}
                 {gatewayInfo.paystackServerEnabled && (
-                  <form
-                    onSubmit={handleVerifyPaystack}
-                    className="border-t border-[#E4E1F5] pt-4 space-y-3"
-                  >
-                    <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
-                      <ShieldCheck size={14} className="text-[#4F46E5]" />
-                      Paystack Server-Verified Reference
-                    </p>
-                    <div className="flex gap-2">
-                      <input
-                        required
-                        value={paystackRef}
-                        onChange={(e) => setPaystackRef(e.target.value)}
-                        placeholder="Enter Paystack transaction reference..."
-                        className="learnova-input flex-1 px-3 py-2 text-xs"
-                      />
+                  <div className="border-t border-[#E4E1F5] pt-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
+                        <ShieldCheck size={14} className="text-[#4F46E5]" />
+                        Pay Instantly via Paystack (Card / Bank / USSD / Transfer)
+                      </p>
                       <button
-                        disabled={saving}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
+                        type="button"
+                        onClick={() => setShowManualVerify((v) => !v)}
+                        className="text-[11px] font-semibold text-[#6D28D9] hover:underline shrink-0"
                       >
-                        Verify Paystack
+                        {showManualVerify ? "Hide manual verify" : "Verify ref"}
                       </button>
                     </div>
-                  </form>
+
+                    <button
+                      type="button"
+                      disabled={saving || !selectedPlanId || !selectedLevelId}
+                      onClick={handleStartPaystackCheckout}
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition shadow-md shadow-[#4F46E5]/20"
+                    >
+                      {saving
+                        ? "Launching Secure Checkout..."
+                        : `Pay Securely with Paystack (₦${Number(
+                            plans.find((p) => p.id === selectedPlanId)?.priceNgn || 0
+                          ).toLocaleString()})`}
+                    </button>
+
+                    {showManualVerify && (
+                      <form onSubmit={handleVerifyPaystack} className="flex gap-2 pt-1">
+                        <input
+                          required
+                          value={paystackRef}
+                          onChange={(e) => setPaystackRef(e.target.value)}
+                          placeholder="Already paid? Enter Paystack reference..."
+                          className="learnova-input flex-1 px-3 py-2 text-xs"
+                        />
+                        <button
+                          disabled={saving}
+                          className="px-4 py-2 rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] hover:bg-[#EDE9FE] text-[#4F46E5] text-xs font-bold transition"
+                        >
+                          Verify
+                        </button>
+                      </form>
+                    )}
+                  </div>
                 )}
 
                 {/* Bank Transfer Submission */}

@@ -8,25 +8,7 @@ import {
   mutateLmsState,
 } from "./lmsDb";
 import type { AuthenticatedSessionUser } from "./serverAuth";
-
-interface LiveRegistryStore {
-  rooms: Map<string, ClassroomSnapshot>;
-  signals: Map<string, SignalingEnvelope[]>;
-  seqCounter: number;
-}
-
-const g = globalThis as unknown as { __learnovaLiveStore?: LiveRegistryStore };
-
-function getStore(): LiveRegistryStore {
-  if (!g.__learnovaLiveStore) {
-    g.__learnovaLiveStore = {
-      rooms: new Map(),
-      signals: new Map(),
-      seqCounter: 0,
-    };
-  }
-  return g.__learnovaLiveStore;
-}
+import { getSupabaseServerClient, isSupabaseServerConfigured } from "./supabaseServer";
 
 function formatWatTime(): string {
   return new Intl.DateTimeFormat("en-NG", {
@@ -114,6 +96,40 @@ function buildSnapshotFromClassroom(roomRecord: ClassroomRecord): ClassroomSnaps
   };
 }
 
+function mergeClassroomRecordIntoSnapshot(
+  snap: ClassroomSnapshot,
+  roomRecord: ClassroomRecord
+): ClassroomSnapshot {
+  return {
+    ...snap,
+    title: roomRecord.lessonTitle || snap.title,
+    topic: roomRecord.lessonDescription || snap.topic,
+    teacherName: roomRecord.teacherName,
+    sessionStatus:
+      roomRecord.status === "LIVE"
+        ? "live"
+        : roomRecord.status === "ENDED"
+        ? "ended"
+        : "waiting",
+    startedAt: roomRecord.startedAt ? new Date(roomRecord.startedAt).getTime() : null,
+    endedAt: roomRecord.endedAt ? new Date(roomRecord.endedAt).getTime() : null,
+  };
+}
+
+async function saveRoomSnapshotToPg(snap: ClassroomSnapshot): Promise<void> {
+  if (!isSupabaseServerConfigured) return;
+  const sb = getSupabaseServerClient();
+  await sb.from("live_room_states").upsert(
+    {
+      class_id: snap.classId,
+      snapshot: snap,
+      version: snap.version,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "class_id" }
+  );
+}
+
 export interface RoomAccessResult {
   allowed: boolean;
   httpStatus: 200 | 403 | 404;
@@ -148,7 +164,6 @@ export async function verifyLiveRoomAccess(
     };
   }
 
-  // Admins inspect operational status in /admin/classrooms, NOT private live audio/video streams
   if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
     return {
       allowed: false,
@@ -218,45 +233,39 @@ export async function verifyLiveRoomAccess(
   };
 }
 
-export function getRoomSnapshotFromRecord(roomRecord: ClassroomRecord): ClassroomSnapshot {
-  const store = getStore();
-  let snap = store.rooms.get(roomRecord.id);
-  if (!snap) {
-    snap = buildSnapshotFromClassroom(roomRecord);
-    store.rooms.set(roomRecord.id, snap);
-  } else {
-    // Keep authoritative LMS status, teacher, notes, and materials synchronized
-    snap.title = roomRecord.lessonTitle || snap.title;
-    snap.topic = roomRecord.lessonDescription || snap.topic;
-    snap.teacherName = roomRecord.teacherName;
-    snap.sessionStatus =
-      roomRecord.status === "LIVE"
-        ? "live"
-        : roomRecord.status === "ENDED"
-        ? "ended"
-        : "waiting";
-    snap.startedAt = roomRecord.startedAt ? new Date(roomRecord.startedAt).getTime() : null;
-    snap.endedAt = roomRecord.endedAt ? new Date(roomRecord.endedAt).getTime() : null;
+export async function getRoomSnapshotFromRecord(
+  roomRecord: ClassroomRecord
+): Promise<ClassroomSnapshot> {
+  if (isSupabaseServerConfigured) {
+    try {
+      const sb = getSupabaseServerClient();
+      const { data } = await sb
+        .from("live_room_states")
+        .select("snapshot")
+        .eq("class_id", roomRecord.id)
+        .maybeSingle();
+
+      if (data?.snapshot) {
+        return mergeClassroomRecordIntoSnapshot(
+          data.snapshot as ClassroomSnapshot,
+          roomRecord
+        );
+      }
+    } catch {
+      // ignore read failure; create initial snapshot below
+    }
   }
-  return snap;
+
+  const initialSnap = buildSnapshotFromClassroom(roomRecord);
+  await saveRoomSnapshotToPg(initialSnap).catch(() => {});
+  return initialSnap;
 }
 
-export function getSignalsSince(
-  classId: string,
-  sinceSeq: number,
-  peerId?: string
-): { signals: SignalingEnvelope[]; latestSeq: number } {
-  const store = getStore();
-  const list = store.signals.get(classId) || [];
-  const filtered = list.filter(
-    (s) =>
-      s.seq > sinceSeq &&
-      (!peerId || s.toPeerId === "broadcast" || s.toPeerId === peerId) &&
-      s.fromPeerId !== peerId
-  );
+export function getSignalsSince(): { signals: SignalingEnvelope[]; latestSeq: number } {
+  // Media streaming is handled via LiveKit Cloud SFU tokens rather than server-stored peer SDP signals.
   return {
-    signals: filtered,
-    latestSeq: store.seqCounter,
+    signals: [],
+    latestSeq: 0,
   };
 }
 
@@ -266,8 +275,7 @@ export async function applyAuthenticatedRoomAction(
   user: AuthenticatedSessionUser,
   body: Record<string, any>
 ): Promise<ClassroomSnapshot> {
-  const store = getStore();
-  const room = getRoomSnapshotFromRecord(roomRecord);
+  const room = await getRoomSnapshotFromRecord(roomRecord);
   const action = String(body.action || "");
   const isTeacherActor = user.role === "TEACHER" && roomRecord.teacherUserId === user.id;
   const nowStr = formatWatTime();
@@ -276,7 +284,6 @@ export async function applyAuthenticatedRoomAction(
     case "JOIN_ROOM": {
       if (user.role === "TEACHER" && isTeacherActor) {
         room.teacherName = user.fullName || room.teacherName;
-        // Note: Joining room in prep/waiting does NOT auto-start broadcast. Teacher explicitly clicks START_CLASS.
       } else if (user.role === "STUDENT") {
         const existing = room.participants.find((p) => p.id === user.id);
         if (!existing) {
@@ -301,7 +308,6 @@ export async function applyAuthenticatedRoomAction(
           });
         }
 
-        // Persist attendance PRESENT when room is live
         if (roomRecord.status === "LIVE") {
           await mutateLmsState((state) => {
             const existingAtt = state.attendanceRecords.find(
@@ -792,26 +798,10 @@ export async function applyAuthenticatedRoomAction(
       break;
     }
 
-    case "WEBRTC_SIGNAL": {
-      const list = store.signals.get(classId) || [];
-      store.seqCounter += 1;
-      list.push({
-        seq: store.seqCounter,
-        classId,
-        fromPeerId: user.id,
-        fromRole: isTeacherActor ? "TEACHER" : "STUDENT",
-        toPeerId: String(body.toPeerId || "broadcast"),
-        kind: body.kind,
-        payload: body.payload,
-        createdAt: Date.now(),
-      });
-      store.signals.set(classId, list.slice(-120));
-      break;
-    }
-
     default:
       break;
   }
 
+  await saveRoomSnapshotToPg(room);
   return room;
 }

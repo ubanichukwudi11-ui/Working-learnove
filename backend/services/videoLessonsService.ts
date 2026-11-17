@@ -1,15 +1,18 @@
 import crypto from "crypto";
-import fs from "fs";
-import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import {
   appendAuditLog,
   appendNotification,
   fetchDirectoryUsers,
+  isStudentEntitledForSubject,
   loadLmsState,
   mutateLmsState,
 } from "./lmsDb";
-import { getSupabaseServerClient } from "./supabaseServer";
+import {
+  getSupabaseServerClient,
+  isSupabaseServerConfigured,
+  SUPABASE_SERVER_CONFIG_ERROR,
+} from "./supabaseServer";
 import type { AuthenticatedSessionUser } from "./serverAuth";
 import type {
   CurriculumTopicRecord,
@@ -764,13 +767,45 @@ export async function getVideoLessonsOverview(user: AuthenticatedSessionUser) {
     .filter((t) => isAdmin || isTeacher || t.isPublished)
     .sort((a, b) => a.topicOrder - b.topicOrder);
 
-  const videos = (state.videoLessons || []).filter((v) => {
+  const rawVideos = (state.videoLessons || []).filter((v) => {
     if (isAdmin) return true;
     if (isTeacher) {
       return v.status === "PUBLISHED" || v.uploadedByUserId === user.id;
     }
     return v.status === "PUBLISHED";
   });
+
+  const videos = await Promise.all(
+    rawVideos.map(async (v) => {
+      if (
+        v.sourceType === "UPLOADED_VIDEO" &&
+        v.storagePath?.startsWith("supabase://") &&
+        isSupabaseServerConfigured
+      ) {
+        const entitled =
+          isAdmin ||
+          isTeacher ||
+          isStudentEntitledForSubject(state, user.id, v.subjectId, v.classLevelId).entitled;
+        if (entitled) {
+          const parsed = parseSupabaseStorageUri(v.storagePath);
+          if (parsed) {
+            try {
+              const sb = getSupabaseServerClient();
+              const { data } = await sb.storage
+                .from(parsed.bucket)
+                .createSignedUrl(parsed.objectPath, 3600);
+              if (data?.signedUrl) {
+                return { ...v, videoUrl: data.signedUrl };
+              }
+            } catch {
+              // keep proxy route URL on transient storage signing error
+            }
+          }
+        }
+      }
+      return v;
+    })
+  );
 
   const requests = isAdmin
     ? state.videoUploadRequests || []
@@ -993,6 +1028,10 @@ export async function handleVideoLessonsMutation(
               ? m.type
               : "PDF") as VideoLessonMaterialRecord["type"],
             url: String(m.url).trim(),
+            storageBucket: m.storageBucket ? String(m.storageBucket) : undefined,
+            storageObjectPath: m.storageObjectPath
+              ? String(m.storageObjectPath)
+              : undefined,
             fileName: m.fileName ? String(m.fileName) : undefined,
             mimeType: m.mimeType ? String(m.mimeType) : undefined,
             fileSizeBytes: m.fileSizeBytes
@@ -1016,6 +1055,7 @@ export async function handleVideoLessonsMutation(
           sourceType: normalized.sourceType,
           videoUrl: normalized.videoUrl,
           youtubeVideoId: normalized.youtubeVideoId,
+          storageBucket: body.storageBucket ? String(body.storageBucket) : undefined,
           storagePath: body.storagePath ? String(body.storagePath) : undefined,
           mimeType: body.mimeType ? String(body.mimeType) : undefined,
           fileSizeBytes: body.fileSizeBytes
@@ -1331,10 +1371,51 @@ const ALLOWED_VIDEO_MIME_EXT: Record<string, string> = {
   "video/ogg": ".ogv",
 };
 
+function parseSupabaseStorageUri(
+  uri: string
+): { bucket: string; objectPath: string } | null {
+  const clean = uri.trim();
+  const prefix = clean.startsWith("supabase://")
+    ? "supabase://"
+    : clean.startsWith("storage://")
+    ? "storage://"
+    : null;
+  if (!prefix) return null;
+  const rest = clean.slice(prefix.length);
+  const slashIdx = rest.indexOf("/");
+  if (slashIdx <= 0) return null;
+  return {
+    bucket: rest.slice(0, slashIdx),
+    objectPath: rest.slice(slashIdx + 1),
+  };
+}
+
+async function ensurePrivateBucket(bucketName: string, maxBytes?: number) {
+  const sb = getSupabaseServerClient();
+  const { data: buckets } = await sb.storage.listBuckets();
+  const existing = buckets?.find(
+    (b) => b.id === bucketName || b.name === bucketName
+  );
+  if (!existing) {
+    await sb.storage.createBucket(bucketName, {
+      public: false,
+      fileSizeLimit: maxBytes,
+    });
+  } else if (existing.public) {
+    await sb.storage
+      .updateBucket(bucketName, { public: false, fileSizeLimit: maxBytes })
+      .catch(() => {});
+  }
+  return sb;
+}
+
 export async function uploadVideoLessonFile(
   user: AuthenticatedSessionUser,
   file: FormDataEntryValue | null
 ) {
+  if (!isSupabaseServerConfigured) {
+    throw new VideoServiceError(SUPABASE_SERVER_CONFIG_ERROR, 503);
+  }
   if (!file || !(file instanceof File)) {
     throw new VideoServiceError(
       "Please select a video file (.mp4, .webm, or .mov) to upload.",
@@ -1376,43 +1457,26 @@ export async function uploadVideoLessonFile(
   const filename = `${Date.now()}_${user.id.slice(0, 8)}_${safeBase}${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 
-  try {
-    const sb = getSupabaseServerClient();
-    const { data: buckets } = await sb.storage.listBuckets();
-    if (!buckets?.some((b) => b.id === VIDEO_BUCKET)) {
-      await sb.storage.createBucket(VIDEO_BUCKET, { public: true });
-    }
-    const { error: uploadErr } = await sb.storage
-      .from(VIDEO_BUCKET)
-      .upload(filename, bytes, {
-        contentType: mimeType || "video/mp4",
-        upsert: false,
-      });
+  const sb = await ensurePrivateBucket(VIDEO_BUCKET, MAX_VIDEO_BYTES);
+  const { error: uploadErr } = await sb.storage
+    .from(VIDEO_BUCKET)
+    .upload(filename, bytes, {
+      contentType: mimeType || "video/mp4",
+      upsert: false,
+    });
 
-    if (!uploadErr) {
-      const { data: pub } = sb.storage.from(VIDEO_BUCKET).getPublicUrl(filename);
-      if (pub?.publicUrl) {
-        return {
-          success: true,
-          videoUrl: pub.publicUrl,
-          storagePath: `supabase://${VIDEO_BUCKET}/${filename}`,
-          mimeType: mimeType || "video/mp4",
-          fileSizeBytes: file.size,
-        };
-      }
-    }
-  } catch (sbErr) {
-    console.warn("Supabase video storage upload fallback to local disk:", sbErr);
+  if (uploadErr) {
+    throw new VideoServiceError(
+      `Failed to store video in private Supabase Storage: ${uploadErr.message}`,
+      503
+    );
   }
-
-  const uploadDir = path.join(process.cwd(), ".aistudio", "uploads", "videos");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, filename), bytes);
 
   return {
     success: true,
     videoUrl: `/api/lms/videos/stream/${encodeURIComponent(filename)}`,
-    storagePath: `local://${filename}`,
+    storageBucket: VIDEO_BUCKET,
+    storagePath: `supabase://${VIDEO_BUCKET}/${filename}`,
     mimeType: mimeType || "video/mp4",
     fileSizeBytes: file.size,
   };
@@ -1447,6 +1511,9 @@ function inferMaterialType(
 export async function uploadVideoMaterialFile(
   file: FormDataEntryValue | null
 ) {
+  if (!isSupabaseServerConfigured) {
+    throw new VideoServiceError(SUPABASE_SERVER_CONFIG_ERROR, 503);
+  }
   if (!file || !(file instanceof File)) {
     throw new VideoServiceError(
       "Please attach a document, slide deck, or study sheet file.",
@@ -1479,73 +1546,33 @@ export async function uploadVideoMaterialFile(
   const buffer = Buffer.from(await file.arrayBuffer());
   const mimeType = file.type || "application/octet-stream";
 
-  try {
-    const sb = getSupabaseServerClient();
-    const { data: buckets } = await sb.storage.listBuckets();
-    if (!buckets?.some((b) => b.name === MATERIALS_BUCKET)) {
-      await sb.storage.createBucket(MATERIALS_BUCKET, {
-        public: true,
-        fileSizeLimit: MAX_MATERIAL_BYTES,
-      });
-    }
+  const sb = await ensurePrivateBucket(MATERIALS_BUCKET, MAX_MATERIAL_BYTES);
+  const { error: uploadErr } = await sb.storage
+    .from(MATERIALS_BUCKET)
+    .upload(uniqueName, buffer, {
+      contentType: mimeType,
+      upsert: false,
+    });
 
-    const { error: uploadErr } = await sb.storage
-      .from(MATERIALS_BUCKET)
-      .upload(uniqueName, buffer, {
-        contentType: mimeType,
-        upsert: false,
-      });
-
-    if (!uploadErr) {
-      const { data: publicUrlData } = sb.storage
-        .from(MATERIALS_BUCKET)
-        .getPublicUrl(uniqueName);
-
-      return {
-        success: true,
-        url: publicUrlData.publicUrl,
-        fileName: file.name,
-        mimeType,
-        fileSizeBytes: file.size,
-        materialType: inferMaterialType(ext),
-        storage: "supabase",
-      };
-    }
-  } catch {
-    // Fall back to persistent local disk directory
+  if (uploadErr) {
+    throw new VideoServiceError(
+      `Failed to store material in private Supabase Storage: ${uploadErr.message}`,
+      503
+    );
   }
-
-  const dir = path.join(process.cwd(), ".aistudio", "uploads", "materials");
-  await mkdir(dir, { recursive: true });
-  await writeFile(path.join(dir, uniqueName), buffer);
 
   return {
     success: true,
     url: `/api/lms/videos/materials/download?file=${encodeURIComponent(uniqueName)}`,
+    storageBucket: MATERIALS_BUCKET,
+    storageObjectPath: uniqueName,
     fileName: file.name,
     mimeType,
     fileSizeBytes: file.size,
     materialType: inferMaterialType(ext),
-    storage: "local",
+    storage: "supabase",
   };
 }
-
-const MATERIAL_CONTENT_TYPES: Record<string, string> = {
-  ".pdf": "application/pdf",
-  ".doc": "application/msword",
-  ".docx":
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".ppt": "application/vnd.ms-powerpoint",
-  ".pptx":
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ".txt": "text/plain; charset=utf-8",
-  ".md": "text/markdown; charset=utf-8",
-  ".csv": "text/csv; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-};
 
 function sanitizeDownloadName(
   raw: string,
@@ -1555,37 +1582,57 @@ function sanitizeDownloadName(
   return cleaned || fallback;
 }
 
-export async function resolveVideoMaterialDownload(params: {
-  localFileParam?: string | null;
-  videoId?: string;
-  materialId?: string;
-}): Promise<
+export async function resolveVideoMaterialDownload(
+  user: AuthenticatedSessionUser,
+  params: {
+    localFileParam?: string | null;
+    videoId?: string;
+    materialId?: string;
+  }
+): Promise<
   | { kind: "redirect"; url: string }
   | { kind: "bytes"; data: Uint8Array; contentType: string; fileName: string }
 > {
   const { localFileParam, videoId = "", materialId = "" } = params;
+  const state = await loadLmsState();
 
   if (localFileParam) {
     const safeName = path.basename(localFileParam);
-    const fullPath = path.join(
-      process.cwd(),
-      ".aistudio",
-      "uploads",
-      "materials",
-      safeName
-    );
-    try {
-      const buf = await readFile(fullPath);
-      const ext = path.extname(safeName).toLowerCase();
-      return {
-        kind: "bytes",
-        data: new Uint8Array(buf),
-        contentType: MATERIAL_CONTENT_TYPES[ext] || "application/octet-stream",
-        fileName: sanitizeDownloadName(safeName),
-      };
-    } catch {
-      throw new VideoServiceError("Material file not found.", 404);
+    if (!safeName) {
+      throw new VideoServiceError("Invalid material file name.", 400);
     }
+
+    const parentVideo = (state.videoLessons || []).find((v) =>
+      (v.materials || []).some(
+        (m) =>
+          m.storageObjectPath === safeName ||
+          (m.url && m.url.includes(encodeURIComponent(safeName)))
+      )
+    );
+    if (parentVideo && user.role === "STUDENT") {
+      const ent = isStudentEntitledForSubject(
+        state,
+        user.id,
+        parentVideo.subjectId,
+        parentVideo.classLevelId
+      );
+      if (!ent.entitled) {
+        throw new VideoServiceError(ent.reason, 403);
+      }
+    }
+
+    if (!isSupabaseServerConfigured) {
+      throw new VideoServiceError(SUPABASE_SERVER_CONFIG_ERROR, 503);
+    }
+
+    const sb = getSupabaseServerClient();
+    const { data, error } = await sb.storage
+      .from(MATERIALS_BUCKET)
+      .createSignedUrl(safeName, 900);
+    if (error || !data?.signedUrl) {
+      throw new VideoServiceError("Lesson material file not found.", 404);
+    }
+    return { kind: "redirect", url: data.signedUrl };
   }
 
   if (!videoId) {
@@ -1595,10 +1642,21 @@ export async function resolveVideoMaterialDownload(params: {
     );
   }
 
-  const state = await loadLmsState();
   const video = (state.videoLessons || []).find((v) => v.id === videoId);
   if (!video) {
     throw new VideoServiceError("Video lesson not found.", 404);
+  }
+
+  if (user.role === "STUDENT") {
+    const ent = isStudentEntitledForSubject(
+      state,
+      user.id,
+      video.subjectId,
+      video.classLevelId
+    );
+    if (!ent.entitled) {
+      throw new VideoServiceError(ent.reason, 403);
+    }
   }
 
   const subject = state.subjects.find((s) => s.id === video.subjectId);
@@ -1611,6 +1669,17 @@ export async function resolveVideoMaterialDownload(params: {
     ? (video.materials || []).find((m) => m.id === materialId)
     : undefined;
 
+  if (material?.storageObjectPath && isSupabaseServerConfigured) {
+    const sb = getSupabaseServerClient();
+    const bucket = material.storageBucket || MATERIALS_BUCKET;
+    const { data, error } = await sb.storage
+      .from(bucket)
+      .createSignedUrl(material.storageObjectPath, 900);
+    if (!error && data?.signedUrl) {
+      return { kind: "redirect", url: data.signedUrl };
+    }
+  }
+
   if (
     material &&
     material.url &&
@@ -1618,26 +1687,6 @@ export async function resolveVideoMaterialDownload(params: {
   ) {
     if (material.type === "LINK") {
       return { kind: "redirect", url: material.url };
-    }
-    try {
-      const remoteRes = await fetch(material.url);
-      if (remoteRes.ok) {
-        const arrBuf = await remoteRes.arrayBuffer();
-        const fileName = sanitizeDownloadName(
-          material.fileName || `${material.title}.pdf`
-        );
-        return {
-          kind: "bytes",
-          data: new Uint8Array(arrBuf),
-          contentType:
-            material.mimeType ||
-            remoteRes.headers.get("content-type") ||
-            "application/octet-stream",
-          fileName,
-        };
-      }
-    } catch {
-      // Fall back to generating a clean PDF study guide below if remote fetch fails
     }
   }
 
@@ -1661,38 +1710,67 @@ export async function resolveVideoMaterialDownload(params: {
   };
 }
 
-const STREAM_MIME_BY_EXT: Record<string, string> = {
-  ".mp4": "video/mp4",
-  ".webm": "video/webm",
-  ".mov": "video/quicktime",
-  ".m4v": "video/x-m4v",
-  ".ogv": "video/ogg",
-};
+export async function resolveSignedVideoStreamUrl(
+  user: AuthenticatedSessionUser,
+  rawFilename: string
+): Promise<string> {
+  if (!isSupabaseServerConfigured) {
+    throw new VideoServiceError(SUPABASE_SERVER_CONFIG_ERROR, 503);
+  }
 
-export function resolveLocalVideoStreamFile(rawFilename: string) {
   const safeName = path.basename(decodeURIComponent(rawFilename || ""));
   if (!safeName) {
-    throw new VideoServiceError("Invalid filename.", 400);
+    throw new VideoServiceError("Invalid video filename.", 400);
   }
 
-  const filePath = path.join(
-    process.cwd(),
-    ".aistudio",
-    "uploads",
-    "videos",
-    safeName
+  const state = await loadLmsState();
+  const video = (state.videoLessons || []).find(
+    (v) =>
+      v.storagePath?.endsWith(`/${safeName}`) ||
+      v.videoUrl.includes(encodeURIComponent(safeName)) ||
+      v.videoUrl.endsWith(`/${safeName}`)
   );
-  if (!fs.existsSync(filePath)) {
-    throw new VideoServiceError("Video file not found.", 404);
+
+  if (video) {
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+    const isTeacher = user.role === "TEACHER";
+
+    if (isTeacher && video.status !== "PUBLISHED" && video.uploadedByUserId !== user.id) {
+      throw new VideoServiceError("You are not authorized to stream this draft video.", 403);
+    }
+
+    if (!isAdmin && !isTeacher) {
+      if (video.status !== "PUBLISHED") {
+        throw new VideoServiceError("This video lesson is not published.", 403);
+      }
+      if (user.role === "STUDENT") {
+        const ent = isStudentEntitledForSubject(
+          state,
+          user.id,
+          video.subjectId,
+          video.classLevelId
+        );
+        if (!ent.entitled) {
+          throw new VideoServiceError(ent.reason, 403);
+        }
+      }
+    }
   }
 
-  const stat = fs.statSync(filePath);
-  const ext = path.extname(safeName).toLowerCase();
-  return {
-    filePath,
-    totalSize: stat.size,
-    contentType: STREAM_MIME_BY_EXT[ext] || "video/mp4",
-  };
+  const parsed = video?.storagePath ? parseSupabaseStorageUri(video.storagePath) : null;
+  const bucket = parsed?.bucket || video?.storageBucket || VIDEO_BUCKET;
+  const objectPath = parsed?.objectPath || safeName;
+
+  const sb = getSupabaseServerClient();
+  const { data, error } = await sb.storage
+    .from(bucket)
+    .createSignedUrl(objectPath, 3600);
+
+  if (error || !data?.signedUrl) {
+    throw new VideoServiceError("Video file not found in private storage.", 404);
+  }
+
+  return data.signedUrl;
 }
 
 export async function listVideoQuestions(filters: {

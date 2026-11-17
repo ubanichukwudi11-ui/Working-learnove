@@ -19,7 +19,18 @@ import {
   CreditCard,
   Loader2,
   X,
+  ShieldCheck,
+  KeyRound,
+  Trash2,
 } from "lucide-react";
+
+interface PendingWardRequest {
+  linkId: string;
+  studentEmail: string;
+  relationship: string;
+  status: "PENDING_VERIFICATION" | "REJECTED";
+  linkedAt: string;
+}
 
 interface WardRecord {
   linkId: string;
@@ -91,6 +102,7 @@ function ParentContent() {
   const guardianName = user?.fullName || "Guardian";
 
   const [wards, setWards] = useState<WardRecord[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<PendingWardRequest[]>([]);
   const [selectedWardId, setSelectedWardId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
@@ -100,6 +112,12 @@ function ParentContent() {
   const [relationship, setRelationship] = useState("Mother / Guardian");
   const [linking, setLinking] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [linkInfo, setLinkInfo] = useState<string | null>(null);
+
+  // 6-digit OTP verification state
+  const [otpInputs, setOtpInputs] = useState<Record<string, string>>({});
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
+  const [otpError, setOtpError] = useState<string | null>(null);
 
   const loadWards = useCallback(async () => {
     setLoading(true);
@@ -109,6 +127,7 @@ function ParentContent() {
       const data = await res.json();
       const list: WardRecord[] = data.wards || [];
       setWards(list);
+      setPendingRequests(data.pendingRequests || []);
       setSelectedWardId((prev) =>
         list.some((w) => w.student.id === prev) ? prev : list[0]?.student.id || ""
       );
@@ -124,6 +143,7 @@ function ParentContent() {
   const handleLinkWard = async (e: React.FormEvent) => {
     e.preventDefault();
     setLinkError(null);
+    setLinkInfo(null);
     setLinking(true);
     try {
       const res = await fetch("/api/lms/parent", {
@@ -137,15 +157,55 @@ function ParentContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setLinkError(data.error || "Unable to link student account.");
+        setLinkError(data.error || "Unable to initiate guardian link.");
         return;
       }
       setStudentEmail("");
       setLinkModalOpen(false);
+      setLinkInfo(
+        "Verification request sent! Ask your child to share the 6-digit code sent to their email/Profile or approve the request directly in their Profile page."
+      );
       await loadWards();
     } finally {
       setLinking(false);
     }
+  };
+
+  const handleVerifyCode = async (linkId: string) => {
+    const code = (otpInputs[linkId] || "").trim();
+    if (!code) return;
+    setOtpError(null);
+    setVerifyingId(linkId);
+    try {
+      const res = await fetch("/api/lms/parent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "VERIFY_CODE",
+          linkId,
+          verificationCode: code,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setOtpError(data.error || "Verification failed.");
+        return;
+      }
+      setOtpInputs((prev) => ({ ...prev, [linkId]: "" }));
+      setLinkInfo("Ward account verified and linked!");
+      await loadWards();
+    } finally {
+      setVerifyingId(null);
+    }
+  };
+
+  const handleUnlink = async (linkId: string) => {
+    await fetch("/api/lms/parent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "UNLINK_WARD", linkId }),
+    });
+    await loadWards();
   };
 
   const activeWard =
@@ -166,7 +226,7 @@ function ParentContent() {
               Welcome, {guardianName}
             </h1>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              Monitor your ward&apos;s attendance, quiz &amp; CBT scores, fee receipts (₦), and download official PDF report cards.
+              Monitor your verified ward&apos;s attendance, quiz &amp; CBT scores, fee receipts (₦), and download official PDF report cards.
             </p>
           </div>
 
@@ -198,7 +258,105 @@ function ParentContent() {
           </div>
         </div>
 
-        {/* Ward Switcher if multiple children linked */}
+        {linkInfo && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-800 flex items-center justify-between gap-3">
+            <span>{linkInfo}</span>
+            <button
+              type="button"
+              onClick={() => setLinkInfo(null)}
+              className="text-emerald-700 hover:text-emerald-950"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
+
+        {/* Pending Consent / Verification Requests */}
+        {pendingRequests.length > 0 && (
+          <div className="learnova-card p-5 space-y-3 border-amber-200 bg-amber-50/40">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={17} className="text-[#4F46E5]" />
+              <h2 className="landing-display text-sm font-bold text-[#0B1230]">
+                Pending Guardian Verification Requests
+              </h2>
+            </div>
+            <p className="text-xs text-[#6B6F94]">
+              Student privacy is protected. Enter the 6-digit verification code sent to the student&apos;s email/Profile, or ask the student to approve the request on their Profile page.
+            </p>
+            {otpError && (
+              <div className="rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs font-medium text-rose-700">
+                {otpError}
+              </div>
+            )}
+            <div className="space-y-2.5">
+              {pendingRequests.map((reqItem) => (
+                <div
+                  key={reqItem.linkId}
+                  className="rounded-xl border border-[#E4E1F5] bg-white p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div>
+                    <p className="text-xs font-bold text-[#0B1230]">
+                      {reqItem.studentEmail}
+                    </p>
+                    <p className="text-[11px] text-[#6B6F94]">
+                      {reqItem.relationship} ·{" "}
+                      <span
+                        className={
+                          reqItem.status === "REJECTED"
+                            ? "text-rose-600 font-semibold"
+                            : "text-amber-700 font-semibold"
+                        }
+                      >
+                        {reqItem.status.replace(/_/g, " ")}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {reqItem.status === "PENDING_VERIFICATION" && (
+                      <>
+                        <div className="flex items-center gap-1.5">
+                          <KeyRound size={14} className="text-[#4F46E5]" />
+                          <input
+                            type="text"
+                            maxLength={6}
+                            value={otpInputs[reqItem.linkId] || ""}
+                            onChange={(e) =>
+                              setOtpInputs((prev) => ({
+                                ...prev,
+                                [reqItem.linkId]: e.target.value,
+                              }))
+                            }
+                            placeholder="6-digit code"
+                            className="learnova-input w-28 px-2.5 py-1.5 text-xs font-mono tracking-wider"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          disabled={verifyingId === reqItem.linkId}
+                          onClick={() => handleVerifyCode(reqItem.linkId)}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-bold transition disabled:opacity-50"
+                        >
+                          {verifyingId === reqItem.linkId ? "Verifying..." : "Verify Code"}
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleUnlink(reqItem.linkId)}
+                      title="Remove request"
+                      className="p-1.5 rounded-lg border border-[#E4E1F5] text-[#6B6F94] hover:text-rose-600 transition"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Ward Switcher if multiple children verified */}
         {wards.length > 1 && (
           <div className="flex flex-wrap items-center gap-2">
             {wards.map((w) => (
@@ -220,16 +378,16 @@ function ParentContent() {
 
         {loading ? (
           <div className="learnova-card p-12 text-center text-sm text-[#6B6F94]">
-            Loading linked ward records...
+            Loading verified ward records...
           </div>
         ) : !activeWard ? (
           <div className="rounded-2xl border border-dashed border-[#DCD7F5] bg-white p-12 text-center space-y-3">
             <User size={28} className="mx-auto text-[#6B6F94]" />
             <h2 className="landing-display text-base font-bold text-[#0B1230]">
-              No Student Account Linked Yet
+              No Verified Student Account Linked Yet
             </h2>
             <p className="text-xs text-[#6B6F94] max-w-md mx-auto">
-              Link your child&apos;s Learnova email address to track attendance, WAEC/JAMB CBT readiness, fees, and report cards.
+              Request to link your child&apos;s Learnova email address. Once verified by 6-digit code or student approval, you can track attendance, WAEC/JAMB CBT readiness, fees, and report cards.
             </p>
             <button
               type="button"
@@ -249,7 +407,7 @@ function ParentContent() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-[#4F46E5] font-semibold">
-                    Linked Ward · {activeWard.relationship}
+                    Verified Ward · {activeWard.relationship}
                   </p>
                   <h2 className="landing-display text-xl font-extrabold text-[#0B1230] mt-0.5 truncate">
                     {activeWard.student.fullName}
@@ -479,7 +637,7 @@ function ParentContent() {
           >
             <div className="flex items-center justify-between">
               <h3 className="landing-display text-lg font-bold text-[#0B1230]">
-                Link Child / Student Account
+                Request Guardian Ward Link
               </h3>
               <button
                 type="button"
@@ -490,7 +648,7 @@ function ParentContent() {
               </button>
             </div>
             <p className="text-xs text-[#6B6F94]">
-              Enter your child&apos;s registered Learnova student email address to monitor their progress and download report cards.
+              Enter your child&apos;s registered Learnova student email. A 6-digit verification code will be emailed to the student and shown in their Profile for consent approval.
             </p>
 
             {linkError && (
@@ -509,7 +667,7 @@ function ParentContent() {
                   required
                   value={studentEmail}
                   onChange={(e) => setStudentEmail(e.target.value)}
-                  placeholder="e.g. student@learnova.ng"
+                  placeholder="e.g. student@example.com"
                   className="learnova-input w-full px-3.5 py-2.5 text-sm"
                 />
               </div>
@@ -544,7 +702,7 @@ function ParentContent() {
                 className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold inline-flex items-center gap-1.5 disabled:opacity-50 transition shadow-sm"
               >
                 {linking && <Loader2 size={13} className="animate-spin" />}
-                Link Student
+                Send Verification Request
               </button>
             </div>
           </form>

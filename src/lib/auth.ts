@@ -118,7 +118,8 @@ export async function login(email: string, password?: string): Promise<User> {
         localStorage.setItem("learnova_user", serialized);
         localStorage.setItem("learnova-user", serialized);
         sessionStorage.setItem("learnova_user", serialized);
-        document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax`;
+        const secureAttr = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
       } catch {}
     }
 
@@ -378,33 +379,14 @@ export async function getCurrentUser(): Promise<User | null> {
 =========================================== */
 
 export async function getAllUsers(): Promise<User[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data: profiles, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (!error && profiles && profiles.length > 0) {
-        return profiles.map((p: any) => ({
-          id: p.id,
-          email: p.email,
-          fullName: p.full_name,
-          role: p.role,
-          status: p.status,
-          avatarUrl: p.avatar_url,
-          phone: p.phone,
-          gender: p.gender,
-          country: p.country,
-          state: p.state,
-          address: p.address,
-          dob: p.dob,
-        }));
-      }
-    } catch {}
+  try {
+    const res = await fetch("/api/admin/users", { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data?.users) ? data.users : [];
+  } catch {
+    return [];
   }
-
-  return [];
 }
 
 /* ===========================================
@@ -417,99 +399,61 @@ export async function getTeachers(): Promise<User[]> {
 }
 
 export async function getTeacherById(id: string): Promise<User | null> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
-
-      const { data: teacher } = await supabase
-        .from("teacher_profiles")
-        .select("*")
-        .eq("user_id", id)
-        .maybeSingle();
-
-      if (profile) {
-        return {
-          id: profile.id,
-          email: profile.email,
-          fullName: profile.full_name,
-          role: profile.role,
-          status: profile.status,
-          avatarUrl: profile.avatar_url,
-          phone: profile.phone,
-          gender: profile.gender,
-          country: profile.country,
-          state: profile.state,
-          address: profile.address,
-          dob: profile.dob,
-          subject: teacher?.subject,
-          qualification: teacher?.qualification,
-          institution: teacher?.institution,
-          experience: teacher?.experience,
-          licenseNumber: teacher?.license_number,
-          profilePhoto: teacher?.profile_photo,
-          certificate: teacher?.teaching_certificate,
-          degreeCertificate: teacher?.degree_certificate,
-          governmentId: teacher?.government_id,
-          cv: teacher?.cv,
-          verificationScore: teacher?.verification_score ?? 0,
-          adminNotes: teacher?.admin_notes,
-        };
-      }
-    } catch {}
-  }
-
-  const all = await getAllUsers();
-  return all.find((u) => u.id === id) || null;
+  try {
+    const res = await fetch(
+      `/api/admin/users?userId=${encodeURIComponent(id)}`,
+      { cache: "no-store" }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.user) return data.user;
+    }
+  } catch {}
+  return null;
 }
 
 /* ===========================================
-   STATUS MODIFIERS (Approve / Reject / Suspend)
+   STATUS MODIFIERS (Server-Enforced Admin API)
 =========================================== */
 
+async function adminPatchUser(
+  userId: string,
+  payload: { status?: UserStatus; role?: UserRole }
+): Promise<boolean> {
+  const res = await fetch("/api/admin/users", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId, ...payload }),
+  });
+  return res.ok;
+}
+
 export async function approveTeacher(userId: string): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase.from("profiles").update({ status: "ACTIVE" }).eq("id", userId);
-  }
-  return true;
+  return adminPatchUser(userId, { status: "ACTIVE" });
 }
 
 export async function rejectTeacher(userId: string): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase.from("profiles").update({ status: "REJECTED" }).eq("id", userId);
-  }
-  return true;
+  return adminPatchUser(userId, { status: "REJECTED" });
 }
 
 export async function suspendUser(userId: string): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase.from("profiles").update({ status: "SUSPENDED" }).eq("id", userId);
-  }
-  return true;
+  return adminPatchUser(userId, { status: "SUSPENDED" });
 }
 
 export async function activateUser(userId: string): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase.from("profiles").update({ status: "ACTIVE" }).eq("id", userId);
-  }
-  return true;
+  return adminPatchUser(userId, { status: "ACTIVE" });
 }
 
 export async function changeUserRole(userId: string, role: UserRole): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase.from("profiles").update({ role }).eq("id", userId);
-  }
-  return true;
+  return adminPatchUser(userId, { role });
 }
 
 export async function deleteUser(userId: string): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase.from("profiles").delete().eq("id", userId);
-  }
-  return true;
+  const res = await fetch(
+    `/api/admin/users?userId=${encodeURIComponent(userId)}`,
+    { method: "DELETE" }
+  );
+  return res.ok;
 }
 
 export async function resetPassword(email: string): Promise<boolean> {
@@ -531,26 +475,17 @@ export async function updatePassword(password: string): Promise<boolean> {
 }
 
 export async function resendVerificationEmail(): Promise<boolean> {
-  return true;
+  const res = await fetch("/api/auth/verification", { method: "POST" });
+  return res.ok;
 }
 
-export async function updateProfile(userId: string, values: Partial<User>): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    await supabase
-      .from("profiles")
-      .update({
-        full_name: values.fullName,
-        avatar_url: values.avatarUrl,
-        phone: values.phone,
-        gender: values.gender,
-        country: values.country,
-        state: values.state,
-        address: values.address,
-        dob: values.dob,
-      })
-      .eq("id", userId);
-  }
-  return true;
+export async function updateProfile(_userId: string, values: Partial<User>): Promise<boolean> {
+  const res = await fetch("/api/auth/me", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(values),
+  });
+  return res.ok;
 }
 
 export async function updateTeacherProfile(userId: string, values: Partial<User>): Promise<boolean> {

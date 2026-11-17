@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   try {
-    const resolved = await resolveVideoMaterialDownload({
+    const resolved = await resolveVideoMaterialDownload(auth.user, {
       localFileParam: searchParams.get("file"),
       videoId: searchParams.get("videoId") || "",
       materialId: searchParams.get("materialId") || "",

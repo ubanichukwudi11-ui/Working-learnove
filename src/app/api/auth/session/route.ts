@@ -16,16 +16,19 @@ export async function POST(req: NextRequest) {
     );
 
     const response = NextResponse.json({ success: true, user });
+    const isProd = process.env.NODE_ENV === "production";
     response.cookies.set("learnova_access_token", accessToken, {
       httpOnly: true,
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
       sameSite: "lax",
+      secure: isProd,
     });
     response.cookies.set("learnova_user", JSON.stringify(user), {
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
       sameSite: "lax",
+      secure: isProd,
     });
     return response;
   } catch (err: unknown) {

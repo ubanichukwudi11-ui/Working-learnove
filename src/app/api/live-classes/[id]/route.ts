@@ -26,10 +26,8 @@ export async function GET(
     );
   }
 
-  const { searchParams } = new URL(req.url);
-  const sinceSeq = Number(searchParams.get("sinceSeq") || "0");
-  const snapshot = getRoomSnapshotFromRecord(access.classroom);
-  const { signals, latestSeq } = getSignalsSince(id, sinceSeq, auth.user.id);
+  const snapshot = await getRoomSnapshotFromRecord(access.classroom);
+  const { signals, latestSeq } = getSignalsSince();
 
   return NextResponse.json({
     snapshot,

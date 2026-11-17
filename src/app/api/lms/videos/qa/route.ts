@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireApiAuth } from "@backend/services/serverAuth";
+import { enforceAndConsumeNovaQuota } from "@backend/services/rateLimitService";
 import { draftVideoQaReply, NovaApiError } from "@backend/ai/novaAiService";
 import {
   askVideoQuestion,
@@ -7,6 +9,11 @@ import {
   replyToVideoQuestion,
   VideoServiceError,
 } from "@backend/services/videoLessonsService";
+
+const qaDraftSchema = z.object({
+  question: z.string().min(1).max(2000),
+  lessonContext: z.string().max(1500).optional(),
+});
 
 export async function GET(req: NextRequest) {
   const { errorResponse } = await requireApiAuth(req);
@@ -38,8 +45,28 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "AI_DRAFT_REPLY") {
-      const result = await draftVideoQaReply(body);
-      return NextResponse.json(result);
+      const parsed = qaDraftSchema.safeParse(body);
+      if (!parsed.success) {
+        return NextResponse.json(
+          { error: "Invalid Q&A AI draft request." },
+          { status: 400 }
+        );
+      }
+      const quota = await enforceAndConsumeNovaQuota(user, "qa_draft");
+      if (!quota.allowed) {
+        return NextResponse.json(
+          { error: quota.reason || "Daily Nova AI limit reached.", quota },
+          {
+            status: 429,
+            headers: quota.retryAfterSeconds
+              ? { "Retry-After": String(quota.retryAfterSeconds) }
+              : undefined,
+          }
+        );
+      }
+
+      const result = await draftVideoQaReply(parsed.data);
+      return NextResponse.json({ ...result, quota });
     }
 
     return NextResponse.json({ error: "Unsupported Q&A action." }, { status: 400 });

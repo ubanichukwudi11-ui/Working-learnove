@@ -32,30 +32,19 @@ import { useAuth } from "@/context/AuthContext";
 import {
   ClassroomSnapshot,
   classroomSync,
+  Participant,
   ScreenShareType,
   VideoQualityPreset,
   WhiteboardStroke,
 } from "@/lib/classroomSync";
-import { webrtcManager } from "@/lib/webrtcManager";
+import {
+  LiveKitClassroomProvider,
+  LiveKitParticipantVideoTile,
+  useLiveKitClassroom,
+} from "./VideoRoom";
 import PresentationStage from "./PresentationStage";
 import ClassroomTools from "./ClassroomTools";
 import NovaClassAssistantModal from "./NovaClassAssistantModal";
-
-function RemoteVideoTile({ stream, label }: { stream: MediaStream; label: string }) {
-  const ref = useRef<HTMLVideoElement | null>(null);
-  useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
-  }, [stream]);
-  return (
-    <video
-      ref={ref}
-      autoPlay
-      playsInline
-      aria-label={label}
-      className="w-full h-full object-cover"
-    />
-  );
-}
 
 export default function TeacherLiveClassroom({ classId = "" }: { classId?: string }) {
   const { user } = useAuth();
@@ -64,11 +53,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
   const [snapshot, setSnapshot] = useState<ClassroomSnapshot | null>(null);
   const [accessError, setAccessError] = useState<{ message: string; code: string } | null>(null);
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
-  const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
   const [mediaNotice, setMediaNotice] = useState<string | null>(null);
-  const [audioLevel, setAudioLevel] = useState(0);
   const [quality, setQuality] = useState<VideoQualityPreset>("medium");
 
   const [rightTab, setRightTab] = useState<"roster" | "chat" | "attendance">("roster");
@@ -82,9 +67,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
   const [isNovaOpen, setIsNovaOpen] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const seqRef = useRef(0);
-  const knownPeersOfferedRef = useRef<Set<string>>(new Set());
 
   const syncFromServer = useCallback(async () => {
     const res = await classroomSync.fetchSnapshot(classId, hostPeerId, seqRef.current);
@@ -97,20 +80,6 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
     setAccessError(null);
     seqRef.current = res.latestSeq ?? seqRef.current;
     setSnapshot(res.snapshot);
-
-    for (const sig of res.signals || []) {
-      await webrtcManager.handleSignal(
-        classId,
-        hostPeerId,
-        "TEACHER",
-        sig.fromPeerId,
-        sig.kind,
-        sig.payload,
-        (stream) => {
-          setRemoteStreams((prev) => ({ ...prev, [sig.fromPeerId]: stream }));
-        }
-      );
-    }
   }, [classId, hostPeerId]);
 
   useEffect(() => {
@@ -140,34 +109,6 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
     };
   }, [classId, hostPeerId, user?.fullName, syncFromServer]);
 
-  // Start teacher local camera/mic on entry with graceful fallback
-  useEffect(() => {
-    let mounted = true;
-    const startHostMedia = async () => {
-      const res = await webrtcManager.startLocalMedia(true, true, quality);
-      if (!mounted) return;
-      if (res.stream) setLocalStream(res.stream);
-      if (res.errorReason) setMediaNotice(res.errorReason);
-    };
-    startHostMedia();
-
-    const unsubAudio = webrtcManager.onAudioLevel((lvl) => {
-      if (mounted) setAudioLevel(lvl);
-    });
-
-    return () => {
-      mounted = false;
-      unsubAudio();
-      webrtcManager.closeAll();
-    };
-  }, [quality]);
-
-  useEffect(() => {
-    if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
-    }
-  }, [localStream]);
-
   // Elapsed timer synchronized from session start
   useEffect(() => {
     if (!snapshot?.startedAt || snapshot.sessionStatus !== "live") return;
@@ -179,79 +120,37 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
     return () => clearInterval(t);
   }, [snapshot?.startedAt, snapshot?.sessionStatus]);
 
-  // Offer WebRTC stream to any real connected student peers
-  useEffect(() => {
-    if (!snapshot) return;
-    const realStudentIds = snapshot.participants
-      .filter((p) => p.role === "STUDENT" && !p.id.startsWith("demo-"))
-      .map((p) => p.id);
-
-    for (const sid of realStudentIds) {
-      if (!knownPeersOfferedRef.current.has(sid)) {
-        knownPeersOfferedRef.current.add(sid);
-        webrtcManager.sendOffer(classId, hostPeerId, "TEACHER", sid, (stream) => {
-          setRemoteStreams((prev) => ({ ...prev, [sid]: stream }));
-        });
-      }
-    }
-  }, [snapshot, classId, hostPeerId]);
-
-  const act = async (action: string, payload: Record<string, any> = {}) => {
-    const next = await classroomSync.dispatchAction(classId, action, {
-      actorRole: "TEACHER",
-      ...payload,
-    });
-    if (next) setSnapshot(next);
-  };
+  const act = useCallback(
+    async (action: string, payload: Record<string, any> = {}) => {
+      const next = await classroomSync.dispatchAction(classId, action, {
+        actorRole: "TEACHER",
+        ...payload,
+      });
+      if (next) setSnapshot(next);
+    },
+    [classId]
+  );
 
   const handleToggleMic = async () => {
-    const muted = webrtcManager.toggleMute();
-    await act("TOGGLE_HOST_MEDIA", { hostMicOn: !muted });
+    const nextMic = snapshot?.hostMicOn === false;
+    await act("TOGGLE_HOST_MEDIA", { hostMicOn: nextMic });
   };
 
   const handleToggleCam = async () => {
-    const stopped = webrtcManager.toggleVideo();
-    await act("TOGGLE_HOST_MEDIA", { hostVideoOn: !stopped });
+    const nextCam = snapshot?.hostVideoOn === false;
+    await act("TOGGLE_HOST_MEDIA", { hostVideoOn: nextCam });
   };
 
   const handleAudioOnlyToggle = async () => {
     const nextAudioOnly = !snapshot?.hostAudioOnly;
-    if (nextAudioOnly) {
-      webrtcManager.toggleVideo(true);
-    } else {
-      webrtcManager.toggleVideo(false);
-    }
     await act("TOGGLE_HOST_MEDIA", {
       hostAudioOnly: nextAudioOnly,
       hostVideoOn: !nextAudioOnly,
     });
   };
 
-  const handleStageMode = async (mode: ScreenShareType) => {
-    if (mode === "window") {
-      const stream = await webrtcManager.startScreenShare(() => {
-        setScreenStream(null);
-        act("TOGGLE_HOST_MEDIA", { hostScreenSharing: false });
-        act("SET_STAGE_VIEW", { type: "slide" });
-      });
-      if (!stream) {
-        setMediaNotice("Screen sharing was cancelled or is unsupported in this browser.");
-        return;
-      }
-      setScreenStream(stream);
-      await act("TOGGLE_HOST_MEDIA", { hostScreenSharing: true });
-      await act("SET_STAGE_VIEW", { type: "window" });
-    } else {
-      webrtcManager.stopScreenShare();
-      setScreenStream(null);
-      await act("TOGGLE_HOST_MEDIA", { hostScreenSharing: false });
-      await act("SET_STAGE_VIEW", { type: mode });
-    }
-  };
-
   const handleEndClass = async () => {
     await act("END_CLASS");
-    webrtcManager.closeAll();
     setIsEndModalOpen(false);
     router.push("/teacher/classes");
   };
@@ -266,7 +165,6 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
   const participants = snapshot?.participants || [];
   const raisedHands = participants.filter((p) => p.handRaised || p.stageStatus === "pending");
   const stageStudents = participants.filter((p) => p.stageStatus === "approved");
-  const hostVideoActive = Boolean(snapshot?.hostVideoOn && !snapshot?.hostAudioOnly && localStream);
 
   if (accessError) {
     return (
@@ -284,6 +182,139 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
       </div>
     );
   }
+
+  return (
+    <LiveKitClassroomProvider
+      classId={classId}
+      canPublish={true}
+      micOn={snapshot?.hostMicOn !== false}
+      videoOn={snapshot?.hostVideoOn !== false}
+      audioOnly={Boolean(snapshot?.hostAudioOnly)}
+      quality={quality}
+      onMediaNotice={setMediaNotice}
+    >
+      <TeacherClassroomStageContent
+        classId={classId}
+        hostPeerId={hostPeerId}
+        userFullName={user?.fullName || "Instructor"}
+        snapshot={snapshot}
+        mediaNotice={mediaNotice}
+        setMediaNotice={setMediaNotice}
+        quality={quality}
+        setQuality={setQuality}
+        rightTab={rightTab}
+        setRightTab={setRightTab}
+        bottomTab={bottomTab}
+        setBottomTab={setBottomTab}
+        chatInput={chatInput}
+        setChatInput={setChatInput}
+        isAnnouncementOpen={isAnnouncementOpen}
+        setIsAnnouncementOpen={setIsAnnouncementOpen}
+        announcementText={announcementText}
+        setAnnouncementText={setAnnouncementText}
+        isEndModalOpen={isEndModalOpen}
+        setIsEndModalOpen={setIsEndModalOpen}
+        isNovaOpen={isNovaOpen}
+        setIsNovaOpen={setIsNovaOpen}
+        elapsedSeconds={elapsedSeconds}
+        formatDuration={formatDuration}
+        participants={participants}
+        raisedHands={raisedHands}
+        stageStudents={stageStudents}
+        act={act}
+        handleToggleMic={handleToggleMic}
+        handleToggleCam={handleToggleCam}
+        handleAudioOnlyToggle={handleAudioOnlyToggle}
+        handleEndClass={handleEndClass}
+      />
+    </LiveKitClassroomProvider>
+  );
+}
+
+interface TeacherClassroomStageContentProps {
+  classId: string;
+  hostPeerId: string;
+  userFullName: string;
+  snapshot: ClassroomSnapshot | null;
+  mediaNotice: string | null;
+  setMediaNotice: (msg: string | null) => void;
+  quality: VideoQualityPreset;
+  setQuality: (q: VideoQualityPreset) => void;
+  rightTab: "roster" | "chat" | "attendance";
+  setRightTab: (tab: "roster" | "chat" | "attendance") => void;
+  bottomTab: "polls" | "qa" | "resources" | "assignments" | "notes";
+  setBottomTab: (tab: "polls" | "qa" | "resources" | "assignments" | "notes") => void;
+  chatInput: string;
+  setChatInput: (v: string) => void;
+  isAnnouncementOpen: boolean;
+  setIsAnnouncementOpen: (open: boolean) => void;
+  announcementText: string;
+  setAnnouncementText: (v: string) => void;
+  isEndModalOpen: boolean;
+  setIsEndModalOpen: (open: boolean) => void;
+  isNovaOpen: boolean;
+  setIsNovaOpen: (open: boolean) => void;
+  elapsedSeconds: number;
+  formatDuration: (sec: number) => string;
+  participants: Participant[];
+  raisedHands: Participant[];
+  stageStudents: Participant[];
+  act: (action: string, payload?: Record<string, unknown>) => Promise<void>;
+  handleToggleMic: () => Promise<void>;
+  handleToggleCam: () => Promise<void>;
+  handleAudioOnlyToggle: () => Promise<void>;
+  handleEndClass: () => Promise<void>;
+}
+
+function TeacherClassroomStageContent({
+  classId,
+  hostPeerId,
+  userFullName,
+  snapshot,
+  mediaNotice,
+  setMediaNotice,
+  quality,
+  setQuality,
+  rightTab,
+  setRightTab,
+  bottomTab,
+  setBottomTab,
+  chatInput,
+  setChatInput,
+  isAnnouncementOpen,
+  setIsAnnouncementOpen,
+  announcementText,
+  setAnnouncementText,
+  isEndModalOpen,
+  setIsEndModalOpen,
+  isNovaOpen,
+  setIsNovaOpen,
+  elapsedSeconds,
+  formatDuration,
+  participants,
+  raisedHands,
+  stageStudents,
+  act,
+  handleToggleMic,
+  handleToggleCam,
+  handleAudioOnlyToggle,
+  handleEndClass,
+}: TeacherClassroomStageContentProps) {
+  const { audioLevel, screenShareTrack, setScreenShareEnabled } =
+    useLiveKitClassroom();
+
+  const handleStageMode = async (mode: ScreenShareType) => {
+    if (mode === "window") {
+      const ok = await setScreenShareEnabled(true);
+      if (!ok) return;
+      await act("TOGGLE_HOST_MEDIA", { hostScreenSharing: true });
+      await act("SET_STAGE_VIEW", { type: "window" });
+    } else {
+      await setScreenShareEnabled(false);
+      await act("TOGGLE_HOST_MEDIA", { hostScreenSharing: false });
+      await act("SET_STAGE_VIEW", { type: mode });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#070D24] text-white flex flex-col">
@@ -400,28 +431,24 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
             <div className="space-y-3 flex flex-col min-w-0">
               {/* Teacher Host Video Feed */}
               <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-[#0D1438] aspect-[4/3] shadow-sm">
-                {hostVideoActive ? (
-                  <video
-                    ref={localVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={snapshot?.hostPoster || "/images/teacher-live-poster.jpg"}
-                    alt={snapshot?.teacherName || "Instructor"}
-                    fill
-                    referrerPolicy="no-referrer"
-                    className="object-cover opacity-85"
-                  />
-                )}
+                <LiveKitParticipantVideoTile
+                  participantIdentity={hostPeerId}
+                  matchTeacher
+                  fallback={
+                    <Image
+                      src={snapshot?.hostPoster || "/images/teacher-live-poster.jpg"}
+                      alt={snapshot?.teacherName || "Instructor"}
+                      fill
+                      referrerPolicy="no-referrer"
+                      className="object-cover opacity-85"
+                    />
+                  }
+                />
 
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent p-3 flex items-center justify-between text-xs">
                   <div className="min-w-0">
                     <p className="font-bold text-white leading-tight truncate">
-                      {snapshot?.teacherName || user?.fullName || "Instructor"}
+                      {snapshot?.teacherName || userFullName || "Instructor"}
                     </p>
                     <p className="text-[11px] text-[#22D3EE] truncate">
                       Host · {snapshot?.hostAudioOnly ? "Audio-Only Mode" : snapshot?.hostVideoOn ? "Camera Live" : "Camera Paused"}
@@ -443,14 +470,21 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
 
               {/* Approved Student(s) On Stage ONLY */}
               {stageStudents.length > 0 ? (
-                stageStudents.map((st) => (
+                stageStudents.map((st: any) => (
                   <div
                     key={st.id}
                     className="relative rounded-2xl overflow-hidden border border-[#7C3AED] bg-[#121A4A] p-3 space-y-2"
                   >
-                    {remoteStreams[st.id] && st.videoOn ? (
+                    {st.videoOn ? (
                       <div className="relative rounded-xl overflow-hidden aspect-video bg-black">
-                        <RemoteVideoTile stream={remoteStreams[st.id]} label={st.name} />
+                        <LiveKitParticipantVideoTile
+                          participantIdentity={st.id}
+                          fallback={
+                            <div className="w-full h-full flex items-center justify-center text-xs font-bold text-slate-300">
+                              {st.name}
+                            </div>
+                          }
+                        />
                       </div>
                     ) : (
                       <div className="flex items-center gap-3">
@@ -501,7 +535,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                 subject={snapshot?.subject}
                 type={snapshot?.screenShare.type || "slide"}
                 slideIndex={snapshot?.screenShare.slideIndex || 0}
-                screenStream={screenStream}
+                screenTrackRef={screenShareTrack}
                 whiteboardStrokes={snapshot?.whiteboardStrokes || []}
                 isTeacher
                 onChangeSlide={(nextIndex) => act("SET_STAGE_VIEW", { slideIndex: nextIndex })}
@@ -827,7 +861,7 @@ export default function TeacherLiveClassroom({ classId = "" }: { classId?: strin
                   if (!chatInput.trim()) return;
                   act("SEND_CHAT", {
                     userId: hostPeerId,
-                    sender: snapshot?.teacherName || user?.fullName || "Instructor",
+                    sender: snapshot?.teacherName || userFullName || "Instructor",
                     text: chatInput,
                     important: true,
                   });
