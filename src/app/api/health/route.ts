@@ -1,16 +1,22 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
+  checkSupabaseServerConfigured,
   getSupabaseServerClient,
-  isSupabaseServerConfigured,
 } from "@backend/services/supabaseServer";
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function GET(req: NextRequest) {
+  const strict = req.nextUrl.searchParams.get("strict") === "true";
+  const supabaseConfigured = checkSupabaseServerConfigured();
+
   let dbHealthy = false;
   let dbError: string | undefined;
 
-  if (isSupabaseServerConfigured) {
+  if (supabaseConfigured) {
     try {
-      const sb = getSupabaseServerClient();
+      const sb = getSupabaseServerClient({ timeoutMs: 2500 });
       const { error } = await sb.from("schools").select("id").limit(1);
       if (error) {
         dbError = error.message;
@@ -22,14 +28,16 @@ export async function GET() {
     }
   }
 
-  const healthy = isSupabaseServerConfigured ? dbHealthy : true;
+  const healthy = supabaseConfigured ? dbHealthy : true;
+  const statusCode = strict && !healthy ? 503 : 200;
 
   return NextResponse.json(
     {
       status: healthy ? "ok" : "degraded",
+      uptimeSeconds: Math.round(process.uptime()),
       timestamp: new Date().toISOString(),
       services: {
-        supabaseConfigured: isSupabaseServerConfigured,
+        supabaseConfigured,
         databaseConnected: dbHealthy,
         livekitConfigured: Boolean(
           process.env.LIVEKIT_API_KEY &&
@@ -42,6 +50,6 @@ export async function GET() {
       },
       ...(dbError ? { dbError } : {}),
     },
-    { status: healthy ? 200 : 503 }
+    { status: statusCode }
   );
 }

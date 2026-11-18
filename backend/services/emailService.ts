@@ -1,18 +1,32 @@
 import { Resend } from "resend";
 
-const resendApiKey = process.env.RESEND_API_KEY?.trim() || "";
-const defaultFromEmail =
-  process.env.RESEND_FROM_EMAIL?.trim() || "Learnova Academy <noreply@learnova.ng>";
-const appUrl =
-  process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "") ||
-  "http://localhost:3000";
-
+let cachedResendKey = "";
 let cachedResend: Resend | null = null;
 
+function getResendApiKey(): string {
+  return process.env.RESEND_API_KEY?.trim() || "";
+}
+
+function getDefaultFromEmail(): string {
+  return (
+    process.env.RESEND_FROM_EMAIL?.trim() ||
+    "Learnova Academy <noreply@learnova.ng>"
+  );
+}
+
+function getAppUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "") ||
+    "http://localhost:3000"
+  );
+}
+
 function getResendClient(): Resend | null {
-  if (!resendApiKey) return null;
-  if (!cachedResend) {
-    cachedResend = new Resend(resendApiKey);
+  const apiKey = getResendApiKey();
+  if (!apiKey) return null;
+  if (!cachedResend || cachedResendKey !== apiKey) {
+    cachedResendKey = apiKey;
+    cachedResend = new Resend(apiKey);
   }
   return cachedResend;
 }
@@ -32,6 +46,7 @@ function escapeHtml(text: string): string {
 }
 
 function wrapLearnovaEmailHtml(title: string, bodyHtml: string): string {
+  const appUrl = getAppUrl();
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8" /><title>${escapeHtml(title)}</title></head>
@@ -76,7 +91,7 @@ async function dispatchEmail(params: {
 
   try {
     const { data, error } = await client.emails.send({
-      from: defaultFromEmail,
+      from: getDefaultFromEmail(),
       to: [to],
       subject: params.subject,
       html: params.html,
@@ -119,7 +134,7 @@ export async function sendWelcomeEmail(input: {
          : `<p>Confirm your class level (JSS1–SS3) and subjects in your workspace to access scheduled live classes, topic video lessons, and Nova AI tutoring.</p>`
      }
      <p style="margin-top:20px;">
-       <a href="${appUrl}/login" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">Open Your Workspace</a>
+       <a href="${getAppUrl()}/login" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">Open Your Workspace</a>
      </p>`
   );
 
@@ -170,7 +185,7 @@ export async function sendTeacherApplicationStatusEmail(input: {
          : ""
      }
      <p style="margin-top:20px;">
-       <a href="${appUrl}/teacher/applications" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">View Application Status</a>
+       <a href="${getAppUrl()}/teacher/applications" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">View Application Status</a>
      </p>`
   );
 
@@ -219,7 +234,7 @@ export async function sendParentWardLinkedConfirmationEmail(input: {
      <p>Your guardian link to <strong>${escapeHtml(input.studentName)}</strong> (${escapeHtml(input.relationship)}) is now <strong>VERIFIED</strong>.</p>
      <p>You can now view attendance, quiz scores, fee receipts, and official PDF report cards in your Parent Portal.</p>
      <p style="margin-top:20px;">
-       <a href="${appUrl}/parent" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">Open Parent Portal</a>
+       <a href="${getAppUrl()}/parent" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">Open Parent Portal</a>
      </p>`
   );
 
@@ -255,7 +270,7 @@ export async function sendPaystackReceiptEmail(input: {
        <tr><td><strong>Valid Until</strong></td><td align="right">${escapeHtml(expiresLabel)}</td></tr>
      </table>
      <p style="margin-top:20px;">
-       <a href="${appUrl}/subscriptions" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">View Subscription &amp; Classes</a>
+       <a href="${getAppUrl()}/subscriptions" style="display:inline-block;padding:11px 22px;background:#4F46E5;color:#FFFFFF;text-decoration:none;border-radius:10px;font-weight:700;">View Subscription &amp; Classes</a>
      </p>`
   );
 

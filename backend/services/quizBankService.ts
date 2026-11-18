@@ -1,5 +1,5 @@
 import { Type } from "@google/genai";
-import { ai, GEMINI_MODELS } from "@backend/ai/geminiClient";
+import { ai, GEMINI_MODELS } from "../ai/geminiClient";
 import type { TopicQuizQuestion } from "./lmsTypes";
 
 export interface TimedCbtPack {

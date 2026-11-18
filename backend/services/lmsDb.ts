@@ -37,6 +37,7 @@ export interface DirectoryUser {
 
 const g = globalThis as unknown as {
   __learnovaLmsWriteChain?: Promise<unknown>;
+  __learnovaLmsCache?: LmsStateData;
 };
 
 export function createInitialLmsState(): LmsStateData {

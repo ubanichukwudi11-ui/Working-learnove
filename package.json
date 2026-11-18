@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "npx tsx backend/server.ts",
-    "build": "next build",
-    "start": "NODE_ENV=production npx tsx backend/server.ts",
+    "build": "next build && tsc -p tsconfig.backend.json",
+    "start": "NODE_ENV=production node dist/backend/server.js",
     "lint": "eslint"
   },
   "dependencies": {
