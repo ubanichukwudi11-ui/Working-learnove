@@ -99,11 +99,19 @@ export async function login(email: string, password?: string): Promise<User> {
   const cleanEmail = email.trim().toLowerCase();
 
   try {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: cleanEmail, password }),
-    });
+    const controller = new AbortController();
+    const fetchTimer = setTimeout(() => controller.abort(), 15000);
+    let res: Response;
+    try {
+      res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cleanEmail, password }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(fetchTimer);
+    }
 
     const data = await res.json();
 
@@ -113,10 +121,13 @@ export async function login(email: string, password?: string): Promise<User> {
 
     if (data.session && isSupabaseConfigured) {
       try {
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
+        await Promise.race([
+          supabase.auth.setSession({
+            access_token: data.session.access_token,
+            refresh_token: data.session.refresh_token,
+          }),
+          new Promise((resolve) => setTimeout(resolve, 3000)),
+        ]);
       } catch {}
     }
 
@@ -132,9 +143,18 @@ export async function login(email: string, password?: string): Promise<User> {
     }
 
     return data.user;
-  } catch (err: any) {
-    // If Supabase API failed or is unconfigured, return exact error message for UI display
-    throw new Error(err.message || "Failed to sign in. Please verify your credentials.");
+  } catch (err: unknown) {
+    const isAbort =
+      err instanceof Error &&
+      (err.name === "AbortError" || err.message.toLowerCase().includes("aborted"));
+    if (isAbort) {
+      throw new Error("Sign in timed out. Please check your connection and try again.");
+    }
+    const msg =
+      err instanceof Error && err.message
+        ? err.message
+        : "Failed to sign in. Please verify your credentials.";
+    throw new Error(msg);
   }
 }
 

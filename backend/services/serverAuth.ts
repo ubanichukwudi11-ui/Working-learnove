@@ -7,9 +7,9 @@ import {
 import {
   appendAuditLog,
   appendNotification,
-  loadLmsState,
   mutateLmsState,
 } from "./lmsDb";
+import { toPgUuid } from "./pgRepository";
 import type { LmsUserRole } from "./lmsTypes";
 import { sendWelcomeEmail } from "./emailService";
 import {
@@ -506,9 +506,13 @@ export async function loginLearnovaAccount(input: {
 
   const authUser = data.user;
 
-  const [{ data: profile }, state] = await Promise.all([
+  const [{ data: profile }, { data: settingsRow }] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
-    loadLmsState(),
+    supabase
+      .from("platform_settings")
+      .select("super_admin_emails")
+      .eq("id", "global")
+      .maybeSingle(),
   ]);
 
   let teacherData: Record<string, unknown> | null = null;
@@ -517,12 +521,16 @@ export async function loginLearnovaAccount(input: {
 
   let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
   const cleanEmail = (authUser.email || email).toLowerCase();
-  if (
-    role === "ADMIN" &&
-    (state.platformSettings.superAdminEmails || [])
-      .map((e) => e.toLowerCase())
-      .includes(cleanEmail)
-  ) {
+  const superAdminSet = new Set([
+    ...((Array.isArray(settingsRow?.super_admin_emails)
+      ? settingsRow.super_admin_emails
+      : []) as unknown[]).map((e) => String(e).trim().toLowerCase()),
+    ...(process.env.SUPER_ADMIN_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  ]);
+  if (role === "ADMIN" && superAdminSet.has(cleanEmail)) {
     role = "SUPER_ADMIN";
   }
 
@@ -716,39 +724,42 @@ export async function completeOAuthRoleSelection(
 
   if (effectiveRole === "STUDENT") {
     await sb.from("student_profiles").upsert({ user_id: authUser.id });
-    await mutateLmsState((lms) => {
-      const hasEnrolment = lms.studentEnrolments.some(
-        (e) => e.studentUserId === authUser.id
-      );
-      if (!hasEnrolment) {
-        const defaultLevel =
-          lms.classLevels.find((l) => l.code === "SS1") || lms.classLevels[0];
-        if (defaultLevel) {
-          lms.studentEnrolments.push({
-            id: `enr-${authUser.id}`,
-            studentUserId: authUser.id,
-            studentName: fullName,
-            studentEmail: authUser.email || "",
-            classLevelId: defaultLevel.id,
-            subjectIds: [],
+    try {
+      const nowIso = new Date().toISOString();
+      const defaultClassLevelUuid = toPgUuid("lvl-ss1");
+      const defaultSubjectUuid = toPgUuid("sub-math");
+      const entitlementExternalId = `ent-${authUser.id}`;
+
+      await Promise.all([
+        sb.from("student_enrolments").upsert(
+          {
+            student_user_id: authUser.id,
+            class_level_id: defaultClassLevelUuid,
+            subject_id: defaultSubjectUuid,
             status: "REGISTERED",
-            updatedAt: new Date().toISOString(),
-          });
-          lms.studentEntitlements.push({
-            id: `ent-${authUser.id}`,
-            studentUserId: authUser.id,
-            studentName: fullName,
-            studentEmail: authUser.email || "",
-            classLevelId: defaultLevel.id,
-            subjectIds: [],
-            allSubjects: false,
-            accessStatus: "REGISTERED",
-            startsAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-        }
-      }
-    });
+          },
+          { onConflict: "student_user_id,class_level_id,subject_id" }
+        ),
+        sb.from("subscription_entitlements").upsert(
+          {
+            id: toPgUuid(entitlementExternalId),
+            external_id: entitlementExternalId,
+            student_user_id: authUser.id,
+            student_name: fullName,
+            student_email: (authUser.email || existingProfile?.email || "").toLowerCase(),
+            class_level_id: defaultClassLevelUuid,
+            subject_ids: [],
+            all_subjects: false,
+            access_status: "REGISTERED",
+            starts_at: nowIso,
+            updated_at: nowIso,
+          },
+          { onConflict: "id" }
+        ),
+      ]);
+    } catch (enrolErr) {
+      console.warn("OAuth student enrolment initialization warning:", enrolErr);
+    }
   } else if (effectiveRole === "TEACHER") {
     await sb.from("teacher_profiles").upsert({ user_id: authUser.id });
   } else if (effectiveRole === "PARENT") {

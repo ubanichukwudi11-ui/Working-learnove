@@ -240,7 +240,8 @@ export async function seedInitialCatalogToPg(initial: LmsStateData): Promise<voi
 }
 
 export async function loadLmsStateFromPg(
-  createInitialLmsState: () => LmsStateData
+  createInitialLmsState: () => LmsStateData,
+  allowSeed = true
 ): Promise<LmsStateData> {
   if (!isSupabaseServerConfigured) {
     throw new Error(SUPABASE_SERVER_CONFIG_ERROR);
@@ -311,16 +312,32 @@ export async function loadLmsStateFromPg(
 
   const initial = createInitialLmsState();
 
-  // First-boot automatic catalog seeding in Postgres when empty
-  if ((schoolsRes.data?.length || 0) === 0 || (levelsRes.data?.length || 0) === 0 || (subjectsRes.data?.length || 0) === 0) {
-    await seedInitialCatalogToPg(initial);
-    return loadLmsStateFromPg(createInitialLmsState);
+  const coreCatalogMissing =
+    !schoolsRes.error &&
+    !levelsRes.error &&
+    !subjectsRes.error &&
+    ((schoolsRes.data?.length || 0) === 0 ||
+      (levelsRes.data?.length || 0) === 0 ||
+      (subjectsRes.data?.length || 0) === 0);
+
+  const topicsMissing =
+    !topicsRes.error &&
+    (topicsRes.data?.length || 0) === 0 &&
+    initial.curriculumTopics.length > 0;
+
+  if (allowSeed && (coreCatalogMissing || topicsMissing)) {
+    try {
+      await seedInitialCatalogToPg(initial);
+    } catch (seedErr) {
+      console.warn("Catalog auto-seed skipped:", seedErr);
+      return initial;
+    }
+    return loadLmsStateFromPg(createInitialLmsState, false);
   }
 
-  // Also ensure curriculum topics & seeded videos exist if topics table is empty
-  if ((topicsRes.data?.length || 0) === 0 && initial.curriculumTopics.length > 0) {
-    await seedInitialCatalogToPg(initial);
-    return loadLmsStateFromPg(createInitialLmsState);
+  if (schoolsRes.error && levelsRes.error && subjectsRes.error) {
+    console.warn("Postgres LMS state unavailable, falling back to initial state:", schoolsRes.error.message);
+    return initial;
   }
 
   const uuidToExt = new Map<string, string>();

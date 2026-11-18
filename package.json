@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "npx tsx backend/server.ts",
-    "build": "NODE_ENV=production next build && tsc -p tsconfig.backend.json",
+    "build": "NODE_ENV=production next build && tsc -p tsconfig.backend.json && node scripts/patch-standalone.mjs",
     "start": "NODE_ENV=production node dist/backend/server.js",
     "lint": "eslint"
   },

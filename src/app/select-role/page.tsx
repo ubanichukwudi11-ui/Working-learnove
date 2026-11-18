@@ -73,14 +73,22 @@ export default function SelectRolePage() {
         return;
       }
 
-      const res = await fetch("/api/auth/select-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          accessToken: session.access_token,
-          role,
-        }),
-      });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      let res: Response;
+      try {
+        res = await fetch("/api/auth/select-role", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            accessToken: session.access_token,
+            role,
+          }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.user) {
@@ -88,13 +96,23 @@ export default function SelectRolePage() {
       }
 
       saveUser(data.user);
-      router.replace(getDashboardRoute(data.user.role));
+      const destination = getDashboardRoute(data.user.role);
+      router.replace(destination);
       router.refresh();
+      setTimeout(() => {
+        if (typeof window !== "undefined" && window.location.pathname === "/select-role") {
+          window.location.replace(destination);
+        }
+      }, 500);
     } catch (error: unknown) {
-      const msg =
-        error instanceof Error
-          ? error.message
-          : "Could not complete role setup. Please try again.";
+      const isAbort =
+        error instanceof Error &&
+        (error.name === "AbortError" || error.message.toLowerCase().includes("aborted"));
+      const msg = isAbort
+        ? "Workspace setup timed out. Please try selecting your role again."
+        : error instanceof Error
+        ? error.message
+        : "Could not complete role setup. Please try again.";
       setErrorMsg(msg);
     } finally {
       setLoading(false);

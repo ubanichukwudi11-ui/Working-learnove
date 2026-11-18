@@ -2,7 +2,6 @@ import {
   getSupabaseServerClient,
   isSupabaseServerConfigured,
 } from "./supabaseServer";
-import { loadLmsState } from "./lmsDb";
 import type { LmsUserRole } from "./lmsTypes";
 
 export class AuthServiceError extends Error {
@@ -21,6 +20,33 @@ export interface AuthenticatedSessionUser {
   status: "ACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
 }
 
+async function getSuperAdminEmailSet(
+  sb: ReturnType<typeof getSupabaseServerClient>
+): Promise<Set<string>> {
+  const envAdmins = (process.env.SUPER_ADMIN_EMAILS || "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  try {
+    const { data: settingsRow } = await sb
+      .from("platform_settings")
+      .select("super_admin_emails")
+      .eq("id", "global")
+      .maybeSingle();
+
+    const dbAdmins = Array.isArray(settingsRow?.super_admin_emails)
+      ? settingsRow.super_admin_emails
+          .map((e: unknown) => String(e).trim().toLowerCase())
+          .filter(Boolean)
+      : [];
+
+    return new Set([...dbAdmins, ...envAdmins]);
+  } catch {
+    return new Set(envAdmins);
+  }
+}
+
 export async function authenticateAccessToken(
   token: string
 ): Promise<AuthenticatedSessionUser | null> {
@@ -33,17 +59,14 @@ export async function authenticateAccessToken(
   } = await sb.auth.getUser(token);
   if (error || !authUser) return null;
 
-  const [{ data: profile }, state] = await Promise.all([
+  const [{ data: profile }, superAdminSet] = await Promise.all([
     sb.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
-    loadLmsState(),
+    getSuperAdminEmailSet(sb),
   ]);
 
   let role = (profile?.role || authUser.user_metadata?.role || "STUDENT") as LmsUserRole;
   const email = (authUser.email || profile?.email || "").toLowerCase();
 
-  const superAdminSet = new Set(
-    (state.platformSettings.superAdminEmails || []).map((e) => e.toLowerCase())
-  );
   if (role === "ADMIN" && superAdminSet.has(email)) {
     role = "SUPER_ADMIN";
   }
@@ -67,17 +90,14 @@ export async function getSessionUserById(
 ): Promise<AuthenticatedSessionUser | null> {
   if (!isSupabaseServerConfigured || !userId) return null;
   const sb = getSupabaseServerClient();
-  const [{ data: profile }, state] = await Promise.all([
+  const [{ data: profile }, superAdminSet] = await Promise.all([
     sb.from("profiles").select("*").eq("id", userId).maybeSingle(),
-    loadLmsState(),
+    getSuperAdminEmailSet(sb),
   ]);
   if (!profile) return null;
 
   let role = (profile.role || "STUDENT") as LmsUserRole;
   const email = String(profile.email || "").toLowerCase();
-  const superAdminSet = new Set(
-    (state.platformSettings.superAdminEmails || []).map((e) => e.toLowerCase())
-  );
   if (role === "ADMIN" && superAdminSet.has(email)) {
     role = "SUPER_ADMIN";
   }
