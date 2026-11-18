@@ -15,10 +15,28 @@ function getDefaultFromEmail(): string {
 }
 
 function getAppUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "") ||
-    "http://localhost:3000"
-  );
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "");
+  const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN?.trim()?.replace(/\/+$/, "");
+
+  if (configured) {
+    try {
+      const parsed = new URL(configured);
+      const isLocal = ["localhost", "127.0.0.1", "0.0.0.0"].includes(
+        parsed.hostname.toLowerCase()
+      );
+      if (!isLocal || !railwayDomain) {
+        return parsed.origin;
+      }
+    } catch {
+      // Fall through to RAILWAY_PUBLIC_DOMAIN
+    }
+  }
+
+  if (railwayDomain) {
+    return `https://${railwayDomain}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 function getResendClient(): Resend | null {

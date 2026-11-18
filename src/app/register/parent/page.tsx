@@ -14,9 +14,10 @@ import {
   Loader2,
   ArrowRight,
   ArrowLeft,
+  CheckCircle2,
 } from "lucide-react";
 
-import { registerParent, login as authLogin } from "@/lib/auth";
+import { registerParent } from "@/lib/auth";
 import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/branding/Logo";
 
@@ -26,6 +27,7 @@ export default function ParentRegistrationPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirmationEmail, setConfirmationEmail] = useState("");
 
   const [form, setForm] = useState({
     fullName: "",
@@ -50,7 +52,7 @@ export default function ParentRegistrationPage() {
     setError("");
 
     try {
-      await registerParent({
+      const created = await registerParent({
         fullName: form.fullName,
         email: form.email,
         password: form.password,
@@ -59,12 +61,14 @@ export default function ParentRegistrationPage() {
         relationship: form.relationship,
       });
 
-      const user = await authLogin(form.email, form.password);
-      if (user) {
-        saveUser(user);
+      if (created.requiresEmailConfirmation) {
+        setConfirmationEmail(created.email || form.email);
+        return;
       }
 
+      saveUser(created);
       router.push("/parent");
+      router.refresh();
     } catch (err: unknown) {
       const msg =
         err instanceof Error ? err.message : "Failed to create parent account.";
@@ -106,6 +110,25 @@ export default function ParentRegistrationPage() {
             </div>
           )}
 
+          {confirmationEmail ? (
+            <div className="rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF] p-8 text-center space-y-4">
+              <CheckCircle2 size={42} className="mx-auto text-[#0891B2]" />
+              <h2 className="landing-display text-xl font-extrabold text-[#0B1230]">
+                Confirm Your Email Address
+              </h2>
+              <p className="text-sm text-[#43466E] max-w-md mx-auto leading-relaxed">
+                We sent a verification link to <strong>{confirmationEmail}</strong>. Click the link in your inbox to activate your parent account, then sign in.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] px-6 py-3 text-sm font-bold text-white shadow-sm transition"
+                >
+                  Go to Sign In
+                </Link>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-5 md:grid-cols-2">
               <div>
@@ -277,6 +300,7 @@ export default function ParentRegistrationPage() {
               )}
             </button>
           </form>
+          )}
 
           <div className="mt-7 text-center text-xs text-[#43466E]">
             Already have an account?{" "}

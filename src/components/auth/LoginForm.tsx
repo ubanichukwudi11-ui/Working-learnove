@@ -2,169 +2,118 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-import {
-  Eye,
-  EyeOff,
-  Loader2,
-} from "lucide-react";
-
-import { login } from "@/lib/auth";
-import {
-  supabase,
-  isSupabaseConfigured,
-  SUPABASE_CONFIG_ERROR,
-} from "@/lib/supabase";
+import { login, loginWithGoogle } from "@/lib/auth";
+import { sanitizePostAuthRedirect } from "@/lib/appUrl";
+import { getDashboardRoute } from "@/lib/getDashboardRoute";
 import { useAuth } from "@/context/AuthContext";
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  session_expired: "Your sign-in session expired. Please sign in again.",
+  oauth_failed: "Google sign-in could not be completed. Please try again.",
+};
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login: saveUser } = useAuth();
 
-  const { login: saveUser } =
-    useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [nextPath, setNextPath] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [email, setEmail] =
-    useState("");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const nextParam = params.get("next");
+    if (nextParam) {
+      setNextPath(nextParam);
+    }
 
-  const [password, setPassword] =
-    useState("");
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [rememberMe, setRememberMe] =
-    useState(true);
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [errors, setErrors] =
-    useState<Record<string, string>>(
-      {}
-    );
+    const errParam = params.get("error");
+    if (errParam) {
+      setErrors((prev) => ({
+        ...prev,
+        general: AUTH_ERROR_MESSAGES[errParam] || errParam,
+      }));
+    }
+  }, []);
 
   function validate() {
-    const newErrors: Record<
-      string,
-      string
-    > = {};
+    const newErrors: Record<string, string> = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(email)) {
-      newErrors.email =
-        "Enter a valid email.";
+    if (!emailRegex.test(email.trim())) {
+      newErrors.email = "Enter a valid email.";
     }
 
     if (password.length < 6) {
-      newErrors.password =
-        "Password must be at least 6 characters.";
+      newErrors.password = "Password must be at least 6 characters.";
     }
 
     setErrors(newErrors);
-
-    return (
-      Object.keys(newErrors).length ===
-      0
-    );
+    return Object.keys(newErrors).length === 0;
   }
 
-  async function handleSubmit(
-    e: React.FormEvent
-  ) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (!validate()) return;
 
     setLoading(true);
-
     setErrors({});
 
     try {
       const user = await login(email, password);
-
-    if (!user) {
-      throw new Error("Unable to load user profile.");
-    }
+      if (!user) {
+        throw new Error("Unable to load user profile.");
+      }
 
       saveUser(user);
 
-      let targetPath = "/dashboard";
-      switch (user.role) {
-        case "SUPER_ADMIN":
-          targetPath = "/super-admin";
-          break;
+      const roleDashboard = getDashboardRoute(user.role);
+      const targetPath = sanitizePostAuthRedirect(nextPath, roleDashboard);
 
-        case "ADMIN":
-          targetPath = "/admin";
-          break;
-
-        case "TEACHER":
-          targetPath = "/teacher";
-          break;
-
-        case "PARENT":
-          targetPath = "/parent";
-          break;
-
-        default:
-          targetPath = "/dashboard";
-      }
-
-      router.push(targetPath);
+      router.replace(targetPath);
       router.refresh();
 
       setTimeout(() => {
         if (typeof window !== "undefined" && window.location.pathname === "/login") {
           window.location.assign(targetPath);
         }
-      }, 400);
-    } catch (err: any) {
-      setErrors({
-        general:
-          err.message ??
-          "Unable to login.",
-      });
+      }, 450);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error && err.message ? err.message : "Unable to login.";
+      setErrors({ general: msg });
     } finally {
       setLoading(false);
     }
   }
 
-  async function loginWithGoogle() {
+  async function handleGoogleLogin() {
     try {
       setErrors({});
-      if (!isSupabaseConfigured) {
-        throw new Error(SUPABASE_CONFIG_ERROR);
-      }
-      await supabase.auth.signOut();
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            prompt: "select_account",
-          },
-        },
-      });
-
-      if (error) throw error;
-    } catch (err: any) {
-      setErrors({
-        general:
-          err.message ??
-          "Failed to initiate Google sign in. Please check your Supabase configuration.",
-      });
+      setGoogleLoading(true);
+      await loginWithGoogle(nextPath || undefined);
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error && err.message
+          ? err.message
+          : "Failed to initiate Google sign in. Please check your Supabase configuration.";
+      setErrors({ general: msg });
+      setGoogleLoading(false);
     }
   }
 
+  const isBusy = loading || googleLoading;
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-5 w-full max-w-md"
-    >
+    <form onSubmit={handleSubmit} className="space-y-5 w-full max-w-md">
       <div className="text-center pb-1">
         <h2 className="landing-display text-2xl font-extrabold tracking-tight text-[#0B1230]">
           Sign in to Learnova
@@ -184,10 +133,7 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
-            setErrors((prev) => ({
-              ...prev,
-              email: "",
-            }));
+            setErrors((prev) => ({ ...prev, email: "" }));
           }}
           placeholder="you@school.edu.ng"
           className={`w-full rounded-xl border bg-[#FAF8FF] text-[#0B1230] placeholder:text-[#6B6F94] px-3.5 py-2.5 text-sm outline-none transition ${
@@ -213,10 +159,7 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              setErrors((prev) => ({
-                ...prev,
-                password: "",
-              }));
+              setErrors((prev) => ({ ...prev, password: "" }));
             }}
             placeholder="Enter password"
             className={`w-full rounded-xl border bg-[#FAF8FF] text-[#0B1230] placeholder:text-[#6B6F94] px-3.5 py-2.5 pr-11 text-sm outline-none transition ${
@@ -266,7 +209,7 @@ export default function LoginForm() {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={isBusy}
         className="flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] py-3 text-sm font-semibold text-white shadow-md shadow-[#4F46E5]/20 transition disabled:cursor-not-allowed disabled:opacity-60"
       >
         {loading ? (
@@ -293,15 +236,25 @@ export default function LoginForm() {
 
       <button
         type="button"
-        onClick={loginWithGoogle}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#DCD7F5] bg-white py-2.5 text-sm font-semibold text-[#0B1230] transition hover:bg-[#FAF8FF] hover:border-[#C4B5FD]"
+        disabled={isBusy}
+        onClick={handleGoogleLogin}
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#DCD7F5] bg-white py-2.5 text-sm font-semibold text-[#0B1230] transition hover:bg-[#FAF8FF] hover:border-[#C4B5FD] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <img
-          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-          alt="Google"
-          className="h-4 w-4"
-        />
-        <span>Continue with Google</span>
+        {googleLoading ? (
+          <>
+            <Loader2 size={16} className="animate-spin text-[#4F46E5]" />
+            <span>Redirecting to Google...</span>
+          </>
+        ) : (
+          <>
+            <img
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+              alt="Google"
+              className="h-4 w-4"
+            />
+            <span>Continue with Google</span>
+          </>
+        )}
       </button>
 
       <div className="text-center text-xs text-[#43466E]">

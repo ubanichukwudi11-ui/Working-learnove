@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   AuthServiceError,
   loginLearnovaAccount,
+  shouldUseSecureCookie,
 } from "@backend/services/serverAuth";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { session, user } = await loginLearnovaAccount(body);
@@ -16,12 +17,12 @@ export async function POST(req: Request) {
     });
 
     try {
-      const isProd = process.env.NODE_ENV === "production";
+      const isSecure = shouldUseSecureCookie(req);
       response.cookies.set("learnova_user", JSON.stringify(user), {
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
         sameSite: "lax",
-        secure: isProd,
+        secure: isSecure,
       });
       if (session?.access_token) {
         response.cookies.set("learnova_access_token", session.access_token, {
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
           path: "/",
           maxAge: 60 * 60 * 24 * 7,
           sameSite: "lax",
-          secure: isProd,
+          secure: isSecure,
         });
       }
     } catch {}

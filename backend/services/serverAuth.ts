@@ -26,24 +26,72 @@ export {
   type AuthenticatedSessionUser,
 };
 
-export function resolvePublicAppOrigin(req: NextRequest): string {
-  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "");
-  if (configured) return configured;
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
 
+function extractHostOnly(hostHeader: string): string {
+  const withoutPort = hostHeader.replace(/:\d+$/, "").trim().toLowerCase();
+  return withoutPort;
+}
+
+export function shouldUseSecureCookie(req: NextRequest): boolean {
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  if (forwardedProto) {
+    return forwardedProto === "https";
+  }
+  const host = extractHostOnly(
+    req.headers.get("x-forwarded-host")?.split(",")[0] ||
+      req.headers.get("host") ||
+      ""
+  );
+  if (host && LOCAL_HOSTS.has(host)) {
+    return false;
+  }
+  if (req.nextUrl?.protocol === "https:") {
+    return true;
+  }
+  return process.env.NODE_ENV === "production";
+}
+
+export function resolvePublicAppOrigin(req: NextRequest): string {
   const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
-  if (forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
+  const host = req.headers.get("host")?.trim();
+  const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN?.trim()?.replace(/\/+$/, "");
+
+  const requestHost = forwardedHost || host || railwayDomain || "";
+  const requestIsLocal = requestHost ? LOCAL_HOSTS.has(extractHostOnly(requestHost)) : false;
+
+  const configuredRaw = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "");
+  if (configuredRaw) {
+    try {
+      const parsed = new URL(configuredRaw);
+      const configuredIsLocal = LOCAL_HOSTS.has(parsed.hostname.toLowerCase());
+      if (!configuredIsLocal || requestIsLocal) {
+        if (!configuredIsLocal && parsed.protocol === "http:") {
+          const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+          if (forwardedProto === "https" || process.env.NODE_ENV === "production") {
+            return `https://${parsed.host}`;
+          }
+        }
+        return parsed.origin;
+      }
+    } catch {
+      // Ignore malformed NEXT_PUBLIC_APP_URL and derive from request headers
+    }
   }
 
-  const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN?.trim()?.replace(/\/+$/, "");
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  if (forwardedHost) {
+    const proto = forwardedProto || (LOCAL_HOSTS.has(extractHostOnly(forwardedHost)) ? "http" : "https");
+    return `${proto}://${forwardedHost}`;
+  }
+
   if (railwayDomain) {
     return `https://${railwayDomain}`;
   }
 
-  const host = req.headers.get("host")?.trim();
   if (host) {
-    const proto = req.nextUrl.protocol.replace(":", "") || "https";
+    const isLocal = LOCAL_HOSTS.has(extractHostOnly(host));
+    const proto = forwardedProto || req.nextUrl.protocol.replace(":", "") || (isLocal ? "http" : "https");
     return `${proto}://${host}`;
   }
 
@@ -121,7 +169,10 @@ export async function requireApiAuth(
   return { user, errorResponse: null };
 }
 
-export async function registerLearnovaAccount(body: Record<string, unknown>) {
+export async function registerLearnovaAccount(
+  body: Record<string, unknown>,
+  appOrigin?: string
+) {
   const {
     role = "STUDENT",
     fullName,
@@ -184,10 +235,20 @@ export async function registerLearnovaAccount(body: Record<string, unknown>) {
 
   const supabase = getSupabaseServerClient();
 
+  const resolvedRedirectOrigin =
+    appOrigin?.trim()?.replace(/\/+$/, "") ||
+    process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "") ||
+    (process.env.RAILWAY_PUBLIC_DOMAIN?.trim()
+      ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN.trim().replace(/\/+$/, "")}`
+      : "");
+
   const { data, error } = await supabase.auth.signUp({
     email: String(email).trim().toLowerCase(),
     password: String(password),
     options: {
+      ...(resolvedRedirectOrigin
+        ? { emailRedirectTo: `${resolvedRedirectOrigin}/auth/callback` }
+        : {}),
       data: {
         full_name: resolvedFullName,
         role: safeRole,
@@ -547,6 +608,8 @@ export async function exchangeOAuthSessionToken(accessTokenInput: string) {
     loadLmsState(),
   ]);
 
+  const needsRoleSelection = !profile || !profile.role;
+
   let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
   const email = (authUser.email || profile?.email || "").toLowerCase();
   if (
@@ -565,11 +628,134 @@ export async function exchangeOAuthSessionToken(accessTokenInput: string) {
       profile?.full_name ||
       authUser.user_metadata?.full_name ||
       authUser.user_metadata?.name ||
+      email.split("@")[0] ||
       "User",
     role,
     status: profile?.status || "ACTIVE",
     avatarUrl: profile?.avatar_url || authUser.user_metadata?.avatar_url,
   };
 
-  return { accessToken, user };
+  return { accessToken, user, needsRoleSelection };
+}
+
+export async function completeOAuthRoleSelection(
+  accessTokenInput: string,
+  requestedRole: string
+) {
+  if (!isSupabaseServerConfigured) {
+    throw new AuthServiceError(SUPABASE_SERVER_CONFIG_ERROR, 503);
+  }
+
+  const accessToken = String(accessTokenInput || "").trim();
+  if (!accessToken) {
+    throw new AuthServiceError("Authentication session required.", 401);
+  }
+
+  const safeRole =
+    requestedRole === "TEACHER" || requestedRole === "PARENT"
+      ? requestedRole
+      : requestedRole === "STUDENT"
+      ? "STUDENT"
+      : null;
+
+  if (!safeRole) {
+    throw new AuthServiceError("Invalid role selected.", 400);
+  }
+
+  const sb = getSupabaseServerClient();
+  const {
+    data: { user: authUser },
+    error,
+  } = await sb.auth.getUser(accessToken);
+  if (error || !authUser) {
+    throw new AuthServiceError("Invalid or expired authentication session.", 401);
+  }
+
+  const { data: existingProfile } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("id", authUser.id)
+    .maybeSingle();
+
+  // Do not allow downgrading/overwriting existing ADMIN or SUPER_ADMIN roles
+  const effectiveRole =
+    existingProfile?.role === "SUPER_ADMIN" || existingProfile?.role === "ADMIN"
+      ? existingProfile.role
+      : safeRole;
+
+  const fullName =
+    existingProfile?.full_name ||
+    authUser.user_metadata?.full_name ||
+    authUser.user_metadata?.name ||
+    (authUser.email ? authUser.email.split("@")[0] : "Learnova User");
+  const avatarUrl =
+    existingProfile?.avatar_url || authUser.user_metadata?.avatar_url || null;
+  const effectiveStatus =
+    existingProfile?.status || (effectiveRole === "TEACHER" ? "PENDING" : "ACTIVE");
+
+  const { error: upsertError } = await sb.from("profiles").upsert({
+    id: authUser.id,
+    email: (authUser.email || existingProfile?.email || "").toLowerCase(),
+    full_name: fullName,
+    avatar_url: avatarUrl,
+    role: effectiveRole,
+    status: effectiveStatus,
+  });
+
+  if (upsertError) {
+    throw new AuthServiceError(upsertError.message || "Could not save profile role.", 400);
+  }
+
+  if (effectiveRole === "STUDENT") {
+    await sb.from("student_profiles").upsert({ user_id: authUser.id });
+    await mutateLmsState((lms) => {
+      const hasEnrolment = lms.studentEnrolments.some(
+        (e) => e.studentUserId === authUser.id
+      );
+      if (!hasEnrolment) {
+        const defaultLevel =
+          lms.classLevels.find((l) => l.code === "SS1") || lms.classLevels[0];
+        if (defaultLevel) {
+          lms.studentEnrolments.push({
+            id: `enr-${authUser.id}`,
+            studentUserId: authUser.id,
+            studentName: fullName,
+            studentEmail: authUser.email || "",
+            classLevelId: defaultLevel.id,
+            subjectIds: [],
+            status: "REGISTERED",
+            updatedAt: new Date().toISOString(),
+          });
+          lms.studentEntitlements.push({
+            id: `ent-${authUser.id}`,
+            studentUserId: authUser.id,
+            studentName: fullName,
+            studentEmail: authUser.email || "",
+            classLevelId: defaultLevel.id,
+            subjectIds: [],
+            allSubjects: false,
+            accessStatus: "REGISTERED",
+            startsAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+    });
+  } else if (effectiveRole === "TEACHER") {
+    await sb.from("teacher_profiles").upsert({ user_id: authUser.id });
+  } else if (effectiveRole === "PARENT") {
+    await sb.from("parent_profiles").upsert({ user_id: authUser.id });
+  }
+
+  return {
+    accessToken,
+    user: {
+      id: authUser.id,
+      email: authUser.email || existingProfile?.email || "",
+      fullName,
+      role: effectiveRole,
+      status: effectiveStatus,
+      avatarUrl,
+    },
+  };
 }

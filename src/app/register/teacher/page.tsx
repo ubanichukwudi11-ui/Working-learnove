@@ -86,15 +86,17 @@ export default function TeacherRegisterPage() {
     try {
       setLoading(true);
 
-      await registerTeacher(form);
+      const created = await registerTeacher(form);
 
       setSuccessMsg(
-        "Application submitted successfully! Please wait for admin verification. Redirecting..."
+        created.requiresEmailConfirmation
+          ? "Application submitted! Please check your email to confirm your address while your account awaits admin verification. Redirecting..."
+          : "Application submitted successfully! Please wait for admin verification. Redirecting..."
       );
 
       setTimeout(() => {
         router.push("/login");
-      }, 2000);
+      }, 2500);
     } catch (err: unknown) {
       const msg =
         err instanceof Error

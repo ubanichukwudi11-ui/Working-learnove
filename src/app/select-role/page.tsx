@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Users, School } from "lucide-react";
 import {
@@ -8,14 +9,51 @@ import {
   isSupabaseConfigured,
   SUPABASE_CONFIG_ERROR,
 } from "@/lib/supabase";
+import { getDashboardRoute } from "@/lib/getDashboardRoute";
+import { useAuth } from "@/context/AuthContext";
 import Logo from "@/components/branding/Logo";
 
 type Role = "STUDENT" | "TEACHER" | "PARENT";
 
 export default function SelectRolePage() {
   const router = useRouter();
+  const { login: saveUser } = useAuth();
+  const [checkingSession, setCheckingSession] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function verifySession() {
+      if (!isSupabaseConfigured) {
+        if (!cancelled) {
+          setErrorMsg(SUPABASE_CONFIG_ERROR);
+          setCheckingSession(false);
+        }
+        return;
+      }
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!cancelled && !session?.access_token) {
+          router.replace("/login?error=session_expired");
+          return;
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingSession(false);
+        }
+      }
+    }
+
+    verifySession();
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   async function chooseRole(role: Role) {
     try {
@@ -27,55 +65,53 @@ export default function SelectRolePage() {
       setLoading(true);
 
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (!user) {
-        router.replace("/login");
+      if (!session?.access_token) {
+        router.replace("/login?error=session_expired");
         return;
       }
 
-      const fullName =
-        user.user_metadata?.full_name || user.user_metadata?.name || "";
-      const avatar = user.user_metadata?.avatar_url || "";
-
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: user.id,
-        email: user.email,
-        full_name: fullName,
-        avatar_url: avatar,
-        role,
-        status: role === "TEACHER" ? "PENDING" : "ACTIVE",
+      const res = await fetch("/api/auth/select-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          accessToken: session.access_token,
+          role,
+        }),
       });
 
-      if (profileError) throw profileError;
-
-      if (role === "STUDENT") {
-        const { error } = await supabase.from("student_profiles").upsert({ user_id: user.id });
-        if (error) throw error;
-        router.replace("/dashboard");
-        return;
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.user) {
+        throw new Error(data?.error || "Could not complete role setup. Please try again.");
       }
 
-      if (role === "PARENT") {
-        const { error } = await supabase.from("parent_profiles").upsert({ user_id: user.id });
-        if (error) throw error;
-        router.replace("/parent");
-        return;
-      }
-
-      if (role === "TEACHER") {
-        const { error } = await supabase
-          .from("teacher_profiles")
-          .upsert({ user_id: user.id });
-        if (error) throw error;
-        router.replace("/register/teacher");
-      }
-    } catch (error: any) {
-      setErrorMsg(error?.message || "Could not complete role setup. Please try again.");
+      saveUser(data.user);
+      router.replace(getDashboardRoute(data.user.role));
+      router.refresh();
+    } catch (error: unknown) {
+      const msg =
+        error instanceof Error
+          ? error.message
+          : "Could not complete role setup. Please try again.";
+      setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+        <div className="text-center">
+          <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-[#4F46E5] border-t-transparent" />
+          <p className="mt-3 text-xs font-semibold text-[#43466E]">
+            Preparing account setup...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -155,6 +191,12 @@ export default function SelectRolePage() {
             Setting up your Learnova workspace...
           </div>
         )}
+
+        <div className="mt-8 text-center">
+          <Link href="/login" className="text-xs font-semibold text-[#6D28D9] hover:underline">
+            Cancel and return to Sign In
+          </Link>
+        </div>
       </div>
     </main>
   );

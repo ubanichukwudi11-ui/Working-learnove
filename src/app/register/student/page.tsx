@@ -13,9 +13,10 @@ import {
   Upload,
   Loader2,
   ArrowLeft,
+  CheckCircle2,
 } from "lucide-react";
 
-import { registerStudent, login as authLogin } from "@/lib/auth";
+import { registerStudent } from "@/lib/auth";
 import {
   supabase,
   isSupabaseConfigured,
@@ -30,6 +31,7 @@ export default function StudentRegistrationPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [confirmationEmail, setConfirmationEmail] = useState("");
   const [preview, setPreview] = useState("");
 
   const [form, setForm] = useState({
@@ -91,7 +93,7 @@ export default function StudentRegistrationPage() {
     setError("");
 
     try {
-      await registerStudent({
+      const created = await registerStudent({
         fullName: form.fullName,
         email: form.email,
         password: form.password,
@@ -108,12 +110,14 @@ export default function StudentRegistrationPage() {
         reminders: form.reminders,
       });
 
-      const loggedInUser = await authLogin(form.email, form.password);
-      if (loggedInUser) {
-        saveUser(loggedInUser);
+      if (created.requiresEmailConfirmation) {
+        setConfirmationEmail(created.email || form.email);
+        return;
       }
 
+      saveUser(created);
       router.push("/dashboard");
+      router.refresh();
     } catch (err: unknown) {
       const msg =
         err instanceof Error
@@ -159,6 +163,25 @@ export default function StudentRegistrationPage() {
             </div>
           )}
 
+          {confirmationEmail ? (
+            <div className="rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF] p-8 text-center space-y-4">
+              <CheckCircle2 size={42} className="mx-auto text-[#0891B2]" />
+              <h2 className="landing-display text-xl font-extrabold text-[#0B1230]">
+                Confirm Your Email Address
+              </h2>
+              <p className="text-sm text-[#43466E] max-w-md mx-auto leading-relaxed">
+                We sent a verification link to <strong>{confirmationEmail}</strong>. Click the link in your inbox to activate your Learnova student account, then sign in.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] px-6 py-3 text-sm font-bold text-white shadow-sm transition"
+                >
+                  Go to Sign In
+                </Link>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Profile Picture */}
             <div>
@@ -392,6 +415,7 @@ export default function StudentRegistrationPage() {
               )}
             </button>
           </form>
+          )}
 
           <div className="mt-7 text-center text-xs text-[#43466E]">
             Already registered?{" "}

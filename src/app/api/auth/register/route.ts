@@ -1,14 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   AuthServiceError,
   registerLearnovaAccount,
+  resolvePublicAppOrigin,
+  shouldUseSecureCookie,
 } from "@backend/services/serverAuth";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const appOrigin = resolvePublicAppOrigin(req);
     const { session, user, requiresEmailConfirmation } =
-      await registerLearnovaAccount(body);
+      await registerLearnovaAccount(body, appOrigin);
 
     const response = NextResponse.json({
       success: true,
@@ -18,19 +21,19 @@ export async function POST(req: Request) {
     });
 
     if (session?.access_token) {
-      const isProd = process.env.NODE_ENV === "production";
+      const isSecure = shouldUseSecureCookie(req);
       response.cookies.set("learnova_access_token", session.access_token, {
         httpOnly: true,
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
         sameSite: "lax",
-        secure: isProd,
+        secure: isSecure,
       });
       response.cookies.set("learnova_user", JSON.stringify(user), {
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
         sameSite: "lax",
-        secure: isProd,
+        secure: isSecure,
       });
     }
 

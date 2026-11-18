@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   AuthServiceError,
   exchangeOAuthSessionToken,
+  shouldUseSecureCookie,
 } from "@backend/services/serverAuth";
 
 /**
@@ -11,24 +12,28 @@ import {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { accessToken, user } = await exchangeOAuthSessionToken(
+    const { accessToken, user, needsRoleSelection } = await exchangeOAuthSessionToken(
       String(body.accessToken || "")
     );
 
-    const response = NextResponse.json({ success: true, user });
-    const isProd = process.env.NODE_ENV === "production";
+    const response = NextResponse.json({
+      success: true,
+      user,
+      needsRoleSelection,
+    });
+    const isSecure = shouldUseSecureCookie(req);
     response.cookies.set("learnova_access_token", accessToken, {
       httpOnly: true,
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
       sameSite: "lax",
-      secure: isProd,
+      secure: isSecure,
     });
     response.cookies.set("learnova_user", JSON.stringify(user), {
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
       sameSite: "lax",
-      secure: isProd,
+      secure: isSecure,
     });
     return response;
   } catch (err: unknown) {

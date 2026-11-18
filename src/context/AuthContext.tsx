@@ -52,17 +52,18 @@ function getStoredUser(): User | null {
 function persistUser(user: User | null) {
   if (typeof window === "undefined") return;
   try {
+    const secureAttr = window.location.protocol === "https:" ? "; Secure" : "";
     if (user) {
       const serialized = JSON.stringify(user);
       localStorage.setItem("learnova_user", serialized);
       localStorage.setItem("learnova-user", serialized);
       sessionStorage.setItem("learnova_user", serialized);
-      document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `learnova_user=${encodeURIComponent(serialized)}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
     } else {
       localStorage.removeItem("learnova_user");
       localStorage.removeItem("learnova-user");
       sessionStorage.removeItem("learnova_user");
-      document.cookie = "learnova_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = `learnova_user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secureAttr}`;
     }
   } catch {}
 }
@@ -117,7 +118,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (event === "SIGNED_OUT") {
           persistUser(null);
           setUser(null);
-        } else if (event === "SIGNED_IN" || session) {
+        } else if (
+          (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") &&
+          session
+        ) {
           await loadUser();
         }
       }
@@ -130,6 +134,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     persistUser(null);
     setUser(null);
+    if (typeof window !== "undefined") {
+      try {
+        sessionStorage.removeItem("learnova_post_auth_next");
+      } catch {}
+    }
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       if (isSupabaseConfigured) {

@@ -1,97 +1,227 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { AlertCircle, ArrowLeft } from "lucide-react";
+import {
+  supabase,
+  isSupabaseConfigured,
+  SUPABASE_CONFIG_ERROR,
+} from "@/lib/supabase";
+import { sanitizePostAuthRedirect } from "@/lib/appUrl";
+import { getDashboardRoute } from "@/lib/getDashboardRoute";
+import { useAuth } from "@/context/AuthContext";
+import Logo from "@/components/branding/Logo";
+
+function waitForSupabaseSession(timeoutMs = 4500) {
+  return new Promise<Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"]>(
+    (resolve) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          subscription.unsubscribe();
+          resolve(null);
+        }
+      }, timeoutMs);
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!settled && session?.access_token) {
+          settled = true;
+          clearTimeout(timer);
+          subscription.unsubscribe();
+          resolve(session);
+        }
+      });
+    }
+  );
+}
 
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const { login: saveUser } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState("Completing sign in...");
 
   useEffect(() => {
+    let cancelled = false;
+
     async function handleCallback() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        if (!isSupabaseConfigured) {
+          throw new Error(SUPABASE_CONFIG_ERROR);
+        }
 
-      if (!session?.user) {
-        router.replace("/login");
-        return;
-      }
+        const searchParams = new URLSearchParams(window.location.search);
+        const rawHash = window.location.hash.startsWith("#")
+          ? window.location.hash.slice(1)
+          : window.location.hash;
+        const hashParams = new URLSearchParams(rawHash);
 
-      // Exchange OAuth access token for authoritative server profile & httpOnly cookie
-      const sessionRes = await fetch("/api/auth/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accessToken: session.access_token }),
-      });
+        const oauthError =
+          searchParams.get("error_description") ||
+          searchParams.get("error") ||
+          hashParams.get("error_description") ||
+          hashParams.get("error");
 
-      if (sessionRes.ok) {
-        const data = await sessionRes.json();
-        const role = data?.user?.role;
-        if (role === "SUPER_ADMIN") {
-          router.replace("/super-admin");
+        if (oauthError) {
+          throw new Error(decodeURIComponent(oauthError.replace(/\+/g, " ")));
+        }
+
+        const flowType = searchParams.get("type") || hashParams.get("type");
+        const authCode = searchParams.get("code");
+
+        if (flowType === "recovery") {
+          setStatusMessage("Preparing password recovery...");
+          if (authCode) {
+            await supabase.auth.exchangeCodeForSession(authCode);
+          } else {
+            const accessToken = hashParams.get("access_token");
+            const refreshToken = hashParams.get("refresh_token");
+            if (accessToken && refreshToken) {
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+            }
+          }
+          if (!cancelled) {
+            router.replace("/forgot-password?mode=recovery");
+          }
           return;
         }
-        if (role === "ADMIN") {
-          router.replace("/admin");
-          return;
-        }
-        if (role === "TEACHER") {
-          router.replace("/teacher");
-          return;
-        }
-        if (role === "PARENT") {
-          router.replace("/parent");
-          return;
-        }
-        if (role === "STUDENT") {
-          router.replace("/dashboard");
-          return;
-        }
-      }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .maybeSingle();
+        let {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!profile || !profile.role) {
-        router.replace("/select-role");
-        return;
-      }
+        if (!session?.access_token && authCode) {
+          setStatusMessage("Verifying Google authorization...");
+          const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+          if (error) {
+            throw error;
+          }
+          session = data.session;
+        }
 
-      switch (profile.role) {
-        case "SUPER_ADMIN":
-          router.replace("/super-admin");
-          break;
-        case "ADMIN":
-          router.replace("/admin");
-          break;
-        case "TEACHER":
-          router.replace("/teacher");
-          break;
-        case "PARENT":
-          router.replace("/parent");
-          break;
-        case "STUDENT":
-          router.replace("/dashboard");
-          break;
-        default:
+        if (!session?.access_token) {
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+          if (accessToken && refreshToken) {
+            const { data, error } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            if (error) {
+              throw error;
+            }
+            session = data.session;
+          }
+        }
+
+        if (!session?.access_token) {
+          session = await waitForSupabaseSession(4500);
+        }
+
+        if (!session?.access_token) {
+          throw new Error(
+            "No active authentication session was returned. Please verify your Supabase Redirect URLs include this domain and try signing in again."
+          );
+        }
+
+        setStatusMessage("Loading your Learnova profile...");
+
+        const sessionRes = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ accessToken: session.access_token }),
+        });
+
+        const data = await sessionRes.json().catch(() => ({}));
+        if (!sessionRes.ok || !data?.user) {
+          throw new Error(data?.error || "Could not finalize your Learnova session.");
+        }
+
+        saveUser(data.user);
+
+        let storedNext: string | null = null;
+        try {
+          storedNext = sessionStorage.getItem("learnova_post_auth_next");
+          sessionStorage.removeItem("learnova_post_auth_next");
+        } catch {}
+
+        const rawNext = searchParams.get("next") || storedNext;
+
+        if (cancelled) return;
+
+        if (data.needsRoleSelection) {
           router.replace("/select-role");
+          return;
+        }
+
+        const roleDashboard = getDashboardRoute(data.user.role);
+        const destination = sanitizePostAuthRedirect(rawNext, roleDashboard);
+        router.replace(destination);
+      } catch (err: unknown) {
+        if (cancelled) return;
+        const msg =
+          err instanceof Error && err.message
+            ? err.message
+            : "Sign in could not be completed. Please try again.";
+        setErrorMessage(msg);
       }
     }
 
     handleCallback();
-  }, [router]);
+    return () => {
+      cancelled = true;
+    };
+  }, [router, saveUser]);
+
+  if (errorMessage) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender px-5 text-[#0B1230]">
+        <div className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white p-8 shadow-xl shadow-[#0B1230]/6 text-center space-y-5">
+          <div className="flex justify-center">
+            <Logo href="/" variant="learnova" />
+          </div>
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+            <AlertCircle size={24} />
+          </div>
+          <div className="space-y-2">
+            <h1 className="landing-display text-xl font-extrabold text-[#0B1230]">
+              Authentication Error
+            </h1>
+            <p className="text-xs leading-relaxed text-[#43466E]">{errorMessage}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 pt-1">
+            <Link
+              href="/login"
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:from-[#4338CA] hover:to-[#6D28D9] transition"
+            >
+              <ArrowLeft size={14} />
+              Back to Sign In
+            </Link>
+            <Link
+              href="/register"
+              className="flex-1 inline-flex items-center justify-center rounded-xl border border-[#DCD7F5] bg-white px-4 py-2.5 text-xs font-bold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+            >
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
-      <div className="text-center">
+      <div className="text-center px-6">
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#4F46E5] border-t-transparent" />
-        <p className="mt-4 text-sm font-semibold text-[#43466E]">
-          Completing sign in...
-        </p>
+        <p className="mt-4 text-sm font-semibold text-[#43466E]">{statusMessage}</p>
       </div>
     </div>
   );

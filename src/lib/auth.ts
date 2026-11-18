@@ -1,4 +1,9 @@
-import { supabase, isSupabaseConfigured } from "./supabase";
+import { supabase, isSupabaseConfigured, SUPABASE_CONFIG_ERROR } from "./supabase";
+import {
+  getAuthCallbackUrl,
+  getPasswordResetRedirectUrl,
+  sanitizePostAuthRedirect,
+} from "./appUrl";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 /* ===========================================
@@ -55,6 +60,9 @@ export interface User {
   studentName?: string;
   childIdNumber?: string;
   relationship?: string;
+
+  /* Registration state */
+  requiresEmailConfirmation?: boolean;
 }
 
 /* ===========================================
@@ -134,17 +142,30 @@ export async function login(email: string, password?: string): Promise<User> {
    GOOGLE SIGN-IN VIA SUPABASE OAUTH
 =========================================== */
 
-export async function loginWithGoogle(): Promise<void> {
+export async function loginWithGoogle(nextPath?: string): Promise<void> {
   if (!isSupabaseConfigured) {
-    throw new Error(
-      "Supabase Auth is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to enable Google OAuth."
-    );
+    throw new Error(SUPABASE_CONFIG_ERROR);
   }
 
-  const { error } = await supabase.auth.signInWithOAuth({
+  if (typeof window !== "undefined") {
+    try {
+      const safeNext = nextPath ? sanitizePostAuthRedirect(nextPath, "") : "";
+      if (safeNext) {
+        sessionStorage.setItem("learnova_post_auth_next", safeNext);
+      } else {
+        sessionStorage.removeItem("learnova_post_auth_next");
+      }
+    } catch {}
+  }
+
+  try {
+    await supabase.auth.signOut({ scope: "local" });
+  } catch {}
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: getAuthCallbackUrl(),
       queryParams: {
         prompt: "select_account",
       },
@@ -153,6 +174,10 @@ export async function loginWithGoogle(): Promise<void> {
 
   if (error) {
     throw error;
+  }
+
+  if (typeof window !== "undefined" && data?.url) {
+    window.location.assign(data.url);
   }
 }
 
@@ -222,11 +247,14 @@ export async function registerStudent(data: {
     } catch {}
   }
 
-  if (typeof window !== "undefined") {
+  if (result.session && typeof window !== "undefined") {
     localStorage.setItem("learnova_user", JSON.stringify(result.user));
   }
 
-  return result.user;
+  return {
+    ...result.user,
+    requiresEmailConfirmation: Boolean(result.requiresEmailConfirmation),
+  };
 }
 
 /* ===========================================
@@ -278,11 +306,14 @@ export async function registerTeacher(data: {
     } catch {}
   }
 
-  if (typeof window !== "undefined") {
+  if (result.session && typeof window !== "undefined") {
     localStorage.setItem("learnova_user", JSON.stringify(result.user));
   }
 
-  return result.user;
+  return {
+    ...result.user,
+    requiresEmailConfirmation: Boolean(result.requiresEmailConfirmation),
+  };
 }
 
 /* ===========================================
@@ -322,11 +353,14 @@ export async function registerParent(data: {
     } catch {}
   }
 
-  if (typeof window !== "undefined") {
+  if (result.session && typeof window !== "undefined") {
     localStorage.setItem("learnova_user", JSON.stringify(result.user));
   }
 
-  return result.user;
+  return {
+    ...result.user,
+    requiresEmailConfirmation: Boolean(result.requiresEmailConfirmation),
+  };
 }
 
 /* ===========================================
@@ -334,8 +368,10 @@ export async function registerParent(data: {
 =========================================== */
 
 export async function getCurrentUser(): Promise<User | null> {
+  let meStatus = 0;
   try {
     const res = await fetch("/api/auth/me", { cache: "no-store" });
+    meStatus = res.status;
     if (res.ok) {
       const data = await res.json();
       if (data?.user) {
@@ -368,6 +404,12 @@ export async function getCurrentUser(): Promise<User | null> {
           }
         }
       }
+    } catch {}
+  }
+
+  if (meStatus === 401) {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
     } catch {}
   }
 
@@ -457,12 +499,16 @@ export async function deleteUser(userId: string): Promise<boolean> {
 }
 
 export async function resetPassword(email: string): Promise<boolean> {
-  if (isSupabaseConfigured) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/forgot-password`,
-    });
-    if (error) throw error;
+  if (!isSupabaseConfigured) {
+    throw new Error(SUPABASE_CONFIG_ERROR);
   }
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    email.trim().toLowerCase(),
+    {
+      redirectTo: getPasswordResetRedirectUrl(),
+    }
+  );
+  if (error) throw error;
   return true;
 }
 
