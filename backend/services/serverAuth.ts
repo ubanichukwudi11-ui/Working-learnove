@@ -603,21 +603,29 @@ export async function exchangeOAuthSessionToken(accessTokenInput: string) {
     throw new AuthServiceError("Invalid session token.", 401);
   }
 
-  const [{ data: profile }, state] = await Promise.all([
+  const [{ data: profile }, { data: settingsRow }] = await Promise.all([
     sb.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
-    loadLmsState(),
+    sb
+      .from("platform_settings")
+      .select("super_admin_emails")
+      .eq("id", "global")
+      .maybeSingle(),
   ]);
 
   const needsRoleSelection = !profile || !profile.role;
 
   let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
   const email = (authUser.email || profile?.email || "").toLowerCase();
-  if (
-    role === "ADMIN" &&
-    (state.platformSettings.superAdminEmails || [])
-      .map((e) => e.toLowerCase())
-      .includes(email)
-  ) {
+  const superAdminEmails = new Set([
+    ...((Array.isArray(settingsRow?.super_admin_emails)
+      ? settingsRow.super_admin_emails
+      : []) as unknown[]).map((e) => String(e).trim().toLowerCase()),
+    ...(process.env.SUPER_ADMIN_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  ]);
+  if (role === "ADMIN" && superAdminEmails.has(email)) {
     role = "SUPER_ADMIN";
   }
 

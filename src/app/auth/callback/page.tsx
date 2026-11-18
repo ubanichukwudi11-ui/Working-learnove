@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AlertCircle, ArrowLeft } from "lucide-react";
@@ -43,11 +43,32 @@ function waitForSupabaseSession(timeoutMs = 4500) {
 export default function AuthCallbackPage() {
   const router = useRouter();
   const { login: saveUser } = useAuth();
+  const routerRef = useRef(router);
+  const saveUserRef = useRef(saveUser);
+
+  useEffect(() => {
+    routerRef.current = router;
+    saveUserRef.current = saveUser;
+  }, [router, saveUser]);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState("Completing sign in...");
 
   useEffect(() => {
-    let cancelled = false;
+    let active = true;
+    const fetchController = new AbortController();
+
+    function navigateTo(destination: string) {
+      routerRef.current.replace(destination);
+      setTimeout(() => {
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname === "/auth/callback"
+        ) {
+          window.location.replace(destination);
+        }
+      }, 500);
+    }
 
     async function handleCallback() {
       try {
@@ -88,8 +109,8 @@ export default function AuthCallbackPage() {
               });
             }
           }
-          if (!cancelled) {
-            router.replace("/forgot-password?mode=recovery");
+          if (active) {
+            navigateTo("/forgot-password?mode=recovery");
           }
           return;
         }
@@ -132,20 +153,32 @@ export default function AuthCallbackPage() {
           );
         }
 
+        if (!active) return;
         setStatusMessage("Loading your Learnova profile...");
 
-        const sessionRes = await fetch("/api/auth/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accessToken: session.access_token }),
-        });
+        const fetchTimer = setTimeout(() => {
+          fetchController.abort();
+        }, 12000);
+
+        let sessionRes: Response;
+        try {
+          sessionRes = await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accessToken: session.access_token }),
+            signal: fetchController.signal,
+          });
+        } finally {
+          clearTimeout(fetchTimer);
+        }
 
         const data = await sessionRes.json().catch(() => ({}));
         if (!sessionRes.ok || !data?.user) {
           throw new Error(data?.error || "Could not finalize your Learnova session.");
         }
 
-        saveUser(data.user);
+        if (!active) return;
+        saveUserRef.current(data.user);
 
         let storedNext: string | null = null;
         try {
@@ -155,31 +188,34 @@ export default function AuthCallbackPage() {
 
         const rawNext = searchParams.get("next") || storedNext;
 
-        if (cancelled) return;
-
         if (data.needsRoleSelection) {
-          router.replace("/select-role");
+          navigateTo("/select-role");
           return;
         }
 
         const roleDashboard = getDashboardRoute(data.user.role);
         const destination = sanitizePostAuthRedirect(rawNext, roleDashboard);
-        router.replace(destination);
+        navigateTo(destination);
       } catch (err: unknown) {
-        if (cancelled) return;
-        const msg =
-          err instanceof Error && err.message
-            ? err.message
-            : "Sign in could not be completed. Please try again.";
+        if (!active) return;
+        const isAbort =
+          err instanceof Error &&
+          (err.name === "AbortError" || err.message.toLowerCase().includes("aborted"));
+        const msg = isAbort
+          ? "Loading your profile timed out. Please try signing in again."
+          : err instanceof Error && err.message
+          ? err.message
+          : "Sign in could not be completed. Please try again.";
         setErrorMessage(msg);
       }
     }
 
     handleCallback();
     return () => {
-      cancelled = true;
+      active = false;
+      fetchController.abort();
     };
-  }, [router, saveUser]);
+  }, []);
 
   if (errorMessage) {
     return (
