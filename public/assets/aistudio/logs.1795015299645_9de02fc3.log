@@ -1,0 +1,641 @@
+2026-11-18T15:19:17.180438046Z [inf]  [railway-ssh] SSH connected
+2026-11-18T15:19:20.631543662Z [inf]  unpacking archive
+2026-11-18T15:19:20.670736187Z [inf]  [internal] load build definition from Dockerfile
+2026-11-18T15:19:20.670741054Z [inf]  [internal] load build definition from Dockerfile
+2026-11-18T15:19:20.670832160Z [inf]  [internal] load build definition from Dockerfile
+2026-11-18T15:19:20.700606824Z [inf]  [internal] load build definition from Dockerfile
+2026-11-18T15:19:20.705164643Z [inf]  [internal] load metadata for docker.io/library/node:22-alpine
+2026-11-18T15:19:21.022650276Z [inf]  uploading snapshot
+2026-11-18T15:19:21.625495972Z [inf]  [internal] load metadata for docker.io/library/node:22-alpine
+2026-11-18T15:19:21.626319527Z [inf]  [internal] load .dockerignore
+2026-11-18T15:19:21.626326778Z [inf]  [internal] load .dockerignore
+2026-11-18T15:19:21.626333519Z [inf]  [internal] load .dockerignore
+2026-11-18T15:19:21.641351531Z [inf]  [internal] load .dockerignore
+2026-11-18T15:19:21.647186436Z [inf]  importing cache manifest from s3:9030405925439967209
+2026-11-18T15:19:21.648203782Z [inf]  [builder 3/6] COPY --from=deps /app/node_modules ./node_modules
+2026-11-18T15:19:21.648213627Z [inf]  [deps 4/4] RUN npm install --no-audit --no-fund
+2026-11-18T15:19:21.648215420Z [inf]  [deps 3/4] COPY package.json package-lock.json* ./
+2026-11-18T15:19:21.648217413Z [inf]  [internal] load build context
+2026-11-18T15:19:21.648219746Z [inf]  [runner  3/10] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs
+2026-11-18T15:19:21.648221259Z [inf]  [deps 2/4] WORKDIR /app
+2026-11-18T15:19:21.648222521Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.648225415Z [inf]  [runner  6/10] COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts ./next.config.ts
+2026-11-18T15:19:21.648226957Z [inf]  [runner  5/10] COPY --from=builder --chown=nextjs:nodejs /app/tsconfig.json ./tsconfig.json
+2026-11-18T15:19:21.648228309Z [inf]  [runner  4/10] COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+2026-11-18T15:19:21.648229631Z [inf]  [builder 6/6] RUN npm prune --omit=dev
+2026-11-18T15:19:21.648230733Z [inf]  [builder 5/6] RUN npm run build
+2026-11-18T15:19:21.648231975Z [inf]  [builder 4/6] COPY . .
+2026-11-18T15:19:21.648233247Z [inf]  [runner 10/10] COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+2026-11-18T15:19:21.648234528Z [inf]  [runner  9/10] COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+2026-11-18T15:19:21.648236011Z [inf]  [runner  8/10] COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+2026-11-18T15:19:21.648237423Z [inf]  [runner  7/10] COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+2026-11-18T15:19:21.648241078Z [inf]  [internal] load build context
+2026-11-18T15:19:21.648242540Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.658184537Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.838533822Z [inf]  importing cache manifest from s3:9030405925439967209
+2026-11-18T15:19:21.839032020Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.839035635Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.839137769Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.839210027Z [inf]  [internal] load build context
+2026-11-18T15:19:21.907461731Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:21.910006780Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:22.007735211Z [inf]  [internal] load build context
+2026-11-18T15:19:22.904720051Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:22.908268075Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:23.702203370Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:23.702215087Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:23.728490241Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:23.728728057Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:23.735188961Z [inf]  [deps 1/4] FROM docker.io/library/node:22-alpine@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+2026-11-18T15:19:23.735716082Z [inf]  [deps 2/4] WORKDIR /app
+2026-11-18T15:19:23.860448270Z [inf]  [deps 2/4] WORKDIR /app
+2026-11-18T15:19:23.861468851Z [inf]  [deps 3/4] COPY package.json package-lock.json* ./
+2026-11-18T15:19:23.861744965Z [inf]  [runner  3/10] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs
+2026-11-18T15:19:23.906309349Z [inf]  [deps 3/4] COPY package.json package-lock.json* ./
+2026-11-18T15:19:23.907271783Z [inf]  [deps 4/4] RUN npm install --no-audit --no-fund
+2026-11-18T15:19:24.060161087Z [inf]  [runner  3/10] RUN addgroup --system --gid 1001 nodejs &&     adduser --system --uid 1001 nextjs
+2026-11-18T15:19:42.873950193Z [inf]  
+added 858 packages in 19s
+
+2026-11-18T15:19:42.875271025Z [inf]  npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice
+
+2026-11-18T15:19:43.958959384Z [inf]  [deps 4/4] RUN npm install --no-audit --no-fund
+2026-11-18T15:19:47.700528700Z [inf]  [builder 3/6] COPY --from=deps /app/node_modules ./node_modules
+2026-11-18T15:19:51.287419787Z [inf]  [builder 3/6] COPY --from=deps /app/node_modules ./node_modules
+2026-11-18T15:19:51.288597204Z [inf]  [builder 4/6] COPY . .
+2026-11-18T15:19:51.561792845Z [inf]  [builder 4/6] COPY . .
+2026-11-18T15:19:51.563477703Z [inf]  [builder 5/6] RUN npm run build
+2026-11-18T15:19:51.992081537Z [inf]  
+> web@0.1.0 build
+> next build && tsc -p tsconfig.backend.json
+
+
+2026-11-18T15:19:52.440567733Z [inf]  ▲ Next.js 16.2.6 (Turbopack)
+
+2026-11-18T15:19:52.440847493Z [inf]  
+2026-11-18T15:19:52.442872561Z [inf]  ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+2026-11-18T15:19:52.496506012Z [inf]    Creating an optimized production build ...
+
+2026-11-18T15:20:09.830149848Z [inf]  
+2026-11-18T15:20:09.830165251Z [inf]  > Build error occurred
+
+2026-11-18T15:20:09.835201167Z [inf]  Error: Turbopack build failed with 20 errors:
+./node_modules/@fontsource/ibm-plex-mono/400.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/ibm-plex-mono/400.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/ibm-plex-mono/500.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/ibm-plex-mono/500.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/ibm-plex-mono/600.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/ibm-plex-mono/600.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/inter/400.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/inter/400.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/inter/500.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/inter/500.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/inter/600.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/inter/600.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/inter/700.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/inter/700.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/inter/800.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/inter/800.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/outfit/600.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/outfit/600.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/outfit/700.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/outfit/700.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/outfit/800.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/outfit/800.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/plus-jakarta-sans/400.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/plus-jakarta-sans/400.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/plus-jakarta-sans/500.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/plus-jakarta-sans/500.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/plus-jakarta-sans/600.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/plus-jakarta-sans/600.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/plus-jakarta-sans/700.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/plus-jakarta-sans/700.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/source-serif-4/600-italic.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/source-serif-4/600-italic.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/source-serif-4/600.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/source-serif-4/600.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@fontsource/source-serif-4/700.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@fontsource/source-serif-4/700.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+./node_modules/@livekit/components-styles/dist/general/index.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./node_modules/@livekit/components-styles/dist/general/index.css [Client Component Browser]
+    ./src/components/live-class/VideoRoom.tsx [Client Component Browser]
+    ./src/components/live-class/TeacherLiveClassroom.tsx [Client Component Browser]
+    ./src/app/teacher/live-class/[id]/page.tsx [Client Component Browser]
+    ./src/app/teacher/live-class/[id]/page.tsx [Server Component]
+
+
+./src/app/globals.css
+Error evaluating Node.js code
+Error: Cannot find module '../lightningcss.linux-x64-musl.node'
+Require stack:
+- /app/node_modules/lightningcss/node/index.js
+- /app/node_modules/@tailwindcss/node/dist/index.js
+- /app/node_modules/@tailwindcss/postcss/dist/index.js
+- /app/.next/build/chunks/[root-of-the-server]__0d-m0h0._.js
+- /app/.next/build/chunks/[turbopack]_runtime.js
+- /app/.next/build/postcss.js
+    [at Function._resolveFilename (node:internal/modules/cjs/loader:1430:15)]
+    [at defaultResolveImpl (node:internal/modules/cjs/loader:1040:19)]
+    [at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1045:22)]
+    [at Function._load (node:internal/modules/cjs/loader:1216:25)]
+    [at wrapModuleLoad (node:internal/modules/cjs/loader:254:19)]
+    [at Module.require (node:internal/modules/cjs/loader:1527:12)]
+    [at require (node:internal/modules/helpers:147:16)]
+    [at Object.<anonymous> (/app/node_modules/lightningcss/node/index.js:20:12)]
+    [at Module._compile (node:internal/modules/cjs/loader:1781:14)]
+    [at Object..js (node:internal/modules/cjs/loader:1913:10)]
+
+Import trace:
+  Client Component Browser:
+    ./src/app/globals.css [Client Component Browser]
+    ./src/app/layout.tsx [Server Component]
+
+
+    at ignore-listed frames
+
+2026-11-18T15:20:09.912491693Z [inf]  npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.3
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+npm notice To update run: npm install -g npm@12.2.3
+npm notice
+
+2026-11-18T15:20:10.084780915Z [err]  [builder 5/6] RUN npm run build
+2026-11-18T15:20:10.144861239Z [err]  Build Failed: build daemon returned an error < failed to solve: process "/bin/sh -c npm run build" did not complete successfully: exit code: 1 >
+2026-11-18T15:20:10.186426693Z [inf]  [railway-ssh] SSH disconnected
