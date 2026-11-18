@@ -26,6 +26,30 @@ export {
   type AuthenticatedSessionUser,
 };
 
+export function resolvePublicAppOrigin(req: NextRequest): string {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "");
+  if (configured) return configured;
+
+  const forwardedHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const forwardedProto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  if (forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN?.trim()?.replace(/\/+$/, "");
+  if (railwayDomain) {
+    return `https://${railwayDomain}`;
+  }
+
+  const host = req.headers.get("host")?.trim();
+  if (host) {
+    const proto = req.nextUrl.protocol.replace(":", "") || "https";
+    return `${proto}://${host}`;
+  }
+
+  return req.nextUrl.origin || "http://localhost:3000";
+}
+
 function extractToken(req: NextRequest): string | null {
   const authHeader = req.headers.get("authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {

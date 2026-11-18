@@ -51,14 +51,14 @@ export default function SelectRolePage() {
       if (profileError) throw profileError;
 
       if (role === "STUDENT") {
-        const { error } = await supabase.from("student_profiles").upsert({ id: user.id });
+        const { error } = await supabase.from("student_profiles").upsert({ user_id: user.id });
         if (error) throw error;
         router.replace("/dashboard");
         return;
       }
 
       if (role === "PARENT") {
-        const { error } = await supabase.from("parent_profiles").upsert({ id: user.id });
+        const { error } = await supabase.from("parent_profiles").upsert({ user_id: user.id });
         if (error) throw error;
         router.replace("/parent");
         return;
@@ -67,7 +67,7 @@ export default function SelectRolePage() {
       if (role === "TEACHER") {
         const { error } = await supabase
           .from("teacher_profiles")
-          .upsert({ id: user.id, status: "PENDING" });
+          .upsert({ user_id: user.id });
         if (error) throw error;
         router.replace("/register/teacher");
       }

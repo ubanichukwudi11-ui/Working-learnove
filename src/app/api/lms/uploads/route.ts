@@ -3,8 +3,8 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@backend/services/serverAuth";
 import {
+  checkSupabaseServerConfigured,
   getSupabaseServerClient,
-  isSupabaseServerConfigured,
   SUPABASE_SERVER_CONFIG_ERROR,
 } from "@backend/services/supabaseServer";
 
@@ -25,7 +25,7 @@ const ALLOWED_DOC_EXTS = new Set([
 const ALLOWED_IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 
 export async function POST(req: NextRequest) {
-  if (!isSupabaseServerConfigured) {
+  if (!checkSupabaseServerConfigured()) {
     return NextResponse.json(
       { error: SUPABASE_SERVER_CONFIG_ERROR },
       { status: 503 }

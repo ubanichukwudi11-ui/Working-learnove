@@ -3,6 +3,24 @@
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+-- 0. Core Profiles (ensures FK dependency exists on fresh Supabase instances)
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT UNIQUE NOT NULL,
+  full_name TEXT NOT NULL DEFAULT '',
+  role TEXT NOT NULL DEFAULT 'STUDENT' CHECK (role IN ('SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT')),
+  status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'PENDING', 'REJECTED', 'SUSPENDED')),
+  avatar_url TEXT,
+  phone TEXT,
+  gender TEXT,
+  country TEXT,
+  state TEXT,
+  address TEXT,
+  dob TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- 1. Schools / Tenants
 CREATE TABLE IF NOT EXISTS public.schools (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -317,9 +335,20 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Baseline RLS policies (Server service role bypasses RLS after verifying user token + role)
-CREATE POLICY IF NOT EXISTS "Public active class levels read" ON public.class_levels FOR SELECT USING (is_active = TRUE);
-CREATE POLICY IF NOT EXISTS "Public active subjects read" ON public.subjects FOR SELECT USING (is_active = TRUE);
-CREATE POLICY IF NOT EXISTS "Users read own notifications" ON public.notifications FOR SELECT USING (auth.uid() = recipient_user_id);
-CREATE POLICY IF NOT EXISTS "Users update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = recipient_user_id);
-CREATE POLICY IF NOT EXISTS "Students read own enrolments" ON public.student_enrolments FOR SELECT USING (auth.uid() = student_user_id);
-CREATE POLICY IF NOT EXISTS "Students read own group memberships" ON public.student_group_memberships FOR SELECT USING (auth.uid() = student_user_id);
+DROP POLICY IF EXISTS "Public active class levels read" ON public.class_levels;
+CREATE POLICY "Public active class levels read" ON public.class_levels FOR SELECT USING (is_active = TRUE);
+
+DROP POLICY IF EXISTS "Public active subjects read" ON public.subjects;
+CREATE POLICY "Public active subjects read" ON public.subjects FOR SELECT USING (is_active = TRUE);
+
+DROP POLICY IF EXISTS "Users read own notifications" ON public.notifications;
+CREATE POLICY "Users read own notifications" ON public.notifications FOR SELECT USING (auth.uid() = recipient_user_id);
+
+DROP POLICY IF EXISTS "Users update own notifications" ON public.notifications;
+CREATE POLICY "Users update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = recipient_user_id);
+
+DROP POLICY IF EXISTS "Students read own enrolments" ON public.student_enrolments;
+CREATE POLICY "Students read own enrolments" ON public.student_enrolments FOR SELECT USING (auth.uid() = student_user_id);
+
+DROP POLICY IF EXISTS "Students read own group memberships" ON public.student_group_memberships;
+CREATE POLICY "Students read own group memberships" ON public.student_group_memberships FOR SELECT USING (auth.uid() = student_user_id);

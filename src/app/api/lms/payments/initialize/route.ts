@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireApiAuth } from "@backend/services/serverAuth";
+import { requireApiAuth, resolvePublicAppOrigin } from "@backend/services/serverAuth";
 import {
   initializePaystackCheckout,
   SubscriptionServiceError,
@@ -26,9 +26,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const requestOrigin =
-      process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "") ||
-      req.nextUrl.origin;
+    const requestOrigin = resolvePublicAppOrigin(req);
 
     const result = await initializePaystackCheckout(auth.user, {
       ...parsed.data,

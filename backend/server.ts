@@ -59,9 +59,54 @@ async function startServer() {
     console.error("Nova Live WebSocketServer error:", err);
   });
 
+  function isAllowedWebSocketOrigin(req: import("http").IncomingMessage): boolean {
+    const originHeader = req.headers.origin;
+    if (!originHeader) return true;
+    try {
+      const originUrl = new URL(originHeader);
+      const originHost = originUrl.host.toLowerCase();
+      const allowedHosts = new Set<string>();
+
+      const addHost = (raw?: string) => {
+        const cleaned = (raw || "").split(",")[0].trim().toLowerCase();
+        if (cleaned) allowedHosts.add(cleaned);
+      };
+
+      addHost(
+        typeof req.headers["x-forwarded-host"] === "string"
+          ? req.headers["x-forwarded-host"]
+          : undefined
+      );
+      addHost(req.headers.host);
+      addHost(process.env.RAILWAY_PUBLIC_DOMAIN);
+
+      const appUrlRaw = process.env.NEXT_PUBLIC_APP_URL?.trim();
+      if (appUrlRaw) {
+        try {
+          allowedHosts.add(new URL(appUrlRaw).host.toLowerCase());
+        } catch {
+          // ignore invalid NEXT_PUBLIC_APP_URL
+        }
+      }
+
+      if (dev && (originUrl.hostname === "localhost" || originUrl.hostname === "127.0.0.1")) {
+        return true;
+      }
+
+      return allowedHosts.has(originHost);
+    } catch {
+      return false;
+    }
+  }
+
   server.on("upgrade", (req, socket, head) => {
     const { pathname } = parse(req.url || "/", true);
     if (pathname === "/ws/nova-live") {
+      if (!isAllowedWebSocketOrigin(req)) {
+        socket.write("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+        return;
+      }
       wss.handleUpgrade(req, socket, head, (ws) => {
         wss.emit("connection", ws, req);
       });

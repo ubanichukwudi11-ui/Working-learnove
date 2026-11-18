@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@backend/services/serverAuth";
+import { requireApiAuth, resolvePublicAppOrigin } from "@backend/services/serverAuth";
 import { getSupabaseServerClient } from "@backend/services/supabaseServer";
 import { sendVerificationLinkEmail } from "@backend/services/emailService";
 
@@ -9,9 +9,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const sb = getSupabaseServerClient();
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL?.trim()?.replace(/\/+$/, "") ||
-      "http://localhost:3000";
+    const appUrl = resolvePublicAppOrigin(req);
 
     const { data, error } = await sb.auth.admin.generateLink({
       type: "magiclink",
