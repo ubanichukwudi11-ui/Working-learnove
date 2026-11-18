@@ -107,7 +107,7 @@ export default function TeacherApplicationsPage() {
   return (
     <ProtectedRoute roles={["TEACHER"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
             <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
               Educator Accreditation &amp; Teaching Scope
@@ -142,7 +142,7 @@ export default function TeacherApplicationsPage() {
           ) : (
             <div className="grid lg:grid-cols-3 gap-6">
               {/* New / Edit Application Form */}
-              <div className="learnova-card p-5 space-y-4 h-fit">
+              <div className="learnova-card p-6 space-y-4 h-fit">
                 <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
                   <FileBadge2 size={16} className="text-[#4F46E5]" />
                   {editingId ? "Update Application" : "Apply to Teach a Subject"}
@@ -277,7 +277,7 @@ export default function TeacherApplicationsPage() {
               {/* Applications History & Approved Badges */}
               <div className="lg:col-span-2 space-y-6 min-w-0">
                 {/* Approved Authorizations */}
-                <div className="learnova-card p-5">
+                <div className="learnova-card p-6">
                   <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2 mb-3">
                     <Award size={16} className="text-[#4F46E5]" />
                     Approved Subjects &amp; Class Levels ({approvals.filter((a) => a.status === "APPROVED").length})
@@ -305,7 +305,7 @@ export default function TeacherApplicationsPage() {
 
                 {/* Application History */}
                 <div className="learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5]">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5]">
                     <h2 className="landing-display text-base font-bold text-[#0B1230]">
                       Submitted Applications ({applications.length})
                     </h2>
@@ -317,7 +317,7 @@ export default function TeacherApplicationsPage() {
                   ) : (
                     <div className="divide-y divide-[#E4E1F5]">
                       {applications.map((app) => (
-                        <div key={app.id} className="p-4 space-y-2">
+                        <div key={app.id} className="p-5 sm:px-6 space-y-2">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div>
                               <p className="font-bold text-[#0B1230]">{app.subjectName}</p>

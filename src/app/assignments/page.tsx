@@ -211,7 +211,7 @@ export default function StudentAssignmentsPage() {
   return (
     <ProtectedRoute roles={["STUDENT", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           {/* Header Banner */}
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="min-w-0">
@@ -312,9 +312,9 @@ export default function StudentAssignmentsPage() {
             </div>
           ) : (
             /* REAL TIMED JAMB / WAEC CBT SIMULATOR */
-            <div className="space-y-6">
+            <div className="space-y-7">
               {/* Exam Pack Selector */}
-              <div className="learnova-card p-5 space-y-4">
+              <div className="learnova-card p-6 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h2 className="landing-display text-base font-bold text-[#0B1230]">
@@ -586,7 +586,7 @@ export default function StudentAssignmentsPage() {
                   </div>
 
                   {/* Right: Question Navigator Grid (1..N) */}
-                  <div className="learnova-card p-5 space-y-4">
+                  <div className="learnova-card p-6 space-y-4">
                     <div>
                       <h3 className="text-sm font-bold text-[#0B1230]">
                         Question Navigator
@@ -638,7 +638,7 @@ export default function StudentAssignmentsPage() {
 
               {/* Persistent CBT Score History */}
               {pastAttempts.length > 0 && (
-                <div className="learnova-card p-5 space-y-3">
+                <div className="learnova-card p-6 space-y-3">
                   <h3 className="text-sm font-bold text-[#0B1230] flex items-center gap-1.5">
                     <Award size={15} className="text-[#4F46E5]" />
                     Recent Timed CBT Score History

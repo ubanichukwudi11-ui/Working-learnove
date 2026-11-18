@@ -134,7 +134,7 @@ export default function TeacherClassesPage() {
   return (
     <ProtectedRoute roles={["TEACHER", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
             <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Classroom Lifecycle &amp; Official Teaching Schedule
@@ -283,25 +283,25 @@ export default function TeacherClassesPage() {
                   <table className="w-full text-sm">
                     <thead className="bg-[#FAF8FF] text-[#43466E] text-xs uppercase border-b border-[#E4E1F5]">
                       <tr>
-                        <th className="text-left px-4 py-3">Day</th>
-                        <th className="text-left px-4 py-3">Time (WAT)</th>
-                        <th className="text-left px-4 py-3">Subject &amp; Group</th>
-                        <th className="text-left px-4 py-3">Status</th>
-                        <th className="text-left px-4 py-3">Studio</th>
+                        <th className="text-left px-5 py-3.5">Day</th>
+                        <th className="text-left px-5 py-3.5">Time (WAT)</th>
+                        <th className="text-left px-5 py-3.5">Subject &amp; Group</th>
+                        <th className="text-left px-5 py-3.5">Status</th>
+                        <th className="text-left px-5 py-3.5">Studio</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E4E1F5]">
                       {classrooms.map((cls) => (
                         <tr key={cls.id} className="hover:bg-[#FAF8FF] transition">
-                          <td className="px-4 py-3 font-semibold text-[#0B1230]">{cls.dayOfWeek}</td>
-                          <td className="px-4 py-3 text-[#43466E] tabular-nums">
+                          <td className="px-5 py-3.5 font-semibold text-[#0B1230]">{cls.dayOfWeek}</td>
+                          <td className="px-5 py-3.5 text-[#43466E] tabular-nums">
                             {cls.startTime} – {cls.endTime} WAT
                           </td>
-                          <td className="px-4 py-3 text-[#4F46E5] font-semibold">
+                          <td className="px-5 py-3.5 text-[#4F46E5] font-semibold">
                             {cls.classLevelName} · {cls.subjectName} ({cls.groupName})
                           </td>
-                          <td className="px-4 py-3 text-xs font-bold text-[#0B1230]">{cls.status}</td>
-                          <td className="px-4 py-3">
+                          <td className="px-5 py-3.5 text-xs font-bold text-[#0B1230]">{cls.status}</td>
+                          <td className="px-5 py-3.5">
                             <Link
                               href={`/teacher/live-class/${cls.id}`}
                               className="text-xs font-bold text-[#0B1230] hover:text-[#4F46E5] underline"

@@ -138,7 +138,7 @@ export default function SuperAdminPage() {
   return (
     <ProtectedRoute roles={["SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           {/* Header */}
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
@@ -212,8 +212,8 @@ export default function SuperAdminPage() {
             <>
               {/* OVERVIEW */}
               {tab === "overview" && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-7">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     {[
                       {
                         label: "Registered Schools",
@@ -238,7 +238,7 @@ export default function SuperAdminPage() {
                     ].map((kpi) => (
                       <div
                         key={kpi.label}
-                        className="learnova-card p-5"
+                        className="learnova-card p-6"
                       >
                         <p className="text-xs font-semibold text-[#6B6F94] uppercase tracking-wider">
                           {kpi.label}
@@ -251,8 +251,8 @@ export default function SuperAdminPage() {
                     ))}
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="learnova-card p-5 flex items-center justify-between gap-3">
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <div className="learnova-card p-6 flex items-center justify-between gap-4">
                       <div className="min-w-0">
                         <p className="text-xs font-semibold uppercase tracking-wider text-[#6B6F94]">
                           Paystack Payment Gateway
@@ -274,7 +274,7 @@ export default function SuperAdminPage() {
                       </span>
                     </div>
 
-                    <div className="learnova-card p-5 flex items-center justify-between gap-3">
+                    <div className="learnova-card p-6 flex items-center justify-between gap-4">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-[#6B6F94]">
                           Live Classrooms Active Now
@@ -300,7 +300,7 @@ export default function SuperAdminPage() {
                 <div className="grid lg:grid-cols-3 gap-6">
                   <form
                     onSubmit={handleCreateSchool}
-                    className="learnova-card p-5 space-y-4 h-fit"
+                    className="learnova-card p-6 space-y-4 h-fit"
                   >
                     <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                       <Plus size={16} className="text-[#4F46E5]" />
@@ -362,14 +362,14 @@ export default function SuperAdminPage() {
                   </form>
 
                   <div className="lg:col-span-2 learnova-card overflow-hidden">
-                    <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                    <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
                       <h2 className="text-base font-bold text-[#0B1230]">Schools Directory</h2>
                     </div>
                     <div className="divide-y divide-[#E4E1F5]">
                       {data.schools.map((s: any) => (
                         <div
                           key={s.id}
-                          className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div>
                             <p className="font-bold text-[#0B1230]">{s.name}</p>
@@ -410,7 +410,7 @@ export default function SuperAdminPage() {
               {/* ACCOUNTS & ROLES */}
               {tab === "roles" && (
                 <div className="learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex items-center justify-between">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex items-center justify-between">
                     <div>
                       <h2 className="text-base font-bold text-[#0B1230]">
                         User Accounts &amp; Role Provisioning
@@ -424,24 +424,24 @@ export default function SuperAdminPage() {
                     <table className="w-full text-sm text-left">
                       <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
                         <tr>
-                          <th className="px-4 py-3 font-semibold">User</th>
-                          <th className="px-4 py-3 font-semibold">Current Role</th>
-                          <th className="px-4 py-3 font-semibold">Status</th>
-                          <th className="px-4 py-3 font-semibold text-right">Assign Role</th>
+                          <th className="px-5 py-3.5 font-semibold">User</th>
+                          <th className="px-5 py-3.5 font-semibold">Current Role</th>
+                          <th className="px-5 py-3.5 font-semibold">Status</th>
+                          <th className="px-5 py-3.5 font-semibold text-right">Assign Role</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E4E1F5]">
                         {data.users.map((u: any) => (
                           <tr key={u.id} className="hover:bg-[#FAF8FF]/70 transition">
-                            <td className="px-4 py-3">
+                            <td className="px-5 py-3.5">
                               <p className="font-semibold text-[#0B1230]">{u.fullName}</p>
                               <p className="text-xs text-[#6B6F94]">{u.email}</p>
                             </td>
-                            <td className="px-4 py-3 font-semibold text-xs text-[#4F46E5]">
+                            <td className="px-5 py-3.5 font-semibold text-xs text-[#4F46E5]">
                               {u.role}
                             </td>
-                            <td className="px-4 py-3 text-xs text-[#43466E]">{u.status}</td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-5 py-3.5 text-xs text-[#43466E]">{u.status}</td>
+                            <td className="px-5 py-3.5 text-right">
                               <select
                                 aria-label={`Role for ${u.email}`}
                                 value={u.role}
@@ -477,7 +477,7 @@ export default function SuperAdminPage() {
                 <div className="grid lg:grid-cols-3 gap-6">
                   <form
                     onSubmit={handleCreatePlan}
-                    className="learnova-card p-5 space-y-4 h-fit"
+                    className="learnova-card p-6 space-y-4 h-fit"
                   >
                     <h2 className="text-base font-bold text-[#0B1230]">
                       Add Subscription Plan (₦)
@@ -564,11 +564,11 @@ export default function SuperAdminPage() {
                     </button>
                   </form>
 
-                  <div className="lg:col-span-2 grid sm:grid-cols-2 gap-4">
+                  <div className="lg:col-span-2 grid sm:grid-cols-2 gap-5">
                     {data.plans.map((p: any) => (
                       <div
                         key={p.id}
-                        className="learnova-card p-5 flex flex-col justify-between gap-3"
+                        className="learnova-card p-6 flex flex-col justify-between gap-4"
                       >
                         <div>
                           <div className="flex items-center justify-between gap-2">
@@ -669,7 +669,7 @@ export default function SuperAdminPage() {
               {/* AUDIT LOGS */}
               {tab === "audit" && (
                 <div className="learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
                     <h2 className="text-base font-bold text-[#0B1230]">
                       Platform Audit Trail
                     </h2>
@@ -681,7 +681,7 @@ export default function SuperAdminPage() {
                   ) : (
                     <div className="divide-y divide-[#E4E1F5]">
                       {data.auditLogs.map((log: any) => (
-                        <div key={log.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div key={log.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                           <div>
                             <span className="font-bold text-[#0B1230]">{log.action}</span>
                             <span className="text-[#6B6F94] ml-2">

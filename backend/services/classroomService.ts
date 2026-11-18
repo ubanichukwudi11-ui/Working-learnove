@@ -204,6 +204,12 @@ export async function handleClassroomMutation(
   const result = await mutateLmsState(async (state) => {
     switch (action) {
       case "PREPARE_CLASSROOM": {
+        if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+          throw new ClassroomServiceError(
+            "Your teacher account must be approved by a School Administrator before preparing classrooms.",
+            403
+          );
+        }
         const classroomId = String(body.classroomId || "");
         const room = state.classrooms.find((c) => c.id === classroomId);
         if (!room) throw new Error("Allocated classroom not found.");
@@ -267,6 +273,12 @@ export async function handleClassroomMutation(
       }
 
       case "START_LIVE_CLASSROOM": {
+        if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+          throw new ClassroomServiceError(
+            "Your teacher account must be approved by a School Administrator before launching live classes.",
+            403
+          );
+        }
         const classroomId = String(body.classroomId || "");
         const room = state.classrooms.find((c) => c.id === classroomId);
         if (!room) throw new Error("Classroom not found.");

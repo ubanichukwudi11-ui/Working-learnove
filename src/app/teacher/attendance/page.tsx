@@ -90,7 +90,7 @@ export default function TeacherAttendancePage() {
   return (
     <ProtectedRoute roles={["TEACHER", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -139,7 +139,7 @@ export default function TeacherAttendancePage() {
               schedules your classroom groups.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
                 <label className="text-xs font-bold text-[#43466E]">
                   Select Classroom Group:
@@ -147,7 +147,7 @@ export default function TeacherAttendancePage() {
                 <select
                   value={selectedRoomId}
                   onChange={(e) => setSelectedRoomId(e.target.value)}
-                  className="learnova-input px-3 py-2 text-sm font-semibold"
+                  className="learnova-input w-full sm:w-auto min-w-[260px] px-3.5 py-2 text-sm font-semibold"
                 >
                   {classrooms.map((c) => (
                     <option key={c.id} value={c.id}>

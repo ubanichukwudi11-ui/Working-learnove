@@ -224,7 +224,7 @@ export default function AdminAiCopilot({
   return (
     <div className="learnova-card overflow-hidden">
       {/* Header & Mode Switcher */}
-      <div className="bg-[#FAF8FF] border-b border-[#E4E1F5] px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-[#FAF8FF] border-b border-[#E4E1F5] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Sparkles size={18} />
@@ -269,7 +269,7 @@ export default function AdminAiCopilot({
 
       {aiFeedback && (
         <div
-          className={`mx-5 mt-4 rounded-xl px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border ${
+          className={`mx-6 mt-4 rounded-xl px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border ${
             aiFeedback.type === "ok"
               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
               : "bg-rose-50 text-rose-700 border-rose-200"
@@ -282,7 +282,7 @@ export default function AdminAiCopilot({
 
       {/* TAB 1: AI TIMETABLE PLANNER */}
       {activeTab === "timetable" && (
-        <div className="p-5 space-y-5">
+        <div className="p-6 space-y-5">
           <form onSubmit={handleGenerateTimetable} className="space-y-3">
             <div className="grid md:grid-cols-4 gap-3">
               <div className="md:col-span-3">
@@ -472,7 +472,7 @@ export default function AdminAiCopilot({
 
       {/* TAB 2: ADMIN OPERATIONS COPILOT */}
       {activeTab === "copilot" && (
-        <div className="p-5 space-y-4">
+        <div className="p-6 space-y-4">
           <div className="flex flex-wrap gap-1.5">
             {COPILOT_PRESETS.map((p, idx) => (
               <button

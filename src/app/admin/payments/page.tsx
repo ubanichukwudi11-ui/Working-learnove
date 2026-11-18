@@ -86,7 +86,7 @@ export default function AdminPaymentsPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -149,7 +149,7 @@ export default function AdminPaymentsPage() {
                       "Scholarship / authorized access activated."
                     );
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="learnova-card p-6 space-y-4 h-fit"
                 >
                   <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                     <Gift size={16} className="text-[#4F46E5]" />
@@ -257,7 +257,7 @@ export default function AdminPaymentsPage() {
 
                 {/* PAYMENT VERIFICATION QUEUE */}
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex items-center justify-between">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex items-center justify-between">
                     <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                       <CreditCard size={16} className="text-[#4F46E5]" />
                       Payment Records &amp; Bank Transfer Verification ({payments.length})
@@ -273,7 +273,7 @@ export default function AdminPaymentsPage() {
                       {payments.map((pay) => (
                         <div
                           key={pay.id}
-                          className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="p-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -341,7 +341,7 @@ export default function AdminPaymentsPage() {
 
               {/* STUDENT ENTITLEMENTS TABLE */}
               <div className="learnova-card overflow-hidden">
-                <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h2 className="text-base font-bold text-[#0B1230]">
                     Student Access Entitlements ({filteredEntitlements.length})
                   </h2>
@@ -378,27 +378,27 @@ export default function AdminPaymentsPage() {
                     <table className="w-full text-sm text-left">
                       <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
                         <tr>
-                          <th className="px-4 py-3 font-semibold">Student</th>
-                          <th className="px-4 py-3 font-semibold">Class Level</th>
-                          <th className="px-4 py-3 font-semibold">Access Status</th>
-                          <th className="px-4 py-3 font-semibold">Expires</th>
-                          <th className="px-4 py-3 font-semibold text-right">Action</th>
+                          <th className="px-5 py-3.5 font-semibold">Student</th>
+                          <th className="px-5 py-3.5 font-semibold">Class Level</th>
+                          <th className="px-5 py-3.5 font-semibold">Access Status</th>
+                          <th className="px-5 py-3.5 font-semibold">Expires</th>
+                          <th className="px-5 py-3.5 font-semibold text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E4E1F5]">
                         {filteredEntitlements.map((ent) => (
                           <tr key={ent.id} className="hover:bg-[#FAF8FF]/70 transition">
-                            <td className="px-4 py-3">
+                            <td className="px-5 py-3.5">
                               <p className="font-semibold text-[#0B1230]">{ent.studentName}</p>
                               <p className="text-xs text-[#6B6F94]">{ent.studentEmail}</p>
                             </td>
-                            <td className="px-4 py-3 font-semibold text-xs text-[#0B1230]">
+                            <td className="px-5 py-3.5 font-semibold text-xs text-[#0B1230]">
                               {levelCode(ent.classLevelId)} ·{" "}
                               {ent.allSubjects
                                 ? "All Subjects"
                                 : `${ent.subjectIds?.length || 0} subjects`}
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-5 py-3.5">
                               <span
                                 className={`text-xs font-bold ${
                                   ent.accessStatus === "ACTIVE_PAID" ||
@@ -414,12 +414,12 @@ export default function AdminPaymentsPage() {
                                 {ent.accessStatus.replace(/_/g, " ")}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-xs text-[#6B6F94] tabular-nums">
+                            <td className="px-5 py-3.5 text-xs text-[#6B6F94] tabular-nums">
                               {ent.expiresAt
                                 ? new Date(ent.expiresAt).toLocaleDateString("en-NG")
                                 : "—"}
                             </td>
-                            <td className="px-4 py-3 text-right">
+                            <td className="px-5 py-3.5 text-right">
                               {(ent.accessStatus === "ACTIVE_PAID" ||
                                 ent.accessStatus === "SCHOLARSHIP_GRANTED") && (
                                 <button

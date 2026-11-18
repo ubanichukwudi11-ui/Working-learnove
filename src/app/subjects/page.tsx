@@ -68,7 +68,7 @@ export default function SubjectsPage() {
   return (
     <ProtectedRoute>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white border border-white/10 shadow-sm flex flex-col md:flex-row md:items-end justify-between gap-5">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -95,7 +95,7 @@ export default function SubjectsPage() {
           </div>
 
           {!hasActiveSub && !loading && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-bold text-amber-950">
                   No Active Paid Subscription or Scholarship Yet

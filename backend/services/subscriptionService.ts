@@ -9,6 +9,11 @@ import {
 import type { AuthenticatedSessionUser } from "./serverAuth";
 import { getSupabaseServerClient, isSupabaseServerConfigured } from "./supabaseServer";
 import { sendPaystackReceiptEmail } from "./emailService";
+import type {
+  LmsUserRole,
+  PersistentNotification,
+  StudentAccessStatus,
+} from "./lmsTypes";
 
 export class SubscriptionServiceError extends Error {
   status: number;
@@ -18,11 +23,92 @@ export class SubscriptionServiceError extends Error {
   }
 }
 
+export function applyAutomaticExpiryCheck(state: {
+  studentEntitlements: Array<{
+    studentUserId: string;
+    accessStatus: StudentAccessStatus;
+    expiresAt?: string;
+    updatedAt: string;
+  }>;
+  notifications: Array<{
+    id: string;
+    recipientUserId: string;
+    recipientRole?: LmsUserRole | "ALL_ADMINS";
+    category: PersistentNotification["category"];
+    title: string;
+    message: string;
+    href?: string;
+    isRead: boolean;
+    createdAt: string;
+  }>;
+}): number {
+  const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  let expiredCount = 0;
+
+  for (const ent of state.studentEntitlements) {
+    if (
+      (ent.accessStatus === "ACTIVE_PAID" ||
+        ent.accessStatus === "SCHOLARSHIP_GRANTED") &&
+      ent.expiresAt
+    ) {
+      const expiresMs = new Date(ent.expiresAt).getTime();
+      if (!Number.isNaN(expiresMs) && expiresMs < now) {
+        ent.accessStatus = "EXPIRED";
+        ent.updatedAt = nowIso;
+        expiredCount++;
+
+        const alreadyNotified = state.notifications.some(
+          (n) =>
+            n.recipientUserId === ent.studentUserId &&
+            n.category === "SUBSCRIPTION" &&
+            n.title === "Subscription Expired" &&
+            new Date(n.createdAt).getTime() >= expiresMs
+        );
+        if (!alreadyNotified) {
+          state.notifications.unshift({
+            id: `ntf-exp-${ent.studentUserId}-${now}`,
+            recipientUserId: ent.studentUserId,
+            recipientRole: "STUDENT",
+            category: "SUBSCRIPTION",
+            title: "Subscription Expired",
+            message:
+              "Your Learnova subscription term has ended. Renew a plan to restore live classes and subject recordings.",
+            href: "/subscriptions",
+            isRead: false,
+            createdAt: nowIso,
+          });
+        }
+      }
+    }
+  }
+
+  return expiredCount;
+}
+
 export async function getSubscriptionsOverview(user: AuthenticatedSessionUser) {
-  const [state, users] = await Promise.all([
+  const [initialState, users] = await Promise.all([
     loadLmsState(),
     fetchDirectoryUsers(),
   ]);
+  let state = initialState;
+
+  // Enforce automatic expiry transition whenever an entitlement passes expiresAt
+  const hasExpired = state.studentEntitlements.some(
+    (ent) =>
+      (ent.accessStatus === "ACTIVE_PAID" ||
+        ent.accessStatus === "SCHOLARSHIP_GRANTED") &&
+      ent.expiresAt &&
+      new Date(ent.expiresAt).getTime() < Date.now()
+  );
+
+  if (hasExpired) {
+    await mutateLmsState((mutable) => {
+      applyAutomaticExpiryCheck(mutable);
+    });
+    state = await loadLmsState();
+  }
+
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
   if (isAdmin) {
@@ -523,20 +609,7 @@ export async function handleSubscriptionMutation(
       }
 
       case "RUN_EXPIRY_CHECK": {
-        const now = Date.now();
-        let expiredCount = 0;
-        state.studentEntitlements.forEach((ent) => {
-          if (
-            (ent.accessStatus === "ACTIVE_PAID" ||
-              ent.accessStatus === "SCHOLARSHIP_GRANTED") &&
-            ent.expiresAt &&
-            new Date(ent.expiresAt).getTime() < now
-          ) {
-            ent.accessStatus = "EXPIRED";
-            ent.updatedAt = new Date().toISOString();
-            expiredCount++;
-          }
-        });
+        const expiredCount = applyAutomaticExpiryCheck(state);
         return { expiredCount };
       }
 
@@ -838,6 +911,10 @@ async function activateSubscriptionFromVerifiedPayment(params: {
     payment: result.payment,
     entitlement: result.entitlement,
     alreadyApplied: result.alreadyApplied,
+    planName: result.planName,
+    amountNgn: result.payment.amountNgn,
+    accessStatus: result.entitlement?.accessStatus || "ACTIVE_PAID",
+    expiresAt: result.expiresAtIso,
   };
 }
 

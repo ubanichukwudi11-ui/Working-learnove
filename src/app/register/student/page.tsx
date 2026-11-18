@@ -10,13 +10,14 @@ import {
   Lock,
   GraduationCap,
   Calendar,
+  Building2,
   Upload,
   Loader2,
   ArrowLeft,
   CheckCircle2,
 } from "lucide-react";
 
-import { registerStudent } from "@/lib/auth";
+import { loginWithGoogle, registerStudent } from "@/lib/auth";
 import {
   supabase,
   isSupabaseConfigured,
@@ -30,6 +31,7 @@ export default function StudentRegistrationPage() {
   const { login: saveUser } = useAuth();
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const [preview, setPreview] = useState("");
@@ -38,6 +40,7 @@ export default function StudentRegistrationPage() {
     fullName: "",
     email: "",
     password: "",
+    schoolName: "",
     classLevel: "",
     age: "",
     profilePhoto: "",
@@ -87,6 +90,21 @@ export default function StudentRegistrationPage() {
     updateField("profilePhoto", publicUrl);
   }
 
+  async function handleGoogleStudentSignup() {
+    try {
+      setError("");
+      setGoogleLoading(true);
+      await loginWithGoogle("/register/student/complete");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not start Google registration."
+      );
+      setGoogleLoading(false);
+    }
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -97,8 +115,9 @@ export default function StudentRegistrationPage() {
         fullName: form.fullName,
         email: form.email,
         password: form.password,
+        schoolName: form.schoolName,
         classLevel: form.classLevel,
-        age: Number(form.age),
+        age: form.age ? Number(form.age) : undefined,
         profilePhoto: form.profilePhoto,
         aiPurpose: form.aiPurpose,
         examPreparation: form.examPreparation,
@@ -160,6 +179,41 @@ export default function StudentRegistrationPage() {
           {error && (
             <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
               {error}
+            </div>
+          )}
+
+          {!confirmationEmail && (
+            <div className="mb-8 rounded-2xl border border-[#E4E1F5] bg-[#FAF8FF] p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold text-[#0B1230]">
+                  Quick Student Sign-Up with Google
+                </p>
+                <p className="text-xs text-[#43466E] mt-0.5">
+                  Prefills your verified Google name and email, then asks only for your school, class level, and age.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={googleLoading || loading}
+                onClick={handleGoogleStudentSignup}
+                className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-[#DCD7F5] bg-white px-4 py-2.5 text-xs font-bold text-[#0B1230] hover:border-[#7C3AED] hover:bg-white transition shrink-0 disabled:opacity-60"
+              >
+                {googleLoading ? (
+                  <>
+                    <Loader2 size={15} className="animate-spin text-[#4F46E5]" />
+                    Redirecting...
+                  </>
+                ) : (
+                  <>
+                    <img
+                      src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                      alt="Google"
+                      className="h-4 w-4"
+                    />
+                    Continue with Google
+                  </>
+                )}
+              </button>
             </div>
           )}
 
@@ -312,6 +366,25 @@ export default function StudentRegistrationPage() {
 
               <div>
                 <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                  School Name
+                </label>
+                <div className="relative">
+                  <Building2
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    size={17}
+                  />
+                  <input
+                    required
+                    value={form.schoolName}
+                    onChange={(e) => updateField("schoolName", e.target.value)}
+                    placeholder="e.g. Queen's College, Lagos"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
                   Age
                 </label>
                 <div className="relative">
@@ -321,6 +394,9 @@ export default function StudentRegistrationPage() {
                   />
                   <input
                     type="number"
+                    required
+                    min={5}
+                    max={100}
                     value={form.age}
                     onChange={(e) => updateField("age", e.target.value)}
                     placeholder="e.g. 15"

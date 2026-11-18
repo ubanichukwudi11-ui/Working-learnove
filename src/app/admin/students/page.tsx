@@ -69,7 +69,7 @@ export default function AdminStudentsPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -123,10 +123,10 @@ export default function AdminStudentsPage() {
                 <table className="w-full text-sm text-left">
                   <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
                     <tr>
-                      <th className="px-4 py-3.5 font-semibold">Student</th>
-                      <th className="px-4 py-3.5 font-semibold">Enrolled Class Level</th>
-                      <th className="px-4 py-3.5 font-semibold">Access Status</th>
-                      <th className="px-4 py-3.5 font-semibold text-right">Place / Reassign Level</th>
+                      <th className="px-5 py-3.5 font-semibold">Student</th>
+                      <th className="px-5 py-3.5 font-semibold">Enrolled Class Level</th>
+                      <th className="px-5 py-3.5 font-semibold">Access Status</th>
+                      <th className="px-5 py-3.5 font-semibold text-right">Place / Reassign Level</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E4E1F5]">
@@ -142,12 +142,12 @@ export default function AdminStudentsPage() {
 
                       return (
                         <tr key={st.id} className="hover:bg-[#FAF8FF]/70 transition">
-                          <td className="px-4 py-3">
+                          <td className="px-5 py-3.5">
                             <p className="font-semibold text-[#0B1230]">{st.fullName}</p>
                             <p className="text-xs text-[#6B6F94]">{st.email}</p>
                           </td>
-                          <td className="px-4 py-3 font-bold text-[#0B1230]">{lvlCode}</td>
-                          <td className="px-4 py-3">
+                          <td className="px-5 py-3.5 font-bold text-[#0B1230]">{lvlCode}</td>
+                          <td className="px-5 py-3.5">
                             <span
                               className={`text-xs font-bold ${
                                 activeStatus === "ACTIVE_PAID" ||
@@ -161,7 +161,7 @@ export default function AdminStudentsPage() {
                               {activeStatus.replace(/_/g, " ")}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-5 py-3.5 text-right">
                             <select
                               aria-label={`Class level for ${st.email}`}
                               value={currentLevelId}

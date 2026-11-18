@@ -76,7 +76,10 @@ export default function LoginForm() {
       saveUser(user);
 
       const roleDashboard = getDashboardRoute(user.role);
-      const targetPath = sanitizePostAuthRedirect(nextPath, roleDashboard);
+      const targetPath =
+        user.role === "STUDENT" && user.needsProfileCompletion
+          ? "/register/student/complete"
+          : sanitizePostAuthRedirect(nextPath, roleDashboard);
 
       router.replace(targetPath);
       router.refresh();
@@ -256,6 +259,10 @@ export default function LoginForm() {
           </>
         )}
       </button>
+
+      <p className="text-center text-[11px] text-[#6B6F94]">
+        Google sign-in is available for Students &amp; Parents. Teachers sign in with educator email &amp; password above.
+      </p>
 
       <div className="text-center text-xs text-[#43466E]">
         Don&apos;t have an account?{" "}

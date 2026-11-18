@@ -142,7 +142,7 @@ export default function AdminTimetablePage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -219,7 +219,7 @@ export default function AdminTimetablePage() {
               {/* Creation Form */}
               <form
                 onSubmit={handleCreate}
-                className="learnova-card p-5 space-y-4 h-fit"
+                className="learnova-card p-6 space-y-4 h-fit"
               >
                 <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                   <Plus size={16} className="text-[#4F46E5]" />
@@ -267,7 +267,7 @@ export default function AdminTimetablePage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-[#43466E] mb-1">
                       Day
@@ -275,7 +275,7 @@ export default function AdminTimetablePage() {
                     <select
                       value={dayOfWeek}
                       onChange={(e) => setDayOfWeek(e.target.value as any)}
-                      className="learnova-input text-xs px-2 py-2"
+                      className="learnova-input text-xs px-3 py-2"
                     >
                       {DAYS.map((d) => (
                         <option key={d} value={d}>
@@ -293,7 +293,7 @@ export default function AdminTimetablePage() {
                       required
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      className="learnova-input text-xs px-2 py-2 tabular-nums"
+                      className="learnova-input text-xs px-3 py-2 tabular-nums"
                     />
                   </div>
                   <div>
@@ -305,7 +305,7 @@ export default function AdminTimetablePage() {
                       required
                       value={endTime}
                       onChange={(e) => setEndTime(e.target.value)}
-                      className="learnova-input text-xs px-2 py-2 tabular-nums"
+                      className="learnova-input text-xs px-3 py-2 tabular-nums"
                     />
                   </div>
                 </div>
@@ -416,7 +416,7 @@ export default function AdminTimetablePage() {
                     return (
                       <div
                         key={entry.id}
-                        className="learnova-card p-5 space-y-4"
+                        className="learnova-card p-6 space-y-4"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="min-w-0">

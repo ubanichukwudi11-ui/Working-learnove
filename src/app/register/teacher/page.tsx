@@ -144,6 +144,11 @@ export default function TeacherRegisterPage() {
               </div>
             )}
 
+            <div className="mb-7 rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF] px-5 py-4 text-xs text-[#43466E] leading-relaxed">
+              <strong className="text-[#0B1230]">Educator Verification Notice:</strong>{" "}
+              Teacher accounts cannot be created with Google sign-up. Submit this application with your educator email, password, and credentials; School Administration will review and approve your subject teaching access before live classroom tools unlock.
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-9">
               {/* PERSONAL */}
               <Section title="Personal Information">
@@ -272,8 +277,10 @@ export default function TeacherRegisterPage() {
                 />
 
                 <Input
-                  label="Teaching License Number"
+                  label="Teaching License Number (Optional)"
                   name="licenseNumber"
+                  required={false}
+                  placeholder="e.g. TRCN/2023/10492"
                   value={form.licenseNumber}
                   onChange={handleChange}
                 />
@@ -358,7 +365,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
   label: string;
 };
 
-function Input({ label, ...props }: InputProps) {
+function Input({ label, required = true, ...props }: InputProps) {
   return (
     <div>
       <label className="block mb-1.5 text-xs font-bold text-[#0B1230]">
@@ -366,8 +373,8 @@ function Input({ label, ...props }: InputProps) {
       </label>
 
       <input
+        required={required}
         {...props}
-        required
         className="w-full rounded-xl bg-[#FAF8FF] border border-[#DCD7F5] p-3 text-sm text-[#0B1230] placeholder:text-[#6B6F94] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
       />
     </div>

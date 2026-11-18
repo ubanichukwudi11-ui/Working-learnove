@@ -129,7 +129,7 @@ export default function AdminClassroomsControlPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -166,14 +166,14 @@ export default function AdminClassroomsControlPage() {
           )}
 
           {/* KPI Strip */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="learnova-card p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="learnova-card p-5">
               <p className="text-xs text-[#6B6F94] font-semibold">Total Allocated Rooms</p>
               <p className="text-2xl font-extrabold text-[#0B1230] mt-1 tabular-nums">
                 {classrooms.length}
               </p>
             </div>
-            <div className="learnova-card p-4">
+            <div className="learnova-card p-5">
               <p className="text-xs text-[#6B6F94] font-semibold flex items-center gap-1">
                 <Radio size={13} className="text-emerald-600" /> Live Now
               </p>
@@ -181,13 +181,13 @@ export default function AdminClassroomsControlPage() {
                 {liveCount}
               </p>
             </div>
-            <div className="learnova-card p-4">
+            <div className="learnova-card p-5">
               <p className="text-xs text-[#6B6F94] font-semibold">Prepared by Teacher</p>
               <p className="text-2xl font-extrabold text-[#4F46E5] mt-1 tabular-nums">
                 {preparedCount}
               </p>
             </div>
-            <div className="learnova-card p-4">
+            <div className="learnova-card p-5">
               <p className="text-xs text-[#6B6F94] font-semibold">Scheduled / Waiting</p>
               <p className="text-2xl font-extrabold text-amber-700 mt-1 tabular-nums">
                 {scheduledCount}
@@ -219,7 +219,7 @@ export default function AdminClassroomsControlPage() {
           ) : (
             <div className="grid lg:grid-cols-3 gap-6">
               {/* Classroom List */}
-              <div className="lg:col-span-2 space-y-3">
+              <div className="lg:col-span-2 space-y-4">
                 {classrooms.map((rm) => {
                   const roomAtt = attendanceRecords.filter((a) => a.classroomId === rm.id);
                   const presentCount = roomAtt.filter((a) => a.status === "PRESENT").length;
@@ -227,7 +227,7 @@ export default function AdminClassroomsControlPage() {
                     <div
                       key={rm.id}
                       onClick={() => setSelectedRoomId(rm.id)}
-                      className={`learnova-card p-5 cursor-pointer transition ${
+                      className={`learnova-card p-6 cursor-pointer transition ${
                         selectedRoomId === rm.id
                           ? "border-[#4F46E5] ring-2 ring-[#4F46E5]/15"
                           : "hover:border-[#DCD7F5]"
@@ -267,7 +267,7 @@ export default function AdminClassroomsControlPage() {
               </div>
 
               {/* Inspector & Operational Actions */}
-              <div className="learnova-card p-5 h-fit space-y-5">
+              <div className="learnova-card p-6 h-fit space-y-5">
                 {!selectedRoom ? (
                   <div className="text-center py-10 text-sm text-[#6B6F94]">
                     Select any allocated classroom group to inspect its roster, balance students,

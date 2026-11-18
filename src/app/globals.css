@@ -30,138 +30,137 @@
   --font-landing-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
-.landing-body {
-  font-family: var(--font-landing-body);
-}
+@layer components {
+  .landing-body {
+    font-family: var(--font-landing-body);
+  }
 
-.landing-display {
-  font-family: var(--font-landing-display);
-  text-wrap: balance;
-}
+  .landing-display {
+    font-family: var(--font-landing-display);
+    text-wrap: balance;
+  }
 
-.landing-hero-serif {
-  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
-  font-optical-sizing: auto;
-  text-wrap: balance;
-}
+  .landing-hero-serif {
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-optical-sizing: auto;
+    text-wrap: balance;
+  }
 
-.landing-mono {
-  font-family: var(--font-landing-mono);
-  font-variant-numeric: tabular-nums;
-}
+  .landing-mono {
+    font-family: var(--font-landing-mono);
+    font-variant-numeric: tabular-nums;
+  }
 
-.bg-architectural-grid-dark {
-  background-image:
-    linear-gradient(to right, rgba(167, 139, 250, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(167, 139, 250, 0.06) 1px, transparent 1px);
-  background-size: 48px 48px;
-}
+  .bg-architectural-grid-dark {
+    background-image:
+      linear-gradient(to right, rgba(167, 139, 250, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(167, 139, 250, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
 
-.bg-architectural-grid-light {
-  background-image:
-    linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
-  background-size: 44px 44px;
-}
+  .bg-architectural-grid-light {
+    background-image:
+      linear-gradient(to right, rgba(79, 70, 229, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(79, 70, 229, 0.05) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
 
-.bg-learnova-dots-lavender {
-  background-image: radial-gradient(rgba(109, 40, 217, 0.085) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
+  .bg-learnova-dots-lavender {
+    background-image: radial-gradient(rgba(109, 40, 217, 0.065) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 
-.learnova-banner-dark {
-  background: linear-gradient(135deg, #070d24 0%, #151a44 55%, #24195e 100%);
-  box-shadow:
-    0 18px 40px -16px rgba(79, 70, 229, 0.36),
-    -14px 10px 30px -14px rgba(249, 115, 22, 0.16),
-    14px -8px 32px -14px rgba(6, 182, 212, 0.26),
-    0 0 0 1px rgba(255, 255, 255, 0.08);
-}
+  .learnova-banner-dark {
+    background: linear-gradient(135deg, #070d24 0%, #151a44 58%, #24195e 100%);
+    box-shadow:
+      0 14px 32px -16px rgba(11, 18, 48, 0.42),
+      0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
 
-.learnova-card {
-  background-color: #ffffff;
-  border: 1px solid #e4e1f5;
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(11, 18, 48, 0.04);
-}
+  .learnova-card {
+    background-color: #ffffff;
+    border: 1px solid #e6e2f6;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px rgba(11, 18, 48, 0.035);
+  }
 
-.learnova-card-glow {
-  background-color: #ffffff;
-  border: 1px solid #dcd7f5;
-  border-radius: 1rem;
-  box-shadow:
-    0 14px 32px -14px rgba(79, 70, 229, 0.2),
-    -10px 8px 24px -14px rgba(124, 58, 237, 0.16),
-    10px -6px 24px -14px rgba(6, 182, 212, 0.18),
-    0 1px 3px rgba(11, 18, 48, 0.05);
-  transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
-}
+  .learnova-card-glow {
+    background-color: #ffffff;
+    border: 1px solid #e2ddf5;
+    border-radius: 1rem;
+    box-shadow: 0 4px 16px -6px rgba(79, 70, 229, 0.1), 0 1px 3px rgba(11, 18, 48, 0.04);
+    transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+  }
 
-.learnova-card-glow:hover {
-  border-color: #c4b5fd;
-  box-shadow:
-    0 18px 40px -14px rgba(79, 70, 229, 0.28),
-    -12px 10px 28px -14px rgba(249, 115, 22, 0.15),
-    12px -8px 28px -14px rgba(6, 182, 212, 0.24),
-    0 2px 6px rgba(11, 18, 48, 0.06);
-}
+  .learnova-card-glow:hover {
+    border-color: #c4b5fd;
+    box-shadow: 0 10px 24px -10px rgba(79, 70, 229, 0.18), 0 2px 6px rgba(11, 18, 48, 0.05);
+  }
 
-.learnova-ambient-stage {
-  position: relative;
-  isolation: isolate;
-}
+  .learnova-ambient-stage {
+    position: relative;
+    isolation: isolate;
+  }
 
-.learnova-ambient-stage::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 14% 86%, rgba(249, 115, 22, 0.4), transparent 50%),
-    radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.48), transparent 52%),
-    radial-gradient(circle at 82% 88%, rgba(168, 85, 247, 0.44), transparent 54%),
-    radial-gradient(circle at 18% 18%, rgba(79, 70, 229, 0.42), transparent 50%);
-  filter: blur(22px);
-  opacity: 0.88;
-}
+  .learnova-ambient-stage::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 14% 86%, rgba(249, 115, 22, 0.35), transparent 50%),
+      radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.4), transparent 52%),
+      radial-gradient(circle at 82% 88%, rgba(168, 85, 247, 0.38), transparent 54%),
+      radial-gradient(circle at 18% 18%, rgba(79, 70, 229, 0.36), transparent 50%);
+    filter: blur(22px);
+    opacity: 0.84;
+  }
 
-.learnova-ambient-stage-soft {
-  position: relative;
-  isolation: isolate;
-}
+  .learnova-ambient-stage-soft {
+    position: relative;
+    isolation: isolate;
+  }
 
-.learnova-ambient-stage-soft::before {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  z-index: -1;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 14% 86%, rgba(249, 115, 22, 0.22), transparent 52%),
-    radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.28), transparent 54%),
-    radial-gradient(circle at 82% 88%, rgba(124, 58, 237, 0.26), transparent 56%),
-    radial-gradient(circle at 18% 18%, rgba(79, 70, 229, 0.24), transparent 52%);
-  filter: blur(20px);
-  opacity: 0.82;
-}
+  .learnova-ambient-stage-soft::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 14% 86%, rgba(249, 115, 22, 0.18), transparent 52%),
+      radial-gradient(circle at 86% 14%, rgba(6, 182, 212, 0.22), transparent 54%),
+      radial-gradient(circle at 82% 88%, rgba(124, 58, 237, 0.2), transparent 56%),
+      radial-gradient(circle at 18% 18%, rgba(79, 70, 229, 0.2), transparent 52%);
+    filter: blur(20px);
+    opacity: 0.78;
+  }
 
-.learnova-input {
-  width: 100%;
-  border-radius: 0.75rem;
-  border: 1px solid #dcd7f5;
-  background-color: #faf8ff;
-  color: #0b1230;
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
-}
+  .learnova-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+    line-height: 1.35rem;
+    border-radius: 0.75rem;
+    border: 1px solid #dcd7f5;
+    background-color: #faf8ff;
+    color: #0b1230;
+    transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+  }
 
-.learnova-input:focus {
-  outline: none;
-  border-color: #7c3aed;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+  .learnova-input::placeholder {
+    color: #7c7fa3;
+  }
+
+  .learnova-input:focus {
+    outline: none;
+    border-color: #7c3aed;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -186,6 +185,7 @@
     color: var(--foreground);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4 {

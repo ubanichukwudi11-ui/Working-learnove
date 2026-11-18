@@ -18,7 +18,7 @@ export default function TeacherStudentsPage() {
   return (
     <ProtectedRoute roles={["TEACHER", "ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">

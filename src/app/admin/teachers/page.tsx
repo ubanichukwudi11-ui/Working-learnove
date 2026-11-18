@@ -130,7 +130,7 @@ export default function AdminTeachersPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
             <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Educator Vetting &amp; Subject Authorization
@@ -205,7 +205,7 @@ export default function AdminTeachersPage() {
                     return (
                       <div
                         key={app.id}
-                        className="learnova-card p-5 space-y-4"
+                        className="learnova-card p-6 space-y-4"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -327,7 +327,7 @@ export default function AdminTeachersPage() {
 
               {/* Active Authorizations Matrix */}
               <div className="learnova-card overflow-hidden">
-                <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
                   <h2 className="text-base font-bold text-[#0B1230]">
                     Approved Subject &amp; Class-Level Authorizations ({approvals.length})
                   </h2>
@@ -342,24 +342,24 @@ export default function AdminTeachersPage() {
                     <table className="w-full text-sm text-left">
                       <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
                         <tr>
-                          <th className="px-4 py-3 font-semibold">Educator</th>
-                          <th className="px-4 py-3 font-semibold">Subject</th>
-                          <th className="px-4 py-3 font-semibold">Class Level</th>
-                          <th className="px-4 py-3 font-semibold">Status</th>
-                          <th className="px-4 py-3 font-semibold text-right">Action</th>
+                          <th className="px-5 py-3.5 font-semibold">Educator</th>
+                          <th className="px-5 py-3.5 font-semibold">Subject</th>
+                          <th className="px-5 py-3.5 font-semibold">Class Level</th>
+                          <th className="px-5 py-3.5 font-semibold">Status</th>
+                          <th className="px-5 py-3.5 font-semibold text-right">Action</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#E4E1F5]">
                         {approvals.map((ap) => (
                           <tr key={ap.id} className="hover:bg-[#FAF8FF]/70 transition">
-                            <td className="px-4 py-3 font-semibold text-[#0B1230]">
+                            <td className="px-5 py-3.5 font-semibold text-[#0B1230]">
                               {ap.teacherName}
                             </td>
-                            <td className="px-4 py-3 text-[#43466E]">{ap.subjectName}</td>
-                            <td className="px-4 py-3 font-bold text-[#0B1230]">
+                            <td className="px-5 py-3.5 text-[#43466E]">{ap.subjectName}</td>
+                            <td className="px-5 py-3.5 font-bold text-[#0B1230]">
                               {ap.classLevelName}
                             </td>
-                            <td className="px-4 py-3">
+                            <td className="px-5 py-3.5">
                               <span
                                 className={`text-xs font-bold ${
                                   ap.status === "APPROVED"
@@ -370,7 +370,7 @@ export default function AdminTeachersPage() {
                                 {ap.status}
                               </span>
                             </td>
-                            <td className="px-4 py-3 text-right space-x-2">
+                            <td className="px-5 py-3.5 text-right space-x-2">
                               {ap.status === "APPROVED" ? (
                                 <button
                                   disabled={saving}

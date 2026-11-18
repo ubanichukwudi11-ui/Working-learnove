@@ -88,7 +88,7 @@ export default function AdminAcademicsPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
             <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Curriculum &amp; School Structure
@@ -140,7 +140,7 @@ export default function AdminAcademicsPage() {
                       setLvlName("");
                     }
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="learnova-card p-6 space-y-4 h-fit"
                 >
                   <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                     <Layers size={16} className="text-[#4F46E5]" />
@@ -196,7 +196,7 @@ export default function AdminAcademicsPage() {
                 </form>
 
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
                     <h2 className="text-base font-bold text-[#0B1230]">
                       Configured Class Levels ({classLevels.length})
                     </h2>
@@ -205,7 +205,7 @@ export default function AdminAcademicsPage() {
                     {classLevels.map((lvl) => (
                       <div
                         key={lvl.id}
-                        className="px-5 py-3 flex items-center justify-between gap-3"
+                        className="px-6 py-3.5 flex items-center justify-between gap-3"
                       >
                         <div className="min-w-0">
                           <span className="font-bold text-[#0B1230]">{lvl.code}</span>
@@ -261,7 +261,7 @@ export default function AdminAcademicsPage() {
                       setSubLevels([]);
                     }
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="learnova-card p-6 space-y-4 h-fit"
                 >
                   <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                     <BookOpenCheck size={16} className="text-[#4F46E5]" />
@@ -350,7 +350,7 @@ export default function AdminAcademicsPage() {
                 </form>
 
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
                     <h2 className="text-base font-bold text-[#0B1230]">
                       Subjects Registry ({subjects.length})
                     </h2>
@@ -364,7 +364,7 @@ export default function AdminAcademicsPage() {
                       return (
                         <div
                           key={sub.id}
-                          className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="p-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -418,7 +418,7 @@ export default function AdminAcademicsPage() {
                       setTermEnd("");
                     }
                   }}
-                  className="learnova-card p-5 space-y-4 h-fit"
+                  className="learnova-card p-6 space-y-4 h-fit"
                 >
                   <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
                     <CalendarRange size={16} className="text-[#4F46E5]" />
@@ -471,7 +471,7 @@ export default function AdminAcademicsPage() {
                 </form>
 
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
+                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
                     <h2 className="text-base font-bold text-[#0B1230]">
                       Academic Sessions &amp; Terms
                     </h2>
@@ -480,7 +480,7 @@ export default function AdminAcademicsPage() {
                     {terms.map((t) => (
                       <div
                         key={t.id}
-                        className="px-5 py-3 flex items-center justify-between gap-3"
+                        className="px-6 py-4 flex items-center justify-between gap-3"
                       >
                         <div>
                           <p className="font-bold text-[#0B1230]">{t.name}</p>

@@ -100,9 +100,9 @@ export default function AdminDashboardPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           {/* Header Banner */}
-          <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
                 School Operations &amp; Governance
@@ -151,10 +151,10 @@ export default function AdminDashboardPage() {
           ) : (
             <>
               {/* Real KPI Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 <Link
                   href="/admin/students"
-                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
+                  className="learnova-card p-6 hover:border-[#4F46E5] transition"
                 >
                   <div className="flex items-center justify-between text-[#6B6F94]">
                     <span className="text-xs font-semibold uppercase tracking-wide">Students</span>
@@ -170,7 +170,7 @@ export default function AdminDashboardPage() {
 
                 <Link
                   href="/admin/teachers"
-                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
+                  className="learnova-card p-6 hover:border-[#4F46E5] transition"
                 >
                   <div className="flex items-center justify-between text-[#6B6F94]">
                     <span className="text-xs font-semibold uppercase tracking-wide">Educators</span>
@@ -186,7 +186,7 @@ export default function AdminDashboardPage() {
 
                 <Link
                   href="/admin/timetable"
-                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
+                  className="learnova-card p-6 hover:border-[#4F46E5] transition"
                 >
                   <div className="flex items-center justify-between text-[#6B6F94]">
                     <span className="text-xs font-semibold uppercase tracking-wide">Published Lessons</span>
@@ -202,7 +202,7 @@ export default function AdminDashboardPage() {
 
                 <Link
                   href="/admin/classrooms"
-                  className="learnova-card p-5 hover:border-[#4F46E5] transition"
+                  className="learnova-card p-6 hover:border-[#4F46E5] transition"
                 >
                   <div className="flex items-center justify-between text-[#6B6F94]">
                     <span className="text-xs font-semibold uppercase tracking-wide">Live Classrooms</span>
@@ -220,7 +220,7 @@ export default function AdminDashboardPage() {
               {/* Operational Queues */}
               <div className="grid lg:grid-cols-3 gap-6">
                 {/* Pending Teacher Approvals */}
-                <div className="learnova-card p-5 flex flex-col justify-between">
+                <div className="learnova-card p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Pending Payment Verifications */}
-                <div className="learnova-card p-5 flex flex-col justify-between">
+                <div className="learnova-card p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
@@ -298,7 +298,7 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Capacity Shortfalls & Shortcuts */}
-                <div className="learnova-card p-5 flex flex-col justify-between">
+                <div className="learnova-card p-6 flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">

@@ -401,6 +401,26 @@ export async function handleTeacherApplicationMutation(
         ap.status = nextStatus;
         ap.reason = reason || ap.reason;
 
+        if (isSupabaseServerConfigured) {
+          try {
+            const sb = getSupabaseServerClient();
+            const hasApprovedSubject = state.teacherApprovals.some(
+              (a) =>
+                a.teacherUserId === ap.teacherUserId && a.status === "APPROVED"
+            );
+            await sb
+              .from("profiles")
+              .update({
+                status: hasApprovedSubject
+                  ? "ACTIVE"
+                  : nextStatus === "SUSPENDED"
+                  ? "SUSPENDED"
+                  : "PENDING",
+              })
+              .eq("id", ap.teacherUserId);
+          } catch {}
+        }
+
         appendNotification(state, {
           recipientUserId: ap.teacherUserId,
           recipientRole: "TEACHER",

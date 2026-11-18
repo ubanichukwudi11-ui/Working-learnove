@@ -22,7 +22,20 @@ export type User = {
   fullName: string;
   role: UserRole;
   status: UserStatus;
+  avatarUrl?: string;
+  phone?: string;
+  dob?: string;
   classLevel?: string;
+  age?: number | null;
+  schoolName?: string;
+  examPreparation?: string;
+  studyHours?: string;
+  studyTime?: string;
+  learningGoal?: string;
+  reminders?: string;
+  profileCompleted?: boolean;
+  needsProfileCompletion?: boolean;
+  authProvider?: string;
 };
 
 type AuthContextType = {
@@ -84,7 +97,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           fullName: currentUser.fullName,
           role: currentUser.role,
           status: currentUser.status,
+          avatarUrl: currentUser.avatarUrl,
+          phone: currentUser.phone,
+          dob: currentUser.dob,
           classLevel: currentUser.classLevel,
+          age: currentUser.age,
+          schoolName: currentUser.schoolName,
+          examPreparation: currentUser.examPreparation,
+          studyHours: currentUser.studyHours,
+          studyTime: currentUser.studyTime,
+          learningGoal: currentUser.learningGoal,
+          reminders: currentUser.reminders,
+          profileCompleted: currentUser.profileCompleted,
+          needsProfileCompletion: currentUser.needsProfileCompletion,
+          authProvider: currentUser.authProvider,
         };
         setUser(mappedUser);
         persistUser(mappedUser);

@@ -213,9 +213,9 @@ function ParentContent() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-7">
         {/* Header Banner */}
-        <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               {activeWard
@@ -273,7 +273,7 @@ function ParentContent() {
 
         {/* Pending Consent / Verification Requests */}
         {pendingRequests.length > 0 && (
-          <div className="learnova-card p-5 space-y-3 border-amber-200 bg-amber-50/40">
+          <div className="learnova-card p-6 space-y-3 border-amber-200 bg-amber-50/40">
             <div className="flex items-center gap-2">
               <ShieldCheck size={17} className="text-[#4F46E5]" />
               <h2 className="landing-display text-sm font-bold text-[#0B1230]">
@@ -426,7 +426,7 @@ function ParentContent() {
             </div>
 
             {/* KPI Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div className="learnova-card p-5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-[#6B6F94]">

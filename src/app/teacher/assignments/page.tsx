@@ -53,7 +53,7 @@ export default function TeacherAssignmentsPage() {
   return (
     <ProtectedRoute roles={["TEACHER", "ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
@@ -137,7 +137,7 @@ export default function TeacherAssignmentsPage() {
               {tasks.map((t) => (
                 <div
                   key={t.id}
-                  className="learnova-card p-5"
+                  className="learnova-card p-6"
                 >
                   <div className="flex items-center justify-between text-xs font-bold">
                     <span className="text-[#4F46E5]">{t.subject} · {t.classLevel}</span>

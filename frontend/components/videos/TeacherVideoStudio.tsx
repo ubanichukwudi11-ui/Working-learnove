@@ -381,7 +381,7 @@ export default function TeacherVideoStudio() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* Header */}
       <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
@@ -447,7 +447,7 @@ export default function TeacherVideoStudio() {
             {requests.map((reqItem) => (
               <div
                 key={reqItem.id}
-                className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white"
+                className="p-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white"
               >
                 <div className="space-y-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">

@@ -68,9 +68,9 @@ function TeacherWorkspace() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-7">
         {/* Header */}
-        <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
               Educator Workspace · Africa/Lagos (WAT)
@@ -137,8 +137,8 @@ function TeacherWorkspace() {
         ) : (
           <>
             {/* Real KPIs */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="learnova-card p-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="learnova-card p-6">
                 <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Approved Subjects</span>
                   <Award size={17} className="text-[#4F46E5]" />
@@ -149,7 +149,7 @@ function TeacherWorkspace() {
                 <p className="text-xs text-[#6B6F94] mt-1">Subject-level authorizations</p>
               </div>
 
-              <div className="learnova-card p-5">
+              <div className="learnova-card p-6">
                 <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Assigned Classrooms</span>
                   <BookOpen size={17} className="text-[#7C3AED]" />
@@ -162,7 +162,7 @@ function TeacherWorkspace() {
                 </p>
               </div>
 
-              <div className="learnova-card p-5">
+              <div className="learnova-card p-6">
                 <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Allocated Students</span>
                   <Users size={17} className="text-[#0891B2]" />
@@ -173,7 +173,7 @@ function TeacherWorkspace() {
                 <p className="text-xs text-[#6B6F94] mt-1">Across assigned groups</p>
               </div>
 
-              <div className="learnova-card p-5">
+              <div className="learnova-card p-6">
                 <div className="flex items-center justify-between text-[#6B6F94]">
                   <span className="text-xs font-semibold">Attendance Entries</span>
                   <CalendarCheck size={17} className="text-[#4F46E5]" />

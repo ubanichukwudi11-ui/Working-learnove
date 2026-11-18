@@ -243,7 +243,7 @@ export default function AdminVideoManager() {
     vidSourceMode === "YOUTUBE" ? parseYouTubeIdClient(vidUrl) : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* Header */}
       <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border border-white/10">
         <div>
@@ -271,7 +271,7 @@ export default function AdminVideoManager() {
       </div>
 
       {/* Metrics Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="learnova-card p-5">
           <p className="text-xs font-semibold text-[#6B6F94]">Curriculum Topics</p>
           <p className="text-2xl font-extrabold text-[#0D1438] mt-1 tabular-nums">
@@ -366,7 +366,7 @@ export default function AdminVideoManager() {
                 setReqDueDate("");
               }
             }}
-            className="learnova-card p-5 space-y-4"
+            className="learnova-card p-6 space-y-4"
           >
             <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
               <Send size={16} className="text-[#4F46E5]" />
@@ -509,7 +509,7 @@ export default function AdminVideoManager() {
 
           {/* Upload Requests Tracking & Review Queue */}
           <div className="lg:col-span-2 learnova-card overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#E4E1F5] flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-[#E4E1F5] flex items-center justify-between">
               <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
                 <ClipboardList size={16} className="text-[#4F46E5]" />
                 Teacher Video Requests ({requests.length})
@@ -529,7 +529,7 @@ export default function AdminVideoManager() {
                     : null;
 
                   return (
-                    <div key={r.id} className="p-5 space-y-3">
+                    <div key={r.id} className="p-5 sm:px-6 space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                         <div>
                           <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">
@@ -642,7 +642,7 @@ export default function AdminVideoManager() {
         </div>
       ) : (
         /* CURRICULUM TOPICS & CURATED LIBRARY TAB */
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="grid lg:grid-cols-2 gap-6 items-start">
             {/* Create Curriculum Topic */}
             <form
@@ -667,14 +667,14 @@ export default function AdminVideoManager() {
                   setTopDesc("");
                 }
               }}
-              className="learnova-card p-5 space-y-4"
+              className="learnova-card p-6 space-y-4"
             >
               <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
                 <Plus size={16} className="text-[#4F46E5]" />
                 Add Curriculum Topic
               </h2>
 
-              <div className="grid grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <select
                   value={topSubjectId}
                   onChange={(e) => setTopSubjectId(e.target.value)}
@@ -768,7 +768,7 @@ export default function AdminVideoManager() {
                   setAdminMaterials([]);
                 }
               }}
-              className="learnova-card p-5 space-y-4"
+              className="learnova-card p-6 space-y-4"
             >
               <div className="flex items-center justify-between gap-2">
                 <h2 className="landing-display text-base font-bold text-[#0D1438] flex items-center gap-2">
@@ -943,7 +943,7 @@ export default function AdminVideoManager() {
 
           {/* All Topics & Attached Videos */}
           <div className="learnova-card overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#E4E1F5]">
+            <div className="px-6 py-4 border-b border-[#E4E1F5]">
               <h2 className="landing-display text-base font-bold text-[#0D1438]">
                 All Curriculum Topics &amp; Attached Videos ({topics.length})
               </h2>
@@ -952,7 +952,7 @@ export default function AdminVideoManager() {
               {topics.map((t) => {
                 const tVideos = videos.filter((v) => v.topicId === t.id);
                 return (
-                  <div key={t.id} className="p-5 space-y-3">
+                  <div key={t.id} className="p-5 sm:px-6 space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
                         <p className="text-xs font-semibold text-[#4F46E5]">

@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [classrooms, setClassrooms] = useState<any[]>([]);
   const [timetableEntries, setTimetableEntries] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
+  const [nowMs, setNowMs] = useState(0);
 
   const loadStudentPortal = useCallback(async () => {
     try {
@@ -48,6 +49,7 @@ export default function DashboardPage() {
       setClassrooms(rmJson.classrooms || []);
       setTimetableEntries(ttJson.entries || []);
       setGroups(ttJson.groups || []);
+      setNowMs(Date.now());
     } finally {
       setLoading(false);
     }
@@ -64,8 +66,14 @@ export default function DashboardPage() {
     "Class Level Not Selected";
 
   const accessStatus = entitlement?.accessStatus || enrolment?.status || "REGISTERED";
+  const isExpired =
+    accessStatus === "EXPIRED" ||
+    (Boolean(entitlement?.expiresAt) &&
+      nowMs > 0 &&
+      new Date(entitlement.expiresAt).getTime() < nowMs);
   const hasActiveEntitlement =
-    accessStatus === "ACTIVE_PAID" || accessStatus === "SCHOLARSHIP_GRANTED";
+    !isExpired &&
+    (accessStatus === "ACTIVE_PAID" || accessStatus === "SCHOLARSHIP_GRANTED");
 
   const liveNowRooms = classrooms.filter((c) => c.status === "LIVE");
   const subName = (id: string) => subjects.find((s) => s.id === id)?.name || id;
@@ -73,7 +81,7 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute roles={["STUDENT"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           {/* Welcome Header */}
           <div className="learnova-banner-dark learnova-ambient-stage-soft bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
             <div className="min-w-0">
@@ -97,13 +105,15 @@ export default function DashboardPage() {
                 <PlaySquare size={15} className="text-[#22D3EE]" />
                 Video Lessons
               </Link>
-              <Link
-                href="/subscriptions"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs sm:text-sm font-semibold transition whitespace-nowrap"
-              >
-                <CreditCard size={15} className="text-[#C4B5FD]" />
-                {hasActiveEntitlement ? "Subscription Active" : "Activate Subscription"}
-              </Link>
+              {!loading && !hasActiveEntitlement && (
+                <Link
+                  href="/subscriptions"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs sm:text-sm font-semibold transition whitespace-nowrap"
+                >
+                  <CreditCard size={15} className="text-[#C4B5FD]" />
+                  {isExpired ? "Renew Subscription" : "Activate Subscription"}
+                </Link>
+              )}
               <Link
                 href="/nova"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs sm:text-sm font-semibold shadow-sm transition whitespace-nowrap"
@@ -114,16 +124,37 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Entitlement Gate Banner */}
+          {/* Entitlement Gate Banner (hidden completely once subscription is active) */}
           {!loading && !hasActiveEntitlement && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div
+              className={`rounded-2xl border p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                isExpired
+                  ? "border-rose-200 bg-rose-50/90"
+                  : "border-amber-200 bg-amber-50/90"
+              }`}
+            >
               <div className="min-w-0">
-                <p className="text-sm font-bold text-amber-950 flex items-center gap-1.5">
-                  <Lock size={15} className="text-amber-700 shrink-0" />
-                  Subscription Status: {accessStatus.replace(/_/g, " ")}
+                <p
+                  className={`text-sm font-bold flex items-center gap-1.5 ${
+                    isExpired ? "text-rose-950" : "text-amber-950"
+                  }`}
+                >
+                  <Lock
+                    size={15}
+                    className={`shrink-0 ${isExpired ? "text-rose-700" : "text-amber-700"}`}
+                  />
+                  {isExpired
+                    ? "Your Subscription Has Expired"
+                    : `Subscription Status: ${accessStatus.replace(/_/g, " ")}`}
                 </p>
-                <p className="text-xs text-amber-900/80 mt-1 leading-relaxed">
-                  {accessStatus === "AWAITING_CONFIRMATION"
+                <p
+                  className={`text-xs mt-1 leading-relaxed ${
+                    isExpired ? "text-rose-900/85" : "text-amber-900/80"
+                  }`}
+                >
+                  {isExpired
+                    ? "Your previous learning pass has ended. Renew your subscription plan to restore access to live classes and recordings."
+                    : accessStatus === "AWAITING_CONFIRMATION"
                     ? "Your bank transfer reference is awaiting School Admin verification. Your classrooms will unlock automatically once approved."
                     : "Confirm your class level and activate a Nigerian Naira (₦) term or monthly subscription to enter live classrooms."}
                 </p>
@@ -132,7 +163,7 @@ export default function DashboardPage() {
                 href="/subscriptions"
                 className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold shrink-0 whitespace-nowrap shadow-xs transition"
               >
-                Go to Subscriptions →
+                {isExpired ? "Renew Plan →" : "Go to Subscriptions →"}
               </Link>
             </div>
           )}

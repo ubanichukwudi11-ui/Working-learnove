@@ -73,7 +73,7 @@ export default function TimetablePlannerPage() {
   return (
     <ProtectedRoute roles={["STUDENT", "PARENT", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
             <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
               Official Timetable · {TIMEZONE_LABEL}
@@ -134,7 +134,7 @@ export default function TimetablePlannerPage() {
                     return (
                       <div
                         key={slot.id}
-                        className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                       >
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 text-xs font-bold text-[#4F46E5]">
@@ -212,7 +212,7 @@ export default function TimetablePlannerPage() {
                   {goals.map((g) => (
                     <label
                       key={g.id}
-                      className="flex items-start gap-3 rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3 cursor-pointer hover:bg-white transition"
+                      className="flex items-start gap-3 rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3.5 cursor-pointer hover:bg-white transition"
                     >
                       <input
                         type="checkbox"

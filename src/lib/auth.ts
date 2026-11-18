@@ -53,8 +53,17 @@ export interface User {
 
   /* Student */
   classLevel?: string;
-  age?: number;
+  age?: number | null;
+  schoolName?: string;
+  examPreparation?: string;
+  studyHours?: string;
+  studyTime?: string;
+  learningGoal?: string;
+  reminders?: string;
   studentEmail?: string;
+  profileCompleted?: boolean;
+  needsProfileCompletion?: boolean;
+  authProvider?: string;
 
   /* Parent */
   studentName?: string;
@@ -232,7 +241,9 @@ export async function registerStudent(data: {
   email: string;
   password: string;
   classLevel?: string;
+  schoolName?: string;
   age?: number;
+  dob?: string;
   profilePhoto?: string;
   aiPurpose?: string[];
   examPreparation?: string;

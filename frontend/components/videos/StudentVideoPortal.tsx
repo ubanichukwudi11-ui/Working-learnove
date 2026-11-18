@@ -308,7 +308,7 @@ export default function StudentVideoPortal() {
     classLevels.find((c) => c.id === selectedLevelId)?.code || "All Levels";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       {/* Header */}
       <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 border border-white/10 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div className="min-w-0">
@@ -361,7 +361,7 @@ export default function StudentVideoPortal() {
       {/* Breadcrumb Navigation */}
       <nav
         aria-label="Video curriculum navigation"
-        className="learnova-card flex flex-wrap items-center gap-2 text-xs sm:text-sm px-4 py-3"
+        className="learnova-card flex flex-wrap items-center gap-2 text-xs sm:text-sm px-5 py-3.5"
       >
         <button
           type="button"

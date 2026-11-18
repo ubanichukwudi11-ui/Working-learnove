@@ -71,7 +71,7 @@ export default function AdminTeacherDetailPage() {
   return (
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-6">
+        <div className="space-y-7">
           <Link
             href="/admin/teachers"
             className="inline-flex items-center gap-2 text-xs font-semibold text-[#4F46E5] hover:underline"
@@ -123,7 +123,7 @@ export default function AdminTeacherDetailPage() {
               </div>
 
               {/* Uploaded Credentials */}
-              <div className="learnova-card p-5">
+              <div className="learnova-card p-6">
                 <h2 className="text-base font-bold text-[#0B1230] mb-3">
                   Submitted Documents
                 </h2>
@@ -164,7 +164,7 @@ export default function AdminTeacherDetailPage() {
               </div>
 
               {/* Subject Applications */}
-              <div className="learnova-card p-5 space-y-4">
+              <div className="learnova-card p-6 space-y-4">
                 <h2 className="text-base font-bold text-[#0B1230]">
                   Subject Applications ({apps.length})
                 </h2>
@@ -214,7 +214,7 @@ export default function AdminTeacherDetailPage() {
               </div>
 
               {/* Active Authorizations */}
-              <div className="learnova-card p-5">
+              <div className="learnova-card p-6">
                 <h2 className="text-base font-bold text-[#0B1230] mb-3">
                   Authorized Teaching Assignments ({approvals.length})
                 </h2>

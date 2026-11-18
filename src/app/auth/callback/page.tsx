@@ -174,6 +174,9 @@ export default function AuthCallbackPage() {
 
         const data = await sessionRes.json().catch(() => ({}));
         if (!sessionRes.ok || !data?.user) {
+          try {
+            await supabase.auth.signOut({ scope: "local" });
+          } catch {}
           throw new Error(data?.error || "Could not finalize your Learnova session.");
         }
 
@@ -189,7 +192,22 @@ export default function AuthCallbackPage() {
         const rawNext = searchParams.get("next") || storedNext;
 
         if (data.needsRoleSelection) {
+          if (rawNext) {
+            try {
+              sessionStorage.setItem("learnova_post_auth_next", rawNext);
+            } catch {}
+          }
           navigateTo("/select-role");
+          return;
+        }
+
+        if (data.user.role === "STUDENT" && data.user.needsProfileCompletion) {
+          if (rawNext) {
+            try {
+              sessionStorage.setItem("learnova_post_auth_next", rawNext);
+            } catch {}
+          }
+          navigateTo("/register/student/complete");
           return;
         }
 

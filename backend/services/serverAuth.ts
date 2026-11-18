@@ -7,6 +7,7 @@ import {
 import {
   appendAuditLog,
   appendNotification,
+  loadLmsState,
   mutateLmsState,
 } from "./lmsDb";
 import { toPgUuid } from "./pgRepository";
@@ -15,6 +16,8 @@ import { sendWelcomeEmail } from "./emailService";
 import {
   AuthServiceError,
   authenticateAccessToken,
+  computeStudentProfileCompletion,
+  extractAuthProvider,
   getSessionUserById,
   type AuthenticatedSessionUser,
 } from "./authCore";
@@ -25,6 +28,63 @@ export {
   getSessionUserById,
   type AuthenticatedSessionUser,
 };
+
+async function upsertStudentProfileSafe(
+  sb: ReturnType<typeof getSupabaseServerClient>,
+  userId: string,
+  payload: Record<string, unknown>
+) {
+  const { error } = await sb.from("student_profiles").upsert(
+    {
+      user_id: userId,
+      ...payload,
+    },
+    { onConflict: "user_id" }
+  );
+  if (error) {
+    // Graceful fallback if school_name or profile_completed migration has not been applied yet
+    const fallbackPayload = { ...payload };
+    delete fallbackPayload.school_name;
+    delete fallbackPayload.profile_completed;
+    await sb.from("student_profiles").upsert(
+      {
+        user_id: userId,
+        ...fallbackPayload,
+      },
+      { onConflict: "user_id" }
+    );
+  }
+}
+
+async function isEmailAssociatedWithTeacher(
+  sb: ReturnType<typeof getSupabaseServerClient>,
+  email: string
+): Promise<boolean> {
+  if (!email) return false;
+  try {
+    const { data: emailProfile } = await sb
+      .from("profiles")
+      .select("role")
+      .ilike("email", email)
+      .maybeSingle();
+    if (emailProfile?.role === "TEACHER") return true;
+  } catch {
+    // Ignore transient query issue and also check LMS state
+  }
+  try {
+    const lms = await loadLmsState();
+    if (
+      lms.teacherApplications.some(
+        (app) => app.teacherEmail.trim().toLowerCase() === email.toLowerCase()
+      )
+    ) {
+      return true;
+    }
+  } catch {
+    // Ignore if state unavailable
+  }
+  return false;
+}
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1", "[::1]"]);
 
@@ -189,6 +249,7 @@ export async function registerLearnovaAccount(
     profilePhoto,
     classLevel,
     age,
+    schoolName,
     aiPurpose,
     examPreparation,
     favouriteSubjects,
@@ -242,6 +303,11 @@ export async function registerLearnovaAccount(
       ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN.trim().replace(/\/+$/, "")}`
       : "");
 
+  const cleanSchoolName = typeof schoolName === "string" ? schoolName.trim() : "";
+  const isManualStudentCompleted =
+    safeRole === "STUDENT" &&
+    Boolean(classLevel && cleanSchoolName && (age || dob));
+
   const { data, error } = await supabase.auth.signUp({
     email: String(email).trim().toLowerCase(),
     password: String(password),
@@ -253,6 +319,15 @@ export async function registerLearnovaAccount(
         full_name: resolvedFullName,
         role: safeRole,
         avatar_url: profilePhoto || null,
+        ...(safeRole === "STUDENT"
+          ? {
+              school_name: cleanSchoolName || null,
+              class_level: classLevel || "SS1",
+              age: age ? Number(age) : null,
+              dob: dob || null,
+              profile_completed: isManualStudentCompleted,
+            }
+          : {}),
       },
     },
   });
@@ -289,10 +364,11 @@ export async function registerLearnovaAccount(
 
   try {
     if (safeRole === "STUDENT") {
-      await supabase.from("student_profiles").upsert({
-        user_id: authUser.id,
+      await upsertStudentProfileSafe(supabase, authUser.id, {
         class_level: classLevel || "SS1",
         age: age ? Number(age) : null,
+        school_name: cleanSchoolName || null,
+        profile_completed: isManualStudentCompleted,
         profile_photo: profilePhoto || null,
         ai_purpose: aiPurpose || [],
         exam_preparation: examPreparation || null,
@@ -459,6 +535,11 @@ export async function registerLearnovaAccount(
     dob,
     subject,
     classLevel,
+    age: age ? Number(age) : null,
+    schoolName: cleanSchoolName || undefined,
+    profileCompleted: safeRole === "STUDENT" ? isManualStudentCompleted : true,
+    needsProfileCompletion: safeRole === "STUDENT" ? !isManualStudentCompleted : false,
+    authProvider: "email",
     studentName,
   };
 
@@ -519,7 +600,7 @@ export async function loginLearnovaAccount(input: {
   let studentData: Record<string, unknown> | null = null;
   let parentData: Record<string, unknown> | null = null;
 
-  let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
+  let role = (profile?.role || authUser.user_metadata?.role || "STUDENT") as LmsUserRole;
   const cleanEmail = (authUser.email || email).toLowerCase();
   const superAdminSet = new Set([
     ...((Array.isArray(settingsRow?.super_admin_emails)
@@ -557,6 +638,15 @@ export async function loginLearnovaAccount(input: {
     parentData = p;
   }
 
+  const authProvider = extractAuthProvider(authUser) || "email";
+  const completion = computeStudentProfileCompletion({
+    role,
+    authProvider,
+    profileDob: profile?.dob || null,
+    studentProfile: studentData,
+    userMetadata: (authUser.user_metadata || {}) as Record<string, unknown>,
+  });
+
   const user = {
     id: authUser.id,
     email: authUser.email || email,
@@ -579,8 +669,12 @@ export async function loginLearnovaAccount(input: {
     institution: teacherData?.institution,
     experience: teacherData?.experience,
     licenseNumber: teacherData?.license_number,
-    classLevel: studentData?.class_level,
-    age: studentData?.age,
+    classLevel: completion.classLevel ?? studentData?.class_level,
+    age: completion.age ?? studentData?.age,
+    schoolName: completion.schoolName,
+    profileCompleted: completion.profileCompleted,
+    needsProfileCompletion: completion.needsProfileCompletion,
+    authProvider,
     studentName: parentData?.student_name,
     childIdNumber: parentData?.child_id_number,
     relationship: parentData?.relationship,
@@ -611,7 +705,9 @@ export async function exchangeOAuthSessionToken(accessTokenInput: string) {
     throw new AuthServiceError("Invalid session token.", 401);
   }
 
-  const [{ data: profile }, { data: settingsRow }] = await Promise.all([
+  const email = (authUser.email || "").trim().toLowerCase();
+
+  const [{ data: initialProfile }, { data: settingsRow }] = await Promise.all([
     sb.from("profiles").select("*").eq("id", authUser.id).maybeSingle(),
     sb
       .from("platform_settings")
@@ -619,11 +715,36 @@ export async function exchangeOAuthSessionToken(accessTokenInput: string) {
       .eq("id", "global")
       .maybeSingle(),
   ]);
+  let profile = initialProfile;
+
+  // Prevent duplicate accounts by checking case-insensitive email match if ID has no profile row
+  if (!profile && email) {
+    const { data: emailMatchedProfile } = await sb
+      .from("profiles")
+      .select("*")
+      .ilike("email", email)
+      .maybeSingle();
+    if (emailMatchedProfile) {
+      profile = emailMatchedProfile;
+    }
+  }
+
+  const teacherBlocked =
+    profile?.role === "TEACHER" ||
+    authUser.user_metadata?.role === "TEACHER" ||
+    (await isEmailAssociatedWithTeacher(sb, email));
+
+  if (teacherBlocked) {
+    throw new AuthServiceError(
+      "Teacher accounts cannot sign in or register with Google. Please sign in with your educator email and password, or apply via Teacher Registration.",
+      403
+    );
+  }
 
   const needsRoleSelection = !profile || !profile.role;
 
-  let role = profile?.role || authUser.user_metadata?.role || "STUDENT";
-  const email = (authUser.email || profile?.email || "").toLowerCase();
+  let role = (profile?.role || authUser.user_metadata?.role || "STUDENT") as LmsUserRole;
+  const resolvedEmail = (authUser.email || profile?.email || "").toLowerCase();
   const superAdminEmails = new Set([
     ...((Array.isArray(settingsRow?.super_admin_emails)
       ? settingsRow.super_admin_emails
@@ -633,22 +754,48 @@ export async function exchangeOAuthSessionToken(accessTokenInput: string) {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean),
   ]);
-  if (role === "ADMIN" && superAdminEmails.has(email)) {
+  if (role === "ADMIN" && superAdminEmails.has(resolvedEmail)) {
     role = "SUPER_ADMIN";
   }
 
+  let studentData: Record<string, unknown> | null = null;
+  if (!needsRoleSelection && role === "STUDENT") {
+    const { data: s } = await sb
+      .from("student_profiles")
+      .select("*")
+      .eq("user_id", profile?.id || authUser.id)
+      .maybeSingle();
+    studentData = s;
+  }
+
+  const authProvider = extractAuthProvider(authUser) || "google";
+  const completion = computeStudentProfileCompletion({
+    role: needsRoleSelection ? "STUDENT" : role,
+    authProvider,
+    profileDob: profile?.dob || null,
+    studentProfile: studentData,
+    userMetadata: (authUser.user_metadata || {}) as Record<string, unknown>,
+  });
+
   const user = {
-    id: authUser.id,
-    email: authUser.email || "",
+    id: profile?.id || authUser.id,
+    email: authUser.email || profile?.email || "",
     fullName:
       profile?.full_name ||
       authUser.user_metadata?.full_name ||
       authUser.user_metadata?.name ||
-      email.split("@")[0] ||
+      resolvedEmail.split("@")[0] ||
       "User",
     role,
     status: profile?.status || "ACTIVE",
     avatarUrl: profile?.avatar_url || authUser.user_metadata?.avatar_url,
+    dob: profile?.dob || undefined,
+    classLevel: completion.classLevel,
+    age: completion.age,
+    schoolName: completion.schoolName,
+    profileCompleted: needsRoleSelection ? false : completion.profileCompleted,
+    needsProfileCompletion: needsRoleSelection ? true : completion.needsProfileCompletion,
+    authProvider,
   };
 
   return { accessToken, user, needsRoleSelection };
@@ -667,15 +814,26 @@ export async function completeOAuthRoleSelection(
     throw new AuthServiceError("Authentication session required.", 401);
   }
 
+  const normalizedRequested = String(requestedRole || "").trim().toUpperCase();
+  if (normalizedRequested === "TEACHER") {
+    throw new AuthServiceError(
+      "Teachers cannot register or sign in via Google. Please complete the Teacher Application form with an email and password.",
+      403
+    );
+  }
+
   const safeRole =
-    requestedRole === "TEACHER" || requestedRole === "PARENT"
-      ? requestedRole
-      : requestedRole === "STUDENT"
+    normalizedRequested === "PARENT"
+      ? "PARENT"
+      : normalizedRequested === "STUDENT"
       ? "STUDENT"
       : null;
 
   if (!safeRole) {
-    throw new AuthServiceError("Invalid role selected.", 400);
+    throw new AuthServiceError(
+      "Invalid role selected. Only Student and Parent roles are eligible for Google sign-up.",
+      400
+    );
   }
 
   const sb = getSupabaseServerClient();
@@ -687,14 +845,47 @@ export async function completeOAuthRoleSelection(
     throw new AuthServiceError("Invalid or expired authentication session.", 401);
   }
 
+  const cleanEmail = (authUser.email || "").trim().toLowerCase();
+
   const { data: existingProfile } = await sb
     .from("profiles")
     .select("*")
     .eq("id", authUser.id)
     .maybeSingle();
 
+  if (!existingProfile && cleanEmail) {
+    const { data: duplicateEmailProfile } = await sb
+      .from("profiles")
+      .select("*")
+      .ilike("email", cleanEmail)
+      .maybeSingle();
+
+    if (duplicateEmailProfile) {
+      if (duplicateEmailProfile.role === "TEACHER") {
+        throw new AuthServiceError(
+          "Teacher accounts cannot sign in or register with Google. Please use your educator email and password.",
+          403
+        );
+      }
+      throw new AuthServiceError(
+        "An account with this email already exists. Please sign in using your original sign-in method.",
+        409
+      );
+    }
+  }
+
+  if (
+    existingProfile?.role === "TEACHER" ||
+    (await isEmailAssociatedWithTeacher(sb, cleanEmail))
+  ) {
+    throw new AuthServiceError(
+      "Teacher accounts cannot sign in or register with Google. Please use your educator email and password.",
+      403
+    );
+  }
+
   // Do not allow downgrading/overwriting existing ADMIN or SUPER_ADMIN roles
-  const effectiveRole =
+  const effectiveRole: LmsUserRole =
     existingProfile?.role === "SUPER_ADMIN" || existingProfile?.role === "ADMIN"
       ? existingProfile.role
       : safeRole;
@@ -706,12 +897,11 @@ export async function completeOAuthRoleSelection(
     (authUser.email ? authUser.email.split("@")[0] : "Learnova User");
   const avatarUrl =
     existingProfile?.avatar_url || authUser.user_metadata?.avatar_url || null;
-  const effectiveStatus =
-    existingProfile?.status || (effectiveRole === "TEACHER" ? "PENDING" : "ACTIVE");
+  const effectiveStatus = existingProfile?.status || "ACTIVE";
 
   const { error: upsertError } = await sb.from("profiles").upsert({
     id: authUser.id,
-    email: (authUser.email || existingProfile?.email || "").toLowerCase(),
+    email: cleanEmail || existingProfile?.email || "",
     full_name: fullName,
     avatar_url: avatarUrl,
     role: effectiveRole,
@@ -722,8 +912,15 @@ export async function completeOAuthRoleSelection(
     throw new AuthServiceError(upsertError.message || "Could not save profile role.", 400);
   }
 
+  let needsProfileCompletion = false;
+  let profileCompleted = true;
+
   if (effectiveRole === "STUDENT") {
-    await sb.from("student_profiles").upsert({ user_id: authUser.id });
+    await upsertStudentProfileSafe(sb, authUser.id, {
+      profile_completed: false,
+    });
+    needsProfileCompletion = true;
+    profileCompleted = false;
     try {
       const nowIso = new Date().toISOString();
       const defaultClassLevelUuid = toPgUuid("lvl-ss1");
@@ -746,7 +943,7 @@ export async function completeOAuthRoleSelection(
             external_id: entitlementExternalId,
             student_user_id: authUser.id,
             student_name: fullName,
-            student_email: (authUser.email || existingProfile?.email || "").toLowerCase(),
+            student_email: cleanEmail || existingProfile?.email || "",
             class_level_id: defaultClassLevelUuid,
             subject_ids: [],
             all_subjects: false,
@@ -760,8 +957,6 @@ export async function completeOAuthRoleSelection(
     } catch (enrolErr) {
       console.warn("OAuth student enrolment initialization warning:", enrolErr);
     }
-  } else if (effectiveRole === "TEACHER") {
-    await sb.from("teacher_profiles").upsert({ user_id: authUser.id });
   } else if (effectiveRole === "PARENT") {
     await sb.from("parent_profiles").upsert({ user_id: authUser.id });
   }
@@ -775,6 +970,9 @@ export async function completeOAuthRoleSelection(
       role: effectiveRole,
       status: effectiveStatus,
       avatarUrl,
+      profileCompleted,
+      needsProfileCompletion,
+      authProvider: extractAuthProvider(authUser) || "google",
     },
   };
 }

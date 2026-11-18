@@ -10,9 +10,11 @@ import {
   Clock,
   CheckCheck,
   GraduationCap,
+  Menu,
 } from "lucide-react";
 import { formatLagosTime, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
 import { PWAInstallButton } from "@frontend/components/pwa/PwaSupport";
+import { useSidebar } from "@/context/SidebarContext";
 
 type User = {
   id: string;
@@ -44,6 +46,7 @@ type Props = {
 
 export default function AppNavbar({ user, onLogout }: Props) {
   const router = useRouter();
+  const { collapsed, toggleMobile } = useSidebar();
   const [query, setQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -188,9 +191,21 @@ export default function AppNavbar({ user, onLogout }: Props) {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 md:left-20 lg:left-60 h-16 z-40 bg-white/92 backdrop-blur-md border-b border-[#E4E1F5] flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 lg:px-8">
-      {/* Mobile Brand */}
-      <div className="flex items-center gap-2 md:hidden shrink-0">
+    <header
+      className={`fixed top-0 right-0 left-0 h-16 z-40 bg-white/94 backdrop-blur-md border-b border-[#E4E1F5] flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 lg:px-8 transition-[left] duration-200 ease-out ${
+        collapsed ? "md:left-[76px]" : "md:left-64"
+      }`}
+    >
+      {/* Mobile Drawer Toggle + Brand */}
+      <div className="flex items-center gap-2.5 md:hidden shrink-0">
+        <button
+          type="button"
+          onClick={toggleMobile}
+          aria-label="Open navigation menu"
+          className="p-2 rounded-xl border border-[#E4E1F5] bg-white text-[#0B1230] hover:bg-[#FAF8FF] transition"
+        >
+          <Menu size={18} />
+        </button>
         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-white shadow-sm shadow-[#4F46E5]/25">
           <GraduationCap size={17} />
         </div>

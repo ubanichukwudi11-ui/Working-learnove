@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-
+import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 import RoleSidebar from "./RoleSidebar";
 import AppNavbar from "./AppNavbar";
 import MobileBottomNav from "./MobileBottomNav";
@@ -12,13 +12,10 @@ import {
   ServiceWorkerRegistrar,
 } from "@frontend/components/pwa/PwaSupport";
 
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, loading, logout } = useAuth();
+  const { collapsed } = useSidebar();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -51,10 +48,14 @@ export default function AppLayout({
       <ServiceWorkerRegistrar />
       <RoleSidebar role={user.role} />
 
-      <div className="md:pl-20 lg:pl-60 transition-all duration-200 min-h-screen flex flex-col min-w-0">
+      <div
+        className={`transition-[padding] duration-200 ease-out min-h-screen flex flex-col min-w-0 ${
+          collapsed ? "md:pl-[76px]" : "md:pl-64"
+        }`}
+      >
         <AppNavbar user={user} onLogout={handleLogout} />
 
-        <main className="flex-1 pt-20 pb-24 md:pb-10 px-4 sm:px-6 lg:px-8 max-w-[1440px] w-full mx-auto min-w-0">
+        <main className="flex-1 pt-24 pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 max-w-[1440px] w-full mx-auto min-w-0">
           {children}
         </main>
       </div>
@@ -62,5 +63,17 @@ export default function AppLayout({
       <OfflineIndicator />
       <MobileBottomNav role={user.role} />
     </div>
+  );
+}
+
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <SidebarProvider>
+      <AppLayoutInner>{children}</AppLayoutInner>
+    </SidebarProvider>
   );
 }
