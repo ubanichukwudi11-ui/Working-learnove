@@ -368,3 +368,11 @@ export function isStudentEntitledForSubject(
 
   return { entitled: true, status: ent.accessStatus, reason: "Authorized" };
 }
+
+export const DEFAULT_SUPER_ADMIN_EMAILS = ["ubanichukwudi11@gmail.com"];
+
+export function getCachedSuperAdminEmails(): string[] | null {
+  const emails = g.__learnovaLmsCache?.platformSettings?.superAdminEmails;
+  return Array.isArray(emails) ? emails : null;
+}
+
