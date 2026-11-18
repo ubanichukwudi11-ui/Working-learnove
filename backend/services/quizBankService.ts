@@ -1,5 +1,9 @@
 import { Type } from "@google/genai";
-import { ai, GEMINI_MODELS } from "../ai/geminiClient";
+import {
+  getGeminiClient,
+  isGeminiConfigured,
+  GEMINI_MODELS,
+} from "../ai/geminiClient";
 import type { TopicQuizQuestion } from "./lmsTypes";
 
 export interface TimedCbtPack {
@@ -378,11 +382,12 @@ export async function generateTopicQuizWithGemini(input: {
   topicDescription?: string;
 }): Promise<{ questions: TopicQuizQuestion[]; generatedByAi: boolean }> {
   const fallback = getTopicQuizQuestions(input.topicId, input.subjectId);
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     return { questions: fallback, generatedByAi: false };
   }
 
   try {
+    const ai = getGeminiClient();
     const response = await ai.models.generateContent({
       model: GEMINI_MODELS.FAST,
       contents: `Generate 4 multiple-choice exam questions aligned with Nigerian WAEC/JAMB SS2-SS3 standards for:

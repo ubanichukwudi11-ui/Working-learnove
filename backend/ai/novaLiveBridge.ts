@@ -2,7 +2,11 @@ import type { IncomingMessage } from "http";
 import type { WebSocket } from "ws";
 import { Modality, type LiveServerMessage } from "@google/genai";
 import { parse } from "url";
-import { ai, GEMINI_MODELS } from "./geminiClient";
+import {
+  getGeminiClient,
+  isGeminiConfigured,
+  GEMINI_MODELS,
+} from "./geminiClient";
 import {
   authenticateAccessToken,
   getSessionUserById,
@@ -55,7 +59,7 @@ export async function handleNovaLiveConnection(
   clientWs: WebSocket,
   req: IncomingMessage
 ) {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     clientWs.send(
       JSON.stringify({
         type: "error",
@@ -124,6 +128,7 @@ export async function handleNovaLiveConnection(
       ? query.voice
       : "Zephyr";
 
+  const ai = getGeminiClient();
   let session: Awaited<ReturnType<typeof ai.live.connect>> | null = null;
   let closed = false;
   const startedAtMs = Date.now();

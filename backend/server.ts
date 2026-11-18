@@ -1,10 +1,76 @@
+import fs from "fs";
+import path from "path";
 import { createServer } from "http";
 import { parse } from "url";
 import next from "next";
 import { WebSocketServer } from "ws";
 import { handleNovaLiveConnection } from "./ai/novaLiveBridge";
+import { isGeminiConfigured } from "./ai/geminiClient";
+import { checkSupabaseServerConfigured } from "./services/supabaseServer";
 
 const dev = process.env.NODE_ENV !== "production";
+
+function applyBuildOutputConfigFromManifest() {
+  if (dev) return;
+  try {
+    const manifestPath = path.join(process.cwd(), ".next", "required-server-files.json");
+    if (!fs.existsSync(manifestPath)) return;
+    const raw = fs.readFileSync(manifestPath, "utf8");
+    const parsed = JSON.parse(raw) as { config?: { output?: string } };
+    if (parsed?.config?.output === "standalone") {
+      if (!process.env.__NEXT_PRIVATE_STANDALONE_CONFIG) {
+        process.env.__NEXT_PRIVATE_STANDALONE_CONFIG = JSON.stringify(parsed.config);
+      }
+    } else if (!process.env.LEARNOVA_NEXT_OUTPUT) {
+      process.env.LEARNOVA_NEXT_OUTPUT = "standard";
+    }
+  } catch {
+    // Ignore unreadable manifest and let Next load config normally
+  }
+}
+
+function logStartupConfiguration() {
+  const requiredChecks = [
+    { name: "NEXT_PUBLIC_SUPABASE_URL", ok: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()) },
+    { name: "NEXT_PUBLIC_SUPABASE_ANON_KEY", ok: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()) },
+    { name: "SUPABASE_SERVICE_ROLE_KEY", ok: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) },
+    { name: "GEMINI_API_KEY", ok: isGeminiConfigured() },
+  ];
+
+  const integrationChecks = [
+    {
+      name: "LIVEKIT (URL/KEY/SECRET)",
+      ok: Boolean(
+        process.env.NEXT_PUBLIC_LIVEKIT_URL?.trim() &&
+          process.env.LIVEKIT_API_KEY?.trim() &&
+          process.env.LIVEKIT_API_SECRET?.trim()
+      ),
+    },
+    { name: "PAYSTACK_SECRET_KEY", ok: Boolean(process.env.PAYSTACK_SECRET_KEY?.trim()) },
+    { name: "RESEND_API_KEY", ok: Boolean(process.env.RESEND_API_KEY?.trim()) },
+    { name: "NEXT_PUBLIC_APP_URL", ok: Boolean(process.env.NEXT_PUBLIC_APP_URL?.trim()) },
+  ];
+
+  const missingRequired = requiredChecks.filter((c) => !c.ok).map((c) => c.name);
+  const missingIntegrations = integrationChecks.filter((c) => !c.ok).map((c) => c.name);
+
+  console.log(
+    `> Learnova config check: supabase=${checkSupabaseServerConfigured() ? "configured" : "MISSING"}, gemini=${isGeminiConfigured() ? "configured" : "MISSING"}`
+  );
+
+  if (missingRequired.length > 0) {
+    console.warn(
+      `> Learnova startup warning — missing required environment variable(s): ${missingRequired.join(", ")}`
+    );
+  }
+  if (missingIntegrations.length > 0) {
+    console.warn(
+      `> Learnova startup notice — unconfigured optional integration variable(s): ${missingIntegrations.join(", ")}`
+    );
+  }
+}
+
+applyBuildOutputConfigFromManifest();
 
 const rawHost = (process.env.HOST || "").trim();
 const hostname =
@@ -32,6 +98,7 @@ process.on("unhandledRejection", (reason) => {
 });
 
 async function startServer() {
+  logStartupConfiguration();
   await app.prepare();
 
   const server = createServer((req, res) => {

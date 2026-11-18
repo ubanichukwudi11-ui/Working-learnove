@@ -1,6 +1,7 @@
 import { Type } from "@google/genai";
 import {
-  ai,
+  getGeminiClient,
+  isGeminiConfigured,
   GEMINI_MODELS,
   getNovaSystemInstruction,
   resolveNovaModelConfig,
@@ -74,13 +75,15 @@ export async function runNovaChat(input: {
     );
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     throw new NovaApiError(
       "GEMINI_API_KEY is not configured in the server environment.",
       503,
       "Gemini API key is not configured on the server. Add GEMINI_API_KEY in your environment to chat with Nova AI."
     );
   }
+
+  const ai = getGeminiClient();
 
   const cfg = resolveNovaModelConfig(mode);
   const systemInstruction = getNovaSystemInstruction(persona, subjectHint);
@@ -279,11 +282,12 @@ export async function generateFlashcardsForTopic(input: {
 
   const fallback = buildDeterministicFlashcards(title, subject, content);
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     return { flashcards: fallback, generatedByAi: false };
   }
 
   try {
+    const ai = getGeminiClient();
     const response = await ai.models.generateContent({
       model: GEMINI_MODELS.FAST,
       contents: `Turn the following Nigerian secondary school study material into 6 crisp interactive revision flashcards for WAEC/JAMB exam preparation.
@@ -351,9 +355,11 @@ export async function transcribeNovaAudio(input: {
     throw new NovaApiError("Audio recording data is required.", 400);
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     throw new NovaApiError("GEMINI_API_KEY is not configured on the server.", 503);
   }
+
+  const ai = getGeminiClient();
 
   const contentsPayload = {
     parts: [
@@ -420,7 +426,7 @@ export async function draftVideoQaReply(input: {
     throw new NovaApiError("Question text is required.", 400);
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!isGeminiConfigured()) {
     return {
       draft:
         "Great question! Revisit the worked formula step shown in the video segment and check every unit conversion carefully.",
@@ -428,6 +434,7 @@ export async function draftVideoQaReply(input: {
   }
 
   try {
+    const ai = getGeminiClient();
     const res = await ai.models.generateContent({
       model: GEMINI_MODELS.FAST,
       contents: `You are a concise Nigerian secondary school subject teacher replying to a student's question underneath a video lesson.

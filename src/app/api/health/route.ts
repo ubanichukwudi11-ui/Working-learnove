@@ -3,6 +3,7 @@ import {
   checkSupabaseServerConfigured,
   getSupabaseServerClient,
 } from "@backend/services/supabaseServer";
+import { isGeminiConfigured } from "@backend/ai/geminiClient";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -46,7 +47,7 @@ export async function GET(req: NextRequest) {
         ),
         paystackConfigured: Boolean(process.env.PAYSTACK_SECRET_KEY),
         resendConfigured: Boolean(process.env.RESEND_API_KEY),
-        geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+        geminiConfigured: isGeminiConfigured(),
       },
       ...(dbError ? { dbError } : {}),
     },

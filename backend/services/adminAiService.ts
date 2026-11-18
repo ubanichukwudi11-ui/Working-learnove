@@ -1,5 +1,9 @@
 import { Type } from "@google/genai";
-import { ai, GEMINI_TEXT_MODEL } from "../ai/geminiClient";
+import {
+  getGeminiClient,
+  isGeminiConfigured,
+  GEMINI_TEXT_MODEL,
+} from "../ai/geminiClient";
 import { fetchDirectoryUsers, loadLmsState, type DirectoryUser } from "./lmsDb";
 import {
   getEligibleStudentsForLesson,
@@ -527,7 +531,7 @@ export async function getAdminAiOverview() {
   const snapshot = buildLiveSchoolSnapshot(state, users);
 
   return {
-    aiConfigured: Boolean(process.env.GEMINI_API_KEY),
+    aiConfigured: isGeminiConfigured(),
     snapshot: {
       schoolName: snapshot.schoolName,
       currentSession: snapshot.currentSession,
@@ -551,7 +555,7 @@ export async function generateAdminTimetableSuggestions(opts: {
     fetchDirectoryUsers(),
   ]);
   const snapshot = buildLiveSchoolSnapshot(state, users);
-  const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY);
+  const hasGeminiKey = isGeminiConfigured();
 
   const goal = String(
     opts.goal ||
@@ -598,6 +602,7 @@ ${JSON.stringify(
 )}
 `;
 
+      const ai = getGeminiClient();
       const response = await ai.models.generateContent({
         model: GEMINI_TEXT_MODEL,
         contents: prompt,
@@ -683,7 +688,7 @@ export async function runAdminCopilotChat(opts: {
     fetchDirectoryUsers(),
   ]);
   const snapshot = buildLiveSchoolSnapshot(state, users);
-  const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY);
+  const hasGeminiKey = isGeminiConfigured();
   const history = opts.history.slice(-8);
 
   if (hasGeminiKey) {
@@ -707,6 +712,7 @@ LIVE LEARNOVA OPERATIONS SNAPSHOT (JSON):
 ${JSON.stringify(snapshot, null, 2)}
 `;
 
+      const ai = getGeminiClient();
       const response = await ai.models.generateContent({
         model: GEMINI_TEXT_MODEL,
         contents: prompt,

@@ -9,15 +9,38 @@ export const GEMINI_MODELS = {
 
 export const GEMINI_TEXT_MODEL = GEMINI_MODELS.GENERAL;
 
-export const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
-  httpOptions: {
-    apiVersion: "v1beta",
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
+let cachedGeminiClient: GoogleGenAI | null = null;
+let cachedGeminiKey = "";
+
+export function getGeminiApiKey(): string {
+  return process.env.GEMINI_API_KEY?.trim() || "";
+}
+
+export function isGeminiConfigured(): boolean {
+  return Boolean(getGeminiApiKey());
+}
+
+export function getGeminiClient(): GoogleGenAI {
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY is not configured in the server environment."
+    );
+  }
+  if (!cachedGeminiClient || cachedGeminiKey !== apiKey) {
+    cachedGeminiKey = apiKey;
+    cachedGeminiClient = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        apiVersion: "v1beta",
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  }
+  return cachedGeminiClient;
+}
 
 export type NovaChatMode = "fast" | "general" | "deep" | "search";
 

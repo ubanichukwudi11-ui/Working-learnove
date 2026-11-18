@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
+const useStandardOutput =
+  process.env.LEARNOVA_NEXT_OUTPUT?.trim().toLowerCase() === "standard";
+
 const nextConfig: NextConfig = {
-  output: "standalone",
+  ...(useStandardOutput ? {} : { output: "standalone" }),
   reactCompiler: true,
   images: {
     remotePatterns: [
