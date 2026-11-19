@@ -1,12 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireApiAuth } from "@backend/services/serverAuth";
+import { createInitialLmsState, loadLmsState } from "@backend/services/lmsDb";
+import { isSupabaseServerConfigured } from "@backend/services/supabaseServer";
 import {
   getAcademicsCatalog,
   handleAcademicsMutation,
 } from "@backend/services/academicsService";
 
 export async function GET(req: NextRequest) {
-  const auth = await requireApiAuth(req);
+  const isPublicCatalog = req.nextUrl.searchParams.get("public") === "catalog";
+  if (isPublicCatalog) {
+    try {
+      const state = isSupabaseServerConfigured
+        ? await loadLmsState()
+        : createInitialLmsState();
+      return NextResponse.json({
+        classLevels: state.classLevels.filter((c) => c.isActive),
+        subjects: state.subjects.filter((s) => s.isActive),
+      });
+    } catch {
+      const fallback = createInitialLmsState();
+      return NextResponse.json({
+        classLevels: fallback.classLevels.filter((c) => c.isActive),
+        subjects: fallback.subjects.filter((s) => s.isActive),
+      });
+    }
+  }
+
+  const auth = await requireApiAuth(req, undefined, {
+    allowUnapprovedTeacher: true,
+  });
   if (auth.errorResponse) return auth.errorResponse;
 
   const catalog = await getAcademicsCatalog(auth.user);

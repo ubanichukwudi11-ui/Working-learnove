@@ -1,7 +1,7 @@
 import { User } from "@/lib/auth";
 
 export interface TeacherReviewProps {
-  teacher: User;
+  teacher: User & { teachingCertificate?: string; bio?: string };
 }
 
 export interface VerificationItem {

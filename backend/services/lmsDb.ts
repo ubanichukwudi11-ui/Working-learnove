@@ -28,8 +28,13 @@ export interface DirectoryUser {
   experience?: string;
   licenseNumber?: string;
   subject?: string;
+  bio?: string;
+  adminNotes?: string;
+  requestedSubjects?: string[];
+  requestedClassLevels?: string[];
   profilePhoto?: string;
   teachingCertificate?: string;
+  certificate?: string;
   degreeCertificate?: string;
   governmentId?: string;
   cv?: string;
@@ -268,8 +273,17 @@ export async function fetchDirectoryUsers(): Promise<DirectoryUser[]> {
       institution: t?.institution || undefined,
       experience: t?.experience || undefined,
       licenseNumber: t?.license_number || undefined,
+      bio: t?.bio || undefined,
+      adminNotes: t?.admin_notes || undefined,
+      requestedSubjects: Array.isArray(t?.requested_subjects)
+        ? t.requested_subjects
+        : undefined,
+      requestedClassLevels: Array.isArray(t?.requested_class_levels)
+        ? t.requested_class_levels
+        : undefined,
       profilePhoto: t?.profile_photo || undefined,
       teachingCertificate: t?.teaching_certificate || undefined,
+      certificate: t?.teaching_certificate || undefined,
       degreeCertificate: t?.degree_certificate || undefined,
       governmentId: t?.government_id || undefined,
       cv: t?.cv || undefined,

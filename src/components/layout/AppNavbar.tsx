@@ -13,16 +13,20 @@ import {
   Menu,
   ChevronDown,
   ChevronRight,
+  ArrowLeft,
   User as UserIcon,
   Settings,
   Shield,
   CreditCard,
-  SlidersHorizontal,
+  Palette,
 } from "lucide-react";
 import { formatLagosTime, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
 import { PWAInstallButton } from "@frontend/components/pwa/PwaSupport";
 import { useSidebar } from "@/context/SidebarContext";
-import ThemeSwitcher from "./ThemeSwitcher";
+import { getDashboardRoute } from "@/lib/getDashboardRoute";
+import type { UserRole } from "@/lib/roles";
+
+export type HeaderMode = "dashboard" | "compact" | "immersive";
 
 type User = {
   id: string;
@@ -51,6 +55,7 @@ type SearchCandidate = {
 type Props = {
   user: User;
   onLogout: () => void;
+  mode?: HeaderMode;
 };
 
 const ROUTE_LABELS: Record<string, string> = {
@@ -65,9 +70,10 @@ const ROUTE_LABELS: Record<string, string> = {
   analytics: "Achievements",
   subscriptions: "Subscriptions & Billing",
   notifications: "Notifications",
-  profile: "Profile & Settings",
+  profile: "My Profile",
+  settings: "Settings",
   teacher: "Educator Home",
-  applications: "Applications",
+  applications: "Verification & Applications",
   classes: "Classes & Timetable",
   notes: "Lesson Studio",
   attendance: "Attendance",
@@ -76,7 +82,7 @@ const ROUTE_LABELS: Record<string, string> = {
   admin: "School Admin",
   academics: "Academics",
   classrooms: "Classroom Control",
-  teachers: "Teacher Approvals",
+  teachers: "Teacher Verification",
   payments: "Payments & Access",
   "ai-assistant": "Admin AI Copilot",
   "super-admin": "Platform Console",
@@ -90,11 +96,12 @@ function getRoleRoutesForSearch(role: string): SearchCandidate[] {
       { label: "Academics & Curriculum", category: "Page", href: "/admin/academics" },
       { label: "Timetable Scheduler", category: "Page", href: "/admin/timetable" },
       { label: "Classroom Control Centre", category: "Page", href: "/admin/classrooms" },
-      { label: "Teacher Approvals", category: "Page", href: "/admin/teachers" },
+      { label: "Teacher Verification Centre", category: "Page", href: "/admin/teachers" },
       { label: "Students Directory", category: "Page", href: "/admin/students" },
       { label: "Payments & Access", category: "Page", href: "/admin/payments" },
       { label: "Admin AI Copilot", category: "Page", href: "/admin/ai-assistant" },
-      { label: "Profile & Settings", category: "Account", href: "/profile" },
+      { label: "Settings & Appearance", category: "Account", href: "/settings" },
+      { label: "My Profile", category: "Account", href: "/profile" },
     ];
   }
   if (role === "ADMIN") {
@@ -104,11 +111,12 @@ function getRoleRoutesForSearch(role: string): SearchCandidate[] {
       { label: "Timetable Scheduler", category: "Page", href: "/admin/timetable" },
       { label: "Classroom Control Centre", category: "Page", href: "/admin/classrooms" },
       { label: "Video Lessons Manager", category: "Page", href: "/admin/videos" },
-      { label: "Teacher Approvals", category: "Page", href: "/admin/teachers" },
+      { label: "Teacher Verification Centre", category: "Page", href: "/admin/teachers" },
       { label: "Students Directory", category: "Page", href: "/admin/students" },
       { label: "Payments & Access", category: "Page", href: "/admin/payments" },
       { label: "Admin AI Copilot", category: "Page", href: "/admin/ai-assistant" },
-      { label: "Profile & Settings", category: "Account", href: "/profile" },
+      { label: "Settings & Appearance", category: "Account", href: "/settings" },
+      { label: "My Profile", category: "Account", href: "/profile" },
     ];
   }
   if (role === "TEACHER") {
@@ -120,7 +128,8 @@ function getRoleRoutesForSearch(role: string): SearchCandidate[] {
       { label: "Assignments & Quizzes", category: "Page", href: "/teacher/assignments" },
       { label: "Attendance Logs", category: "Page", href: "/teacher/attendance" },
       { label: "Students Roster", category: "Page", href: "/teacher/students" },
-      { label: "Subject Applications", category: "Page", href: "/teacher/applications" },
+      { label: "Verification & Applications", category: "Page", href: "/teacher/applications" },
+      { label: "Settings & Appearance", category: "Account", href: "/settings" },
       { label: "Educator Profile", category: "Account", href: "/teacher/profile" },
     ];
   }
@@ -131,7 +140,8 @@ function getRoleRoutesForSearch(role: string): SearchCandidate[] {
       { label: "Live Classrooms", category: "Page", href: "/live-classes" },
       { label: "Subscriptions & Billing", category: "Page", href: "/subscriptions" },
       { label: "Notifications", category: "Page", href: "/notifications" },
-      { label: "Profile & Settings", category: "Account", href: "/profile" },
+      { label: "Settings & Appearance", category: "Account", href: "/settings" },
+      { label: "My Profile", category: "Account", href: "/profile" },
     ];
   }
   return [
@@ -145,11 +155,12 @@ function getRoleRoutesForSearch(role: string): SearchCandidate[] {
     { label: "Nova AI Tutor", category: "Page", href: "/nova" },
     { label: "Achievements & Progress", category: "Page", href: "/analytics" },
     { label: "Subscriptions & Billing", category: "Account", href: "/subscriptions" },
-    { label: "Profile & Settings", category: "Account", href: "/profile" },
+    { label: "Settings & Appearance", category: "Account", href: "/settings" },
+    { label: "My Profile", category: "Account", href: "/profile" },
   ];
 }
 
-export default function AppNavbar({ user, onLogout }: Props) {
+export default function AppNavbar({ user, onLogout, mode = "dashboard" }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const { collapsed, toggleMobile } = useSidebar();
@@ -167,17 +178,33 @@ export default function AppNavbar({ user, onLogout }: Props) {
   const notifRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
+  const isDashboard = mode === "dashboard";
+  const isImmersive = mode === "immersive";
+  const homeHref = getDashboardRoute(user.role as UserRole);
+
   const breadcrumbs = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
-    if (segments.length === 0) return [{ label: "Workspace", href: "/dashboard" }];
+    if (segments.length === 0) return [{ label: "Workspace", href: homeHref }];
     return segments.map((seg, i) => {
       const href = "/" + segments.slice(0, i + 1).join("/");
       const label =
         ROUTE_LABELS[seg] ||
-        (seg.length > 18 ? "Details" : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+        (seg.length > 18
+          ? "Details"
+          : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
       return { label, href };
     });
-  }, [pathname]);
+  }, [pathname, homeHref]);
+
+  const currentPageLabel =
+    breadcrumbs[breadcrumbs.length - 1]?.label || "Workspace";
+
+  const backTargetHref = useMemo(() => {
+    if (breadcrumbs.length > 1) {
+      return breadcrumbs[breadcrumbs.length - 2].href;
+    }
+    return homeHref;
+  }, [breadcrumbs, homeHref]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -192,12 +219,15 @@ export default function AppNavbar({ user, onLogout }: Props) {
   }, []);
 
   const fetchSearchCandidates = useCallback(async () => {
+    if (!isDashboard) return;
     const baseItems = getRoleRoutesForSearch(user.role);
     try {
       const items: SearchCandidate[] = [...baseItems];
       const [acadRes, roomsRes] = await Promise.all([
         fetch("/api/lms/academics", { cache: "no-store" }),
-        fetch("/api/lms/classrooms", { cache: "no-store" }),
+        user.role === "TEACHER" && user.status !== "ACTIVE"
+          ? Promise.resolve(null)
+          : fetch("/api/lms/classrooms", { cache: "no-store" }),
       ]);
       if (acadRes.ok) {
         const acad = await acadRes.json();
@@ -214,7 +244,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
           });
         }
       }
-      if (roomsRes.ok) {
+      if (roomsRes && roomsRes.ok) {
         const rm = await roomsRes.json();
         for (const c of rm.classrooms || []) {
           items.push({
@@ -233,7 +263,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
     } catch {
       setSearchIndex(baseItems);
     }
-  }, [user.role]);
+  }, [isDashboard, user.role, user.status]);
 
   useEffect(() => {
     fetchNotifications();
@@ -243,11 +273,12 @@ export default function AppNavbar({ user, onLogout }: Props) {
   }, [fetchNotifications, fetchSearchCandidates]);
 
   useEffect(() => {
+    if (!isDashboard) return;
     const interval = setInterval(() => {
       setLagosTime(formatLagosTime());
     }, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isDashboard]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -262,7 +293,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
       }
     }
     function handleShortcut(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if (isDashboard && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         searchInputRef.current?.focus();
         setShowSearch(true);
@@ -279,7 +310,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("keydown", handleShortcut);
     };
-  }, []);
+  }, [isDashboard]);
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -330,7 +361,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
       case "ADMIN":
         return "School Admin";
       case "TEACHER":
-        return "Educator";
+        return user.status === "ACTIVE" ? "Verified Educator" : "Educator (Pending)";
       case "PARENT":
         return "Parent";
       default:
@@ -339,121 +370,162 @@ export default function AppNavbar({ user, onLogout }: Props) {
   };
 
   const profileHref = user.role === "TEACHER" ? "/teacher/profile" : "/profile";
+  const heightClass = isDashboard ? "h-16" : isImmersive ? "h-11" : "h-12";
 
   return (
     <header
-      className={`fixed top-0 right-0 left-0 h-16 z-40 bg-[var(--surface)]/92 backdrop-blur-md border-b border-[var(--border)] flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 lg:px-8 transition-[left,background-color] duration-200 ease-out ${
+      className={`fixed top-0 right-0 left-0 ${heightClass} z-40 learnova-glass-header flex items-center justify-between gap-2.5 sm:gap-4 px-4 sm:px-6 lg:px-8 transition-[left,height,background-color] duration-200 ease-out ${
         collapsed ? "md:left-[76px]" : "md:left-64"
       }`}
     >
-      {/* Mobile Drawer Toggle + Brand */}
-      <div className="flex items-center gap-2.5 md:hidden shrink-0">
-        <button
-          type="button"
-          onClick={toggleMobile}
-          aria-label="Open navigation menu"
-          className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
-        >
-          <Menu size={18} />
-        </button>
-        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-white shadow-sm shadow-[#4F46E5]/25">
-          <GraduationCap size={17} />
-        </div>
-        <span className="landing-display font-extrabold text-[var(--foreground)] text-base tracking-tight">
-          Learnova
-        </span>
-      </div>
+      {/* Left: Context-Aware Header Lead */}
+      {isDashboard ? (
+        <>
+          {/* Mobile Drawer Toggle + Brand */}
+          <div className="flex items-center gap-2.5 md:hidden shrink-0">
+            <button
+              type="button"
+              onClick={toggleMobile}
+              aria-label="Open navigation menu"
+              className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
+            >
+              <Menu size={18} />
+            </button>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-white shadow-sm shadow-[#4F46E5]/25">
+              <GraduationCap size={17} />
+            </div>
+            <span className="landing-display font-extrabold text-[var(--foreground)] text-base tracking-tight">
+              Learnova
+            </span>
+          </div>
 
-      {/* Desktop Breadcrumb Context */}
-      <nav
-        aria-label="Workspace breadcrumb"
-        className="hidden lg:flex items-center gap-1.5 text-xs text-[var(--foreground-subtle)] shrink-0 max-w-[260px] truncate"
-      >
-        {breadcrumbs.map((bc, idx) => (
-          <span key={bc.href} className="inline-flex items-center gap-1.5 min-w-0">
-            {idx > 0 && <ChevronRight size={13} className="shrink-0 opacity-60" />}
-            {idx === breadcrumbs.length - 1 ? (
-              <span className="font-bold text-[var(--foreground)] truncate">
-                {bc.label}
+          {/* Desktop Breadcrumb Context */}
+          <nav
+            aria-label="Workspace breadcrumb"
+            className="hidden lg:flex items-center gap-1.5 text-xs text-[var(--foreground-subtle)] shrink-0 max-w-[260px] truncate"
+          >
+            {breadcrumbs.map((bc, idx) => (
+              <span key={bc.href} className="inline-flex items-center gap-1.5 min-w-0">
+                {idx > 0 && <ChevronRight size={13} className="shrink-0 opacity-60" />}
+                {idx === breadcrumbs.length - 1 ? (
+                  <span className="font-bold text-[var(--foreground)] truncate">
+                    {bc.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={bc.href}
+                    className="font-medium hover:text-[var(--foreground)] truncate transition"
+                  >
+                    {bc.label}
+                  </Link>
+                )}
               </span>
-            ) : (
-              <Link
-                href={bc.href}
-                className="font-medium hover:text-[var(--foreground)] truncate transition"
-              >
-                {bc.label}
-              </Link>
-            )}
-          </span>
-        ))}
-      </nav>
+            ))}
+          </nav>
 
-      {/* Global Search Bar */}
-      <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block min-w-0">
-        <div className="flex items-center gap-2.5 bg-[var(--surface-lavender)] border border-[var(--border)] focus-within:border-[#7C3AED] focus-within:bg-[var(--surface)] focus-within:ring-2 focus-within:ring-[#7C3AED]/15 rounded-xl px-3.5 py-2 transition">
-          <Search size={16} className="text-[var(--foreground-subtle)] shrink-0" />
-          <input
-            ref={searchInputRef}
-            value={query}
-            onFocus={() => setShowSearch(true)}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setShowSearch(true);
-            }}
-            placeholder="Search pages, subjects, or classrooms..."
-            className="bg-transparent outline-none text-sm text-[var(--foreground)] w-full placeholder:text-[var(--foreground-subtle)]"
-          />
-          <kbd className="hidden lg:inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--foreground-subtle)] shrink-0">
-            Ctrl K
-          </kbd>
-        </div>
+          {/* Global Search Bar (Dashboard Home Only) */}
+          <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block min-w-0">
+            <div className="flex items-center gap-2.5 bg-[var(--surface-lavender)]/80 border border-[var(--border)] focus-within:border-[#7C3AED] focus-within:bg-[var(--surface)] focus-within:ring-2 focus-within:ring-[#7C3AED]/15 rounded-xl px-3.5 py-2 transition">
+              <Search size={16} className="text-[var(--foreground-subtle)] shrink-0" />
+              <input
+                ref={searchInputRef}
+                value={query}
+                onFocus={() => setShowSearch(true)}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setShowSearch(true);
+                }}
+                placeholder="Search pages, subjects, or classrooms..."
+                className="bg-transparent outline-none text-sm text-[var(--foreground)] w-full placeholder:text-[var(--foreground-subtle)]"
+              />
+              <kbd className="hidden lg:inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--foreground-subtle)] shrink-0">
+                Ctrl K
+              </kbd>
+            </div>
 
-        {showSearch && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-xl py-2 z-50">
-            <p className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--foreground-subtle)]">
-              {query.trim() ? "Matching Results" : "Quick Navigation"}
-            </p>
-            {searchResults.length > 0 ? (
-              searchResults.map((res, i) => (
-                <button
-                  key={`${res.href}-${i}`}
-                  type="button"
-                  onClick={() => {
-                    setShowSearch(false);
-                    setQuery("");
-                    router.push(res.href);
-                  }}
-                  className="w-full px-4 py-2.5 text-left hover:bg-[var(--surface-lavender)] flex items-center justify-between gap-2 transition"
-                >
-                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                    {res.label}
-                  </span>
-                  <span className="text-xs text-[#6D28D9] dark:text-[#C4B5FD] font-semibold shrink-0">
-                    {res.category}
-                  </span>
-                </button>
-              ))
-            ) : (
-              <p className="px-4 py-3 text-xs text-[var(--foreground-subtle)]">
-                No matches found for &ldquo;{query}&rdquo;.
-              </p>
+            {showSearch && (
+              <div className="absolute top-full left-0 right-0 mt-2 learnova-glass-popover rounded-2xl py-2 z-50">
+                <p className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--foreground-subtle)]">
+                  {query.trim() ? "Matching Results" : "Quick Navigation"}
+                </p>
+                {searchResults.length > 0 ? (
+                  searchResults.map((res, i) => (
+                    <button
+                      key={`${res.href}-${i}`}
+                      type="button"
+                      onClick={() => {
+                        setShowSearch(false);
+                        setQuery("");
+                        router.push(res.href);
+                      }}
+                      className="w-full px-4 py-2.5 text-left hover:bg-[var(--surface-lavender)] flex items-center justify-between gap-2 transition"
+                    >
+                      <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                        {res.label}
+                      </span>
+                      <span className="text-xs text-[#6D28D9] dark:text-[#C4B5FD] font-semibold shrink-0">
+                        {res.category}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <p className="px-4 py-3 text-xs text-[var(--foreground-subtle)]">
+                    No matches found for &ldquo;{query}&rdquo;.
+                  </p>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        /* Compact or Immersive Contextual Header Lead */
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={toggleMobile}
+            aria-label="Open navigation menu"
+            className="md:hidden p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)]/80 text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition shrink-0"
+          >
+            <Menu size={16} />
+          </button>
+
+          <Link
+            href={backTargetHref}
+            aria-label="Back"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-lavender)]/80 transition shrink-0"
+          >
+            <ArrowLeft size={14} />
+            <span className="hidden sm:inline">
+              {breadcrumbs.length > 1
+                ? breadcrumbs[breadcrumbs.length - 2].label
+                : "Home"}
+            </span>
+          </Link>
+
+          <span aria-hidden="true" className="text-[var(--foreground-subtle)]/50 text-xs">
+            /
+          </span>
+
+          <span className="text-xs sm:text-sm font-bold text-[var(--foreground)] truncate">
+            {currentPageLabel}
+          </span>
+        </div>
+      )}
 
       {/* Right Info & Actions */}
-      <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
-        <div className="hidden xl:flex items-center gap-1.5 text-xs text-[var(--foreground-muted)] font-medium tabular-nums bg-[var(--surface-lavender)] border border-[var(--border)] rounded-lg px-2.5 py-1.5">
-          <Clock size={14} className="text-[#0891B2] dark:text-[#22D3EE]" />
-          <span>{lagosTime}</span>
-          <span>·</span>
-          <span>{TIMEZONE_LABEL}</span>
-        </div>
+      <div className="flex items-center gap-2 sm:gap-2.5 ml-auto shrink-0">
+        {isDashboard && (
+          <>
+            <div className="hidden xl:flex items-center gap-1.5 text-xs text-[var(--foreground-muted)] font-medium tabular-nums bg-[var(--surface-lavender)]/85 border border-[var(--border)] rounded-lg px-2.5 py-1.5">
+              <Clock size={14} className="text-[#0891B2] dark:text-[#22D3EE]" />
+              <span>{lagosTime}</span>
+              <span>·</span>
+              <span>{TIMEZONE_LABEL}</span>
+            </div>
 
-        <PWAInstallButton />
-
-        <ThemeSwitcher variant="compact" />
+            <PWAInstallButton />
+          </>
+        )}
 
         {/* Notification Center */}
         <div ref={notifRef} className="relative">
@@ -466,9 +538,11 @@ export default function AppNavbar({ user, onLogout }: Props) {
             }}
             aria-label="Notifications"
             aria-expanded={showNotifications}
-            className="relative p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground-muted)] hover:text-[#4F46E5] dark:hover:text-[#A5B4FC] hover:border-[var(--border-strong)] hover:bg-[var(--surface-lavender)] transition"
+            className={`relative rounded-xl border border-[var(--border)] bg-[var(--surface)]/85 text-[var(--foreground-muted)] hover:text-[#4F46E5] dark:hover:text-[#A5B4FC] hover:border-[var(--border-strong)] hover:bg-[var(--surface-lavender)] transition ${
+              isDashboard ? "p-2" : "p-1.5"
+            }`}
           >
-            <Bell size={18} />
+            <Bell size={isDashboard ? 18 : 16} />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
                 {unreadCount > 99 ? "99+" : unreadCount}
@@ -477,8 +551,8 @@ export default function AppNavbar({ user, onLogout }: Props) {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--surface-lavender)] flex items-center justify-between">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 learnova-glass-popover rounded-2xl overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--surface-lavender)]/70 flex items-center justify-between">
                 <span className="text-sm font-bold text-[var(--foreground)]">
                   Notifications
                 </span>
@@ -512,7 +586,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
                         markOneRead(n.id);
                         setShowNotifications(false);
                       }}
-                      className={`block px-4 py-3 hover:bg-[var(--surface-lavender)] transition ${
+                      className={`block px-4 py-3 hover:bg-[var(--surface-lavender)]/80 transition ${
                         !n.isRead ? "bg-[#4F46E5]/5 dark:bg-[#4F46E5]/12" : ""
                       }`}
                     >
@@ -540,7 +614,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
                   ))
                 )}
               </div>
-              <div className="px-4 py-2.5 border-t border-[var(--border)] bg-[var(--surface-lavender)] text-center">
+              <div className="px-4 py-2.5 border-t border-[var(--border)] bg-[var(--surface-lavender)]/70 text-center">
                 <Link
                   href="/notifications"
                   onClick={() => setShowNotifications(false)}
@@ -553,7 +627,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
           )}
         </div>
 
-        {/* Account & Profile Dropdown Menu */}
+        {/* Account & Settings Dropdown Menu (No Theme Switcher in Global Header) */}
         <div ref={accountRef} className="relative">
           <button
             type="button"
@@ -563,29 +637,39 @@ export default function AppNavbar({ user, onLogout }: Props) {
             }}
             aria-label="Open account menu"
             aria-expanded={showAccountMenu}
-            className="flex items-center gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-lavender)] hover:border-[var(--border-strong)] p-1 sm:pr-2.5 transition"
+            className={`flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)]/85 hover:bg-[var(--surface-lavender)] hover:border-[var(--border-strong)] transition ${
+              isDashboard ? "p-1 sm:pr-2.5" : "p-1"
+            }`}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0B1230] via-[#151A44] to-[#4F46E5] text-white flex items-center justify-center text-xs font-bold shrink-0 ring-2 ring-[#EDE9FE] dark:ring-white/15">
+            <div
+              className={`${
+                isDashboard ? "w-8 h-8" : "w-7 h-7"
+              } rounded-lg bg-gradient-to-br from-[#0B1230] via-[#151A44] to-[#4F46E5] text-white flex items-center justify-center text-xs font-bold shrink-0 ring-2 ring-[#EDE9FE] dark:ring-white/15`}
+            >
               {initials || "LN"}
             </div>
-            <div className="hidden md:block text-left leading-tight">
-              <p className="text-xs font-bold text-[var(--foreground)] truncate max-w-[130px]">
-                {user.fullName}
-              </p>
-              <p className="text-[11px] font-semibold text-[#6D28D9] dark:text-[#C4B5FD]">
-                {roleBadgeLabel()}
-              </p>
-            </div>
-            <ChevronDown size={14} className="hidden sm:block text-[var(--foreground-subtle)]" />
+            {isDashboard && (
+              <div className="hidden md:block text-left leading-tight">
+                <p className="text-xs font-bold text-[var(--foreground)] truncate max-w-[130px]">
+                  {user.fullName}
+                </p>
+                <p className="text-[11px] font-semibold text-[#6D28D9] dark:text-[#C4B5FD]">
+                  {roleBadgeLabel()}
+                </p>
+              </div>
+            )}
+            {isDashboard && (
+              <ChevronDown size={14} className="hidden sm:block text-[var(--foreground-subtle)]" />
+            )}
           </button>
 
           {showAccountMenu && (
             <div
               role="menu"
-              className="absolute right-0 mt-2 w-72 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-50"
+              className="absolute right-0 mt-2 w-72 learnova-glass-popover rounded-2xl overflow-hidden z-50"
             >
               {/* User Identity Header */}
-              <div className="p-4 border-b border-[var(--border)] bg-[var(--surface-lavender)] flex items-center gap-3">
+              <div className="p-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]/70 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center text-sm font-bold shrink-0">
                   {initials || "LN"}
                 </div>
@@ -605,23 +689,31 @@ export default function AppNavbar({ user, onLogout }: Props) {
               {/* Navigation Links */}
               <div className="p-1.5 space-y-0.5">
                 <Link
+                  href="/settings"
+                  onClick={() => setShowAccountMenu(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
+                >
+                  <Settings size={15} className="text-[#4F46E5] dark:text-[#A5B4FC]" />
+                  Settings
+                </Link>
+                <Link
+                  href="/settings?tab=appearance"
+                  onClick={() => setShowAccountMenu(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
+                >
+                  <Palette size={15} className="text-[#7C3AED] dark:text-[#C4B5FD]" />
+                  Appearance &amp; Theme
+                </Link>
+                <Link
                   href={profileHref}
                   onClick={() => setShowAccountMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
                 >
-                  <UserIcon size={15} className="text-[#4F46E5] dark:text-[#A5B4FC]" />
-                  View &amp; Edit Profile
+                  <UserIcon size={15} className="text-indigo-500 dark:text-indigo-300" />
+                  My Profile
                 </Link>
                 <Link
-                  href="/profile?tab=preferences"
-                  onClick={() => setShowAccountMenu(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
-                >
-                  <SlidersHorizontal size={15} className="text-[#7C3AED] dark:text-[#C4B5FD]" />
-                  Account &amp; Learning Settings
-                </Link>
-                <Link
-                  href="/profile?tab=security"
+                  href="/settings?tab=security"
                   onClick={() => setShowAccountMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
                 >
@@ -629,7 +721,7 @@ export default function AppNavbar({ user, onLogout }: Props) {
                   Security &amp; Password
                 </Link>
                 <Link
-                  href="/profile?tab=notifications"
+                  href="/settings?tab=notifications"
                   onClick={() => setShowAccountMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
                 >
@@ -646,17 +738,6 @@ export default function AppNavbar({ user, onLogout }: Props) {
                     Subscription &amp; Billing
                   </Link>
                 )}
-              </div>
-
-              {/* Theme Picker Inline */}
-              <div className="px-3 py-2.5 border-t border-[var(--border)] space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] font-bold text-[var(--foreground-subtle)]">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Settings size={12} />
-                    Theme Preference
-                  </span>
-                </div>
-                <ThemeSwitcher variant="inline" />
               </div>
 
               {/* Sign Out Action */}

@@ -50,7 +50,7 @@ export default function TeacherSidebar() {
       workspaceLabel="Educator Workspace"
       brandIcon={GraduationCap}
       accentTextColor="text-[#22D3EE]"
-      settingsHref="/teacher/profile"
+      settingsHref="/settings"
       groups={groups}
     />
   );

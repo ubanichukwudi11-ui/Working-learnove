@@ -87,9 +87,10 @@ export default function ProtectedRoute({ children, roles }: Props) {
   const isGatedTeacherRoute =
     user.role === "TEACHER" &&
     user.status !== "ACTIVE" &&
-    GATED_TEACHER_PREFIXES.some(
-      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-    );
+    (pathname === "/teacher" ||
+      GATED_TEACHER_PREFIXES.some(
+        (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
+      ));
 
   if (isGatedTeacherRoute) {
     const isRejectedOrSuspended =
@@ -107,14 +108,18 @@ export default function ProtectedRoute({ children, roles }: Props) {
             {isRejectedOrSuspended ? <ShieldAlert size={24} /> : <Clock size={24} />}
           </div>
           <h1 className="landing-display text-xl font-extrabold text-[var(--foreground)]">
-            {isRejectedOrSuspended
-              ? "Educator Account Approval Required"
+            {user.status === "SUSPENDED"
+              ? "Educator Access Suspended"
+              : user.status === "REJECTED"
+              ? "Educator Application Requires Attention"
               : "Verification Pending School Admin Approval"}
           </h1>
           <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
-            {isRejectedOrSuspended
-              ? `Your educator account is currently marked ${user.status.toLowerCase()}. Live teaching and student management tools remain locked until a School Administrator approves your subject application.`
-              : "Your teacher credentials are currently under review by School Administration. Live classes, attendance, notes, and student tools will unlock once your account is approved."}
+            {user.status === "SUSPENDED"
+              ? "Your educator access is currently suspended by School Administration. Live classes, timetable sessions, and student tools are disabled."
+              : user.status === "REJECTED"
+              ? "Your recent teacher verification request was not approved. Inspect administrator feedback in your application portal or submit updated credentials."
+              : "Your teacher credentials are currently under review by School Administration. Live classrooms, video publishing, attendance, and teacher dashboard tools unlock once approved."}
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Link
@@ -122,14 +127,14 @@ export default function ProtectedRoute({ children, roles }: Props) {
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
             >
               <FileBadge2 size={14} />
-              View My Applications
+              View Application Status
             </Link>
             <Link
-              href="/teacher"
+              href="/settings"
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] text-xs font-bold hover:bg-[var(--surface-lavender)] transition"
             >
               <ArrowLeft size={14} />
-              Teacher Desk
+              Account Settings
             </Link>
           </div>
         </div>

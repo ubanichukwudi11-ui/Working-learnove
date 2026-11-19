@@ -7,7 +7,9 @@ import {
 } from "@backend/services/teacherApplicationService";
 
 export async function GET(req: NextRequest) {
-  const auth = await requireApiAuth(req, ["TEACHER", "ADMIN", "SUPER_ADMIN"]);
+  const auth = await requireApiAuth(req, ["TEACHER", "ADMIN", "SUPER_ADMIN"], {
+    allowUnapprovedTeacher: true,
+  });
   if (auth.errorResponse) return auth.errorResponse;
 
   const overview = await getTeacherApplicationsOverview(auth.user);
@@ -15,7 +17,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireApiAuth(req, ["TEACHER", "ADMIN", "SUPER_ADMIN"]);
+  const auth = await requireApiAuth(req, ["TEACHER", "ADMIN", "SUPER_ADMIN"], {
+    allowUnapprovedTeacher: true,
+  });
   if (auth.errorResponse) return auth.errorResponse;
 
   try {

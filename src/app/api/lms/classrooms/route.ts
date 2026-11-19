@@ -10,8 +10,19 @@ export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);
   if (auth.errorResponse) return auth.errorResponse;
 
-  const overview = await getClassroomsOverview(auth.user);
-  return NextResponse.json(overview);
+  try {
+    const overview = await getClassroomsOverview(auth.user);
+    return NextResponse.json(overview);
+  } catch (err: unknown) {
+    if (err instanceof ClassroomServiceError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    const errMsg = (err as { message?: string })?.message;
+    return NextResponse.json(
+      { error: errMsg || "Failed to load classrooms." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {

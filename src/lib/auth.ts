@@ -303,12 +303,17 @@ export async function registerTeacher(data: {
   address?: string;
   dob?: string;
   subject?: string;
+  subjects?: string[];
+  classLevelIds?: string[];
+  subjectApplications?: Array<{ subjectId: string; classLevelIds: string[] }>;
+  bio?: string;
   qualification?: string;
   institution?: string;
   experience?: string;
   licenseNumber?: string;
   profilePhoto?: string;
   certificate?: string;
+  teachingCertificate?: string;
   degreeCertificate?: string;
   governmentId?: string;
   cv?: string;

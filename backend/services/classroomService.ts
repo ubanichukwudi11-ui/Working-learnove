@@ -19,6 +19,12 @@ export class ClassroomServiceError extends Error {
 }
 
 export async function getClassroomsOverview(user: AuthenticatedSessionUser) {
+  if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+    throw new ClassroomServiceError(
+      "Your educator account requires School Administrator approval before accessing classrooms.",
+      403
+    );
+  }
   const [state, users] = await Promise.all([
     loadLmsState(),
     fetchDirectoryUsers(),
@@ -95,6 +101,12 @@ export async function getClassroomsOverview(user: AuthenticatedSessionUser) {
 }
 
 export async function listLiveClassesForUser(user: AuthenticatedSessionUser) {
+  if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+    throw new ClassroomServiceError(
+      "Your educator account requires School Administrator approval before accessing live classrooms.",
+      403
+    );
+  }
   const state = await loadLmsState();
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
 
@@ -184,6 +196,12 @@ export async function handleClassroomMutation(
   user: AuthenticatedSessionUser,
   body: Record<string, unknown>
 ) {
+  if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+    throw new ClassroomServiceError(
+      "Your educator account requires School Administrator approval before managing classrooms.",
+      403
+    );
+  }
   const action = String(body.action || "");
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
   const users = await fetchDirectoryUsers();

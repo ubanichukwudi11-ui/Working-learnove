@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { PageHeader, CardSkeleton } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -618,10 +617,16 @@ function ProfileWorkspace() {
               Appearance &amp; Theme
             </h2>
             <p className="text-xs text-[var(--foreground-subtle)]">
-              Choose Light, Dark, or match your device&apos;s system setting across every Learnova page.
+              Theme modes (Light, Dark, System), Liquid Glass preview, and Accessibility controls are managed in Settings.
             </p>
-            <div className="max-w-sm pt-1">
-              <ThemeSwitcher variant="segmented" />
+            <div className="pt-1">
+              <Link
+                href="/settings?tab=appearance"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:border-[#4F46E5] transition"
+              >
+                Open Appearance &amp; Theme Settings
+                <ArrowRight size={14} />
+              </Link>
             </div>
           </div>
 

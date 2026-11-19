@@ -3,7 +3,9 @@ import { requireApiAuth } from "@backend/services/serverAuth";
 import { loadLmsState, mutateLmsState } from "@backend/services/lmsDb";
 
 export async function GET(req: NextRequest) {
-  const auth = await requireApiAuth(req);
+  const auth = await requireApiAuth(req, undefined, {
+    allowUnapprovedTeacher: true,
+  });
   if (auth.errorResponse) return auth.errorResponse;
 
   const state = await loadLmsState();
@@ -22,7 +24,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const auth = await requireApiAuth(req);
+  const auth = await requireApiAuth(req, undefined, {
+    allowUnapprovedTeacher: true,
+  });
   if (auth.errorResponse) return auth.errorResponse;
 
   const body = await req.json();

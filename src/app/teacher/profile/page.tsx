@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { CardSkeleton, EmptyState, PageHeader } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { CURRENT_ACADEMIC_TERM, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
@@ -98,11 +97,13 @@ export default function TeacherProfilePage() {
               </div>
             </div>
 
-            <div className="w-full sm:w-64 space-y-1.5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--foreground-subtle)]">
-                Theme Preference
-              </p>
-              <ThemeSwitcher variant="segmented" />
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Link
+                href="/settings?tab=appearance"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] hover:bg-[var(--surface-subtle)] text-xs font-bold text-[var(--foreground)] transition"
+              >
+                Theme &amp; Settings →
+              </Link>
             </div>
           </div>
 

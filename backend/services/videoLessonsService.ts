@@ -750,6 +750,12 @@ MARKING SCHEME WEIGHTS (50 MARKS)
 export async function getVideoLessonsOverview(user: AuthenticatedSessionUser) {
   const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
   const isTeacher = user.role === "TEACHER";
+  if (isTeacher && user.status !== "ACTIVE") {
+    throw new VideoServiceError(
+      "Your educator account requires School Administrator approval before accessing the Video Studio.",
+      403
+    );
+  }
 
   const [state, users] = await Promise.all([
     loadLmsState(),
@@ -892,6 +898,12 @@ export async function handleVideoLessonsMutation(
       403
     );
   }
+  if (isTeacher && user.status !== "ACTIVE") {
+    throw new VideoServiceError(
+      "Your educator account requires School Administrator approval before creating or editing video lessons.",
+      403
+    );
+  }
 
   const result = await mutateLmsState(async (state) => {
     if (!Array.isArray(state.curriculumTopics)) state.curriculumTopics = [];
@@ -921,12 +933,10 @@ export async function handleVideoLessonsMutation(
               a.subjectId === subjectId &&
               a.status === "APPROVED"
           );
-          if (
-            state.teacherApprovals.some((a) => a.teacherUserId === user.id) &&
-            !hasApproval
-          ) {
-            throw new Error(
-              "You can only add topics for subjects you are approved to teach."
+          if (!hasApproval) {
+            throw new VideoServiceError(
+              "You can only add topics for subjects you are approved to teach.",
+              403
             );
           }
         }
@@ -1003,6 +1013,20 @@ export async function handleVideoLessonsMutation(
         const topic = state.curriculumTopics.find((t) => t.id === topicId);
         if (!topic) {
           throw new Error("Selected curriculum topic was not found.");
+        }
+        if (isTeacher && !isAdmin) {
+          const hasApproval = state.teacherApprovals.some(
+            (a) =>
+              a.teacherUserId === user.id &&
+              a.subjectId === topic.subjectId &&
+              a.status === "APPROVED"
+          );
+          if (!hasApproval) {
+            throw new VideoServiceError(
+              "You can only publish video lessons for subjects you are approved to teach.",
+              403
+            );
+          }
         }
         if (!title) {
           throw new Error("Video lesson title is required.");
@@ -1413,6 +1437,12 @@ export async function uploadVideoLessonFile(
   user: AuthenticatedSessionUser,
   file: FormDataEntryValue | null
 ) {
+  if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+    throw new VideoServiceError(
+      "Your educator account requires School Administrator approval before uploading lesson videos.",
+      403
+    );
+  }
   if (!isSupabaseServerConfigured) {
     throw new VideoServiceError(SUPABASE_SERVER_CONFIG_ERROR, 503);
   }

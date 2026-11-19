@@ -62,7 +62,7 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
   return (
     <nav
       aria-label="Mobile quick navigation"
-      className="fixed bottom-0 left-0 right-0 md:hidden min-h-16 bg-[var(--surface)]/95 backdrop-blur-md border-t border-[var(--border)] z-50 flex items-center justify-around px-1.5 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 md:hidden min-h-16 learnova-glass-header border-t border-[var(--border)] z-50 flex items-center justify-around px-1.5 pb-[env(safe-area-inset-bottom)]"
     >
       {items.map((item) => {
         const Icon = item.icon;

@@ -56,7 +56,7 @@ export default function SuperAdminSidebar() {
       workspaceLabel="Super Admin"
       brandIcon={ShieldCheck}
       accentTextColor="text-[#C4B5FD]"
-      settingsHref="/profile"
+      settingsHref="/settings"
       groups={groups}
     />
   );

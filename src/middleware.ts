@@ -12,6 +12,7 @@ const PROTECTED_PREFIXES = [
   "/nova",
   "/analytics",
   "/profile",
+  "/settings",
   "/notebook",
   "/quizzes",
   "/timetable",

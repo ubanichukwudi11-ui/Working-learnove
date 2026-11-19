@@ -74,7 +74,7 @@ export default function AppSidebarShell({
       {/* Desktop & Tablet Collapsible Sidebar */}
       <aside
         aria-label={`${workspaceLabel} Navigation`}
-        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 bg-[#070D24] dark:bg-[#050918] text-white flex-col border-r border-white/10 transition-[width] duration-200 ease-out ${
+        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 learnova-glass-sidebar text-white flex-col transition-[width] duration-200 ease-out ${
           collapsed ? "w-[76px]" : "w-64"
         }`}
       >
@@ -200,12 +200,12 @@ export default function AppSidebarShell({
         <div className="border-t border-white/10 p-3 shrink-0">
           <Link
             href={settingsHref}
-            aria-label="Profile & Settings"
+            aria-label="Settings"
             onMouseEnter={(e) => {
               if (!collapsed) return;
               const rect = e.currentTarget.getBoundingClientRect();
               setHoveredTip({
-                label: "Profile & Settings",
+                label: "Settings",
                 top: rect.top + rect.height / 2,
               });
             }}
@@ -219,7 +219,7 @@ export default function AppSidebarShell({
             }`}
           >
             <Settings size={18} className="shrink-0 text-indigo-200/80" />
-            {!collapsed && <span className="truncate">Profile &amp; Settings</span>}
+            {!collapsed && <span className="truncate">Settings</span>}
           </Link>
         </div>
       </aside>
@@ -251,7 +251,7 @@ export default function AppSidebarShell({
 
         <aside
           aria-label={`${workspaceLabel} Mobile Navigation`}
-          className={`relative w-72 max-w-[85vw] h-full bg-[#070D24] dark:bg-[#050918] text-white flex flex-col border-r border-white/10 shadow-2xl transition-transform duration-200 ease-out ${
+          className={`relative w-72 max-w-[85vw] h-full learnova-glass-sidebar text-white flex flex-col shadow-2xl transition-transform duration-200 ease-out ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -332,7 +332,7 @@ export default function AppSidebarShell({
               }`}
             >
               <Settings size={18} className="shrink-0" />
-              <span>Profile &amp; Settings</span>
+              <span>Settings</span>
             </Link>
           </div>
         </aside>
