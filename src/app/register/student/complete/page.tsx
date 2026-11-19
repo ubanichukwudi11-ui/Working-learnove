@@ -73,10 +73,10 @@ export default function CompleteStudentProfilePage() {
 
   if (loading || !user || user.role !== "STUDENT") {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
         <div className="text-center space-y-2.5">
           <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#4F46E5] border-t-transparent mx-auto" />
-          <p className="text-xs font-semibold text-[#43466E]">
+          <p className="text-xs font-semibold text-[var(--foreground-muted)]">
             Loading your Google account details...
           </p>
         </div>
@@ -153,8 +153,8 @@ export default function CompleteStudentProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender py-10 px-4 sm:px-6 text-[#0B1230]">
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-[#E4E1F5] bg-white shadow-xl shadow-[#0B1230]/6">
+    <main className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender py-10 px-4 sm:px-6 text-[var(--foreground)]">
+      <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl learnova-card shadow-xl">
         <div className="learnova-banner-dark bg-architectural-grid-dark px-6 py-8 sm:px-10 text-white">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
             <Logo dark href="/" variant="learnova" />
@@ -179,24 +179,24 @@ export default function CompleteStudentProfilePage() {
 
         <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-8">
           {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 px-4 py-3 text-sm font-medium text-rose-700 dark:text-rose-300">
               {error}
             </div>
           )}
 
           {/* Section 1: Verified Google Account Details */}
-          <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5 sm:p-6 space-y-4">
+          <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 dark:border-emerald-800/60 dark:bg-emerald-950/30 p-5 sm:p-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h2 className="landing-display text-base font-extrabold text-[#0B1230] flex items-center gap-2">
-                  <BadgeCheck size={18} className="text-emerald-600" />
+                <h2 className="landing-display text-base font-extrabold text-[var(--foreground)] flex items-center gap-2">
+                  <BadgeCheck size={18} className="text-emerald-600 dark:text-emerald-400" />
                   Verified Google Account Information
                 </h2>
-                <p className="text-xs text-[#43466E] mt-0.5">
+                <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
                   Automatically imported and locked from your Google account.
                 </p>
               </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold text-emerald-800">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-200">
                 <Lock size={12} />
                 Google Verified
               </span>
@@ -204,37 +204,37 @@ export default function CompleteStudentProfilePage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Full Name (Verified)
                 </label>
                 <div className="relative">
                   <User
                     size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-700"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-400"
                   />
                   <input
                     type="text"
                     value={user.fullName}
                     readOnly
-                    className="w-full rounded-xl border border-emerald-200 bg-white/90 py-2.5 pl-10 pr-3.5 text-sm font-semibold text-[#0B1230] cursor-not-allowed"
+                    className="w-full rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-[var(--surface)] py-2.5 pl-10 pr-3.5 text-sm font-semibold text-[var(--foreground)] cursor-not-allowed"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Email Address (Verified)
                 </label>
                 <div className="relative">
                   <Mail
                     size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-700"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-400"
                   />
                   <input
                     type="email"
                     value={user.email}
                     readOnly
-                    className="w-full rounded-xl border border-emerald-200 bg-white/90 py-2.5 pl-10 pr-3.5 text-sm font-semibold text-[#0B1230] cursor-not-allowed"
+                    className="w-full rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-[var(--surface)] py-2.5 pl-10 pr-3.5 text-sm font-semibold text-[var(--foreground)] cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -243,25 +243,25 @@ export default function CompleteStudentProfilePage() {
 
           {/* Section 2: Student-Supplied Academic Profile */}
           <section className="space-y-5">
-            <div className="border-b border-[#E4E1F5] pb-3">
-              <h2 className="landing-display text-lg font-extrabold text-[#0B1230] flex items-center gap-2">
-                <GraduationCap size={20} className="text-[#4F46E5]" />
+            <div className="border-b border-[var(--border)] pb-3">
+              <h2 className="landing-display text-lg font-extrabold text-[var(--foreground)] flex items-center gap-2">
+                <GraduationCap size={20} className="text-indigo-600 dark:text-indigo-400" />
                 Student-Supplied Academic Information
               </h2>
-              <p className="text-xs text-[#43466E] mt-0.5">
+              <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
                 Tell us your school, class level, and age/date of birth to tailor your timetable and subjects.
               </p>
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   School Name <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
                   <Building2
                     size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                   />
                   <input
                     type="text"
@@ -275,7 +275,7 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Class Level <span className="text-rose-500">*</span>
                 </label>
                 <select
@@ -294,7 +294,7 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Target Exam Focus
                 </label>
                 <select
@@ -312,13 +312,13 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
-                  Date of Birth <span className="text-[11px] font-normal text-[#6B6F94]">(or enter Age)</span>
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
+                  Date of Birth <span className="text-[11px] font-normal text-[var(--foreground-subtle)]">(or enter Age)</span>
                 </label>
                 <div className="relative">
                   <Calendar
                     size={16}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                   />
                   <input
                     type="date"
@@ -335,8 +335,8 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
-                  Age (Years) <span className="text-[11px] font-normal text-[#6B6F94]">(required if DOB blank)</span>
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
+                  Age (Years) <span className="text-[11px] font-normal text-[var(--foreground-subtle)]">(required if DOB blank)</span>
                 </label>
                 <input
                   type="number"
@@ -350,7 +350,7 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Daily Study Commitment
                 </label>
                 <select
@@ -367,7 +367,7 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Preferred Study Window
                 </label>
                 <select
@@ -384,7 +384,7 @@ export default function CompleteStudentProfilePage() {
               </div>
 
               <div className="sm:col-span-2">
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Academic Goal (Optional)
                 </label>
                 <textarea
@@ -398,8 +398,8 @@ export default function CompleteStudentProfilePage() {
             </div>
           </section>
 
-          <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 flex items-start gap-3 text-xs text-[#43466E]">
-            <Sparkles size={16} className="text-[#7C3AED] shrink-0 mt-0.5" />
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 flex items-start gap-3 text-xs text-[var(--foreground-muted)]">
+            <Sparkles size={16} className="text-violet-600 dark:text-violet-400 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
               Your account stays protected with privacy-first student fields. Paid live classrooms and subject packages remain gated until you activate a subscription on the Subscriptions page.
             </p>

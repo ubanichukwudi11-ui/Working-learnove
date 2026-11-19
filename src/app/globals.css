@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -10,9 +12,13 @@
 }
 
 :root {
+  color-scheme: light;
   --background: #f5f4fb;
   --foreground: #0b1230;
+  --foreground-muted: #43466e;
+  --foreground-subtle: #6b6f94;
   --surface: #ffffff;
+  --surface-elevated: #ffffff;
   --surface-subtle: #ede9fe;
   --surface-lavender: #faf8ff;
   --navy-deep: #070d24;
@@ -23,11 +29,28 @@
   --cyan-bright: #22d3ee;
   --emerald-accent: #059669;
   --gold-accent: #d97706;
+  --teal-accent: #0d9488;
+  --rose-accent: #e11d48;
   --border: #e4e1f5;
+  --border-strong: #d4cef0;
   --radius: 0.75rem;
   --font-landing-display: "Outfit", "Plus Jakarta Sans", sans-serif;
   --font-landing-body: "Plus Jakarta Sans", "Inter", sans-serif;
   --font-landing-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: #070b1a;
+  --foreground: #eef1ff;
+  --foreground-muted: #b6bad8;
+  --foreground-subtle: #8b90b8;
+  --surface: #0f162d;
+  --surface-elevated: #151e3b;
+  --surface-subtle: #1c264a;
+  --surface-lavender: #121a35;
+  --border: rgba(148, 163, 224, 0.16);
+  --border-strong: rgba(167, 139, 250, 0.32);
 }
 
 @layer components {
@@ -70,6 +93,11 @@
     background-size: 24px 24px;
   }
 
+  .dark .bg-learnova-dots-lavender {
+    background-image: radial-gradient(rgba(167, 139, 250, 0.09) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
   .learnova-banner-dark {
     background: linear-gradient(135deg, #070d24 0%, #151a44 58%, #24195e 100%);
     box-shadow:
@@ -77,24 +105,53 @@
       0 0 0 1px rgba(255, 255, 255, 0.08);
   }
 
+  .dark .learnova-banner-dark {
+    background: linear-gradient(135deg, #0b1332 0%, #171e4e 58%, #2a1d6b 100%);
+    box-shadow:
+      0 16px 36px -18px rgba(0, 0, 0, 0.65),
+      0 0 0 1px rgba(167, 139, 250, 0.18);
+  }
+
   .learnova-card {
-    background-color: #ffffff;
-    border: 1px solid #e6e2f6;
+    background-color: var(--surface);
+    color: var(--foreground);
+    border: 1px solid var(--border);
     border-radius: 1rem;
     box-shadow: 0 1px 3px rgba(11, 18, 48, 0.035);
+    transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .dark .learnova-card {
+    box-shadow: 0 4px 18px -8px rgba(0, 0, 0, 0.55);
   }
 
   .learnova-card-glow {
-    background-color: #ffffff;
-    border: 1px solid #e2ddf5;
+    background-color: var(--surface);
+    color: var(--foreground);
+    border: 1px solid var(--border);
     border-radius: 1rem;
     box-shadow: 0 4px 16px -6px rgba(79, 70, 229, 0.1), 0 1px 3px rgba(11, 18, 48, 0.04);
-    transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease;
+    transition: box-shadow 200ms ease, border-color 200ms ease, transform 200ms ease, background-color 200ms ease;
+  }
+
+  .dark .learnova-card-glow {
+    box-shadow: 0 10px 26px -12px rgba(79, 70, 229, 0.25), 0 2px 6px rgba(0, 0, 0, 0.45);
   }
 
   .learnova-card-glow:hover {
-    border-color: #c4b5fd;
+    border-color: var(--border-strong);
     box-shadow: 0 10px 24px -10px rgba(79, 70, 229, 0.18), 0 2px 6px rgba(11, 18, 48, 0.05);
+  }
+
+  .dark .learnova-card-glow:hover {
+    border-color: rgba(167, 139, 250, 0.42);
+    box-shadow: 0 14px 30px -12px rgba(124, 58, 237, 0.34), 0 4px 10px rgba(0, 0, 0, 0.55);
+  }
+
+  .learnova-surface-muted {
+    background-color: var(--surface-lavender);
+    border: 1px solid var(--border);
+    color: var(--foreground);
   }
 
   .learnova-ambient-stage {
@@ -145,21 +202,26 @@
     font-size: 0.875rem;
     line-height: 1.35rem;
     border-radius: 0.75rem;
-    border: 1px solid #dcd7f5;
-    background-color: #faf8ff;
-    color: #0b1230;
+    border: 1px solid var(--border-strong);
+    background-color: var(--surface-lavender);
+    color: var(--foreground);
     transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
   }
 
   .learnova-input::placeholder {
-    color: #7c7fa3;
+    color: var(--foreground-subtle);
   }
 
   .learnova-input:focus {
     outline: none;
     border-color: #7c3aed;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.14);
+    background-color: var(--surface);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
+  }
+
+  .dark .learnova-input option {
+    background-color: #0f162d;
+    color: #eef1ff;
   }
 }
 
@@ -186,6 +248,7 @@
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 200ms ease, color 200ms ease;
   }
 
   h1, h2, h3, h4 {

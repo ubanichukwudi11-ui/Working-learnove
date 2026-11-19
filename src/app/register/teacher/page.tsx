@@ -109,9 +109,9 @@ export default function TeacherRegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230] py-10 px-4 sm:px-6">
+    <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)] py-10 px-4 sm:px-6">
       <div className="max-w-5xl mx-auto">
-        <div className="overflow-hidden bg-white border border-[#E4E1F5] rounded-3xl shadow-xl shadow-[#0B1230]/6">
+        <div className="overflow-hidden learnova-card rounded-3xl shadow-xl">
           <div className="learnova-banner-dark bg-architectural-grid-dark px-6 py-8 sm:px-10 text-white">
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <Logo dark href="/" variant="learnova" />
@@ -133,19 +133,19 @@ export default function TeacherRegisterPage() {
 
           <div className="p-6 sm:p-10">
             {error && (
-              <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+              <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 p-4 text-sm font-medium text-rose-700 dark:text-rose-300">
                 {error}
               </div>
             )}
 
             {successMsg && (
-              <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-700">
+              <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 dark:border-emerald-800/60 dark:bg-emerald-950/40 p-4 text-sm font-medium text-emerald-700 dark:text-emerald-300">
                 {successMsg}
               </div>
             )}
 
-            <div className="mb-7 rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF] px-5 py-4 text-xs text-[#43466E] leading-relaxed">
-              <strong className="text-[#0B1230]">Educator Verification Notice:</strong>{" "}
+            <div className="mb-7 rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] px-5 py-4 text-xs text-[var(--foreground-muted)] leading-relaxed">
+              <strong className="text-[var(--foreground)]">Educator Verification Notice:</strong>{" "}
               Teacher accounts cannot be created with Google sign-up. Submit this application with your educator email, password, and credentials; School Administration will review and approve your subject teaching access before live classroom tools unlock.
             </div>
 
@@ -212,14 +212,14 @@ export default function TeacherRegisterPage() {
                 />
 
                 <div>
-                  <label className="block mb-1.5 text-xs font-bold text-[#0B1230]">
+                  <label className="block mb-1.5 text-xs font-bold text-[var(--foreground)]">
                     Gender
                   </label>
                   <select
                     name="gender"
                     value={form.gender}
                     onChange={handleChange}
-                    className="w-full rounded-xl bg-[#FAF8FF] border border-[#DCD7F5] p-3 text-sm text-[#0B1230] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+                    className="learnova-input w-full p-3 text-sm"
                     required
                   >
                     <option value="">Select Gender</option>
@@ -232,7 +232,7 @@ export default function TeacherRegisterPage() {
               {/* ACADEMIC */}
               <Section title="Academic Information">
                 <div>
-                  <label className="block mb-1.5 text-xs font-bold text-[#0B1230]">
+                  <label className="block mb-1.5 text-xs font-bold text-[var(--foreground)]">
                     Primary Subject
                   </label>
                   <select
@@ -240,7 +240,7 @@ export default function TeacherRegisterPage() {
                     value={form.subject}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl bg-[#FAF8FF] border border-[#DCD7F5] p-3 text-sm text-[#0B1230] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+                    className="learnova-input w-full p-3 text-sm"
                   >
                     <option value="">Select Subject</option>
                     <option value="Mathematics">Mathematics</option>
@@ -315,7 +315,7 @@ export default function TeacherRegisterPage() {
               </Section>
 
               {(uploading || loading) && (
-                <div className="text-sm text-[#6D28D9] font-semibold">
+                <div className="text-sm text-violet-600 dark:text-violet-400 font-semibold">
                   {uploading
                     ? "Uploading documents..."
                     : "Submitting application..."}
@@ -330,9 +330,9 @@ export default function TeacherRegisterPage() {
               </button>
             </form>
 
-            <div className="mt-7 text-center text-xs text-[#43466E]">
+            <div className="mt-7 text-center text-xs text-[var(--foreground-muted)]">
               Already have an account?{" "}
-              <Link href="/login" className="font-bold text-[#6D28D9] hover:underline">
+              <Link href="/login" className="font-bold text-violet-600 dark:text-violet-400 hover:underline">
                 Sign In
               </Link>
             </div>
@@ -351,8 +351,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-t border-[#E4E1F5] pt-6 first:border-t-0 first:pt-0">
-      <h2 className="landing-display text-lg font-extrabold text-[#0B1230] mb-4">
+    <div className="border-t border-[var(--border)] pt-6 first:border-t-0 first:pt-0">
+      <h2 className="landing-display text-lg font-extrabold text-[var(--foreground)] mb-4">
         {title}
       </h2>
 
@@ -368,14 +368,14 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 function Input({ label, required = true, ...props }: InputProps) {
   return (
     <div>
-      <label className="block mb-1.5 text-xs font-bold text-[#0B1230]">
+      <label className="block mb-1.5 text-xs font-bold text-[var(--foreground)]">
         {label}
       </label>
 
       <input
         required={required}
         {...props}
-        className="w-full rounded-xl bg-[#FAF8FF] border border-[#DCD7F5] p-3 text-sm text-[#0B1230] placeholder:text-[#6B6F94] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+        className="learnova-input w-full p-3 text-sm"
       />
     </div>
   );
@@ -389,7 +389,7 @@ type FileInputProps = {
 function FileInput({ label, onChange }: FileInputProps) {
   return (
     <div>
-      <label className="block mb-1.5 text-xs font-bold text-[#0B1230]">
+      <label className="block mb-1.5 text-xs font-bold text-[var(--foreground)]">
         {label}
       </label>
 
@@ -397,7 +397,7 @@ function FileInput({ label, onChange }: FileInputProps) {
         type="file"
         required
         onChange={onChange}
-        className="w-full rounded-xl bg-[#FAF8FF] border border-[#DCD7F5] p-2.5 text-xs text-[#43466E] file:mr-3 file:rounded-lg file:border-0 file:bg-[#EDE9FE] file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-[#6D28D9] hover:file:bg-[#DDD6FE]"
+        className="w-full rounded-xl bg-[var(--surface-lavender)] border border-[var(--border-strong)] p-2.5 text-xs text-[var(--foreground-muted)] file:mr-3 file:rounded-lg file:border-0 file:bg-violet-100 dark:file:bg-violet-950/60 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-violet-700 dark:file:text-violet-300 hover:file:bg-violet-200 dark:hover:file:bg-violet-900/60"
       />
     </div>
   );

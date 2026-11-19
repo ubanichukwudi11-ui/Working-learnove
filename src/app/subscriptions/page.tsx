@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, CardSkeleton } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import {
   CreditCard,
@@ -385,48 +386,45 @@ export default function StudentSubscriptionsPage() {
     <ProtectedRoute roles={["STUDENT"]}>
       <AppLayout>
         <div className="space-y-7">
-          {/* Header Banner */}
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
-                Enrolment &amp; Subscription Access (₦)
-              </p>
-              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold mt-1.5">
-                {isActiveSubscription
-                  ? "Subscription & Enrolment Details"
-                  : "Class Enrolment & Subscription Plan"}
-              </h1>
-              <p className="text-sm text-indigo-100/80 mt-1.5 max-w-2xl leading-relaxed">
-                {isActiveSubscription
-                  ? "Your Learnova learning access is verified and active. Manage your enrolled subjects or inspect payment receipts below."
-                  : "Confirm your secondary class level (JSS1–SS3), select your subjects, and activate a Nigerian Naira plan to unlock live classrooms."}
-              </p>
-            </div>
-            <div className="bg-white/10 border border-white/15 rounded-2xl px-4 py-3.5 shrink-0 min-w-[200px]">
-              <p className="text-[11px] uppercase tracking-wider text-indigo-200/80">
-                Access Status
-              </p>
-              <p
-                className={`text-sm font-extrabold mt-0.5 ${
-                  isActiveSubscription
-                    ? "text-emerald-300"
-                    : isExpired
-                    ? "text-rose-300"
-                    : "text-[#22D3EE]"
-                }`}
-              >
-                {isExpired ? "EXPIRED" : statusText.replace(/_/g, " ")}
-              </p>
-              <p className="text-xs text-indigo-100/80 mt-0.5">{levelName}</p>
-            </div>
-          </div>
+          <PageHeader
+            kicker="Enrolment & Subscription Access (₦)"
+            title={
+              isActiveSubscription
+                ? "Subscription & Enrolment Details"
+                : "Class Enrolment & Subscription Plan"
+            }
+            description={
+              isActiveSubscription
+                ? "Your Learnova learning access is verified and active. Manage your enrolled subjects or inspect payment receipts below."
+                : "Confirm your secondary class level (JSS1–SS3), select your subjects, and activate a Nigerian Naira plan to unlock live classrooms."
+            }
+            actions={
+              <div className="bg-white/10 border border-white/15 rounded-2xl px-4 py-3 shrink-0 min-w-[200px]">
+                <p className="text-[11px] uppercase tracking-wider text-indigo-200/80">
+                  Access Status
+                </p>
+                <p
+                  className={`text-sm font-extrabold mt-0.5 ${
+                    isActiveSubscription
+                      ? "text-emerald-300"
+                      : isExpired
+                      ? "text-rose-300"
+                      : "text-[#22D3EE]"
+                  }`}
+                >
+                  {isExpired ? "EXPIRED" : statusText.replace(/_/g, " ")}
+                </p>
+                <p className="text-xs text-indigo-100/80 mt-0.5">{levelName}</p>
+              </div>
+            }
+          />
 
           {feedback && (
             <div
               className={`rounded-2xl px-5 py-3.5 text-sm font-medium flex items-center gap-2.5 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                  : "bg-rose-50 text-rose-800 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? (
@@ -440,13 +438,13 @@ export default function StudentSubscriptionsPage() {
 
           {/* Expired Renewal Notification */}
           {!loading && isExpired && (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50/90 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="rounded-2xl border border-rose-200 dark:border-rose-800/60 bg-rose-50/90 dark:bg-rose-950/35 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-sm font-bold text-rose-900 flex items-center gap-2">
+                <p className="text-sm font-bold text-rose-900 dark:text-rose-200 flex items-center gap-2">
                   <RefreshCw size={16} />
                   Your Subscription Has Expired
                 </p>
-                <p className="text-xs text-rose-800/85 leading-relaxed">
+                <p className="text-xs text-rose-800/85 dark:text-rose-300/85 leading-relaxed">
                   {entitlement?.expiresAt
                     ? `Your previous access ended on ${new Date(
                         entitlement.expiresAt
@@ -460,26 +458,27 @@ export default function StudentSubscriptionsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading your enrolment &amp; subscription plans...
+            <div className="grid lg:grid-cols-2 gap-6">
+              <CardSkeleton lines={5} />
+              <CardSkeleton lines={5} />
             </div>
           ) : isActiveSubscription ? (
             <div className="space-y-6">
               {/* Active Subscription Summary Card (no permanent purchase prompt) */}
               <div className="learnova-card p-6 sm:p-7 space-y-6">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#EFEBF9] pb-5">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
                   <div className="flex items-start gap-3.5">
-                    <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                    <div className="w-11 h-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                       <CheckCircle2 size={22} />
                     </div>
                     <div>
-                      <span className="inline-flex items-center rounded-md bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                      <span className="inline-flex items-center rounded-md bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
                         Active Subscription
                       </span>
-                      <h2 className="landing-display text-xl font-extrabold text-[#0B1230] mt-1">
+                      <h2 className="landing-display text-xl font-extrabold text-[var(--foreground)] mt-1">
                         {activePlanName}
                       </h2>
-                      <p className="text-xs text-[#43466E] mt-0.5">
+                      <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
                         Class Level: <strong>{levelName}</strong>
                         {entitlement?.expiresAt
                           ? ` · Valid until ${new Date(
@@ -494,9 +493,9 @@ export default function StudentSubscriptionsPage() {
                     <button
                       type="button"
                       onClick={() => setShowEnrolmentEditor((v) => !v)}
-                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] hover:bg-[#EDE9FE] text-[#0B1230] text-xs font-bold transition"
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] hover:bg-[var(--surface-subtle)] text-[var(--foreground)] text-xs font-bold transition"
                     >
-                      <BookOpen size={14} className="text-[#4F46E5]" />
+                      <BookOpen size={14} className="text-[#4F46E5] dark:text-indigo-400" />
                       Edit Class &amp; Subjects
                       {showEnrolmentEditor ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                     </button>
@@ -513,21 +512,21 @@ export default function StudentSubscriptionsPage() {
                 </div>
 
                 <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B6F94]">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--foreground-subtle)]">
                       Access Scope
                     </p>
-                    <p className="text-sm font-bold text-[#0B1230] mt-1">
+                    <p className="text-sm font-bold text-[var(--foreground)] mt-1">
                       {entitlement?.allSubjects
                         ? "All Subjects Unlocked"
                         : `${(entitlement?.subjectIds || []).length} Subject(s) Unlocked`}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B6F94]">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--foreground-subtle)]">
                       Valid Until
                     </p>
-                    <p className="text-sm font-bold text-[#0B1230] mt-1">
+                    <p className="text-sm font-bold text-[var(--foreground)] mt-1">
                       {entitlement?.expiresAt
                         ? new Date(entitlement.expiresAt).toLocaleDateString("en-NG", {
                             year: "numeric",
@@ -537,11 +536,11 @@ export default function StudentSubscriptionsPage() {
                         : "Current Term"}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[#6B6F94]">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--foreground-subtle)]">
                       Verification
                     </p>
-                    <p className="text-sm font-bold text-emerald-700 mt-1">
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400 mt-1">
                       {entitlement?.grantedBy || "Server Verified"}
                     </p>
                   </div>
@@ -550,13 +549,13 @@ export default function StudentSubscriptionsPage() {
 
               {showEnrolmentEditor && (
                 <form onSubmit={handleSaveEnrolment} className="learnova-card p-6 space-y-4">
-                  <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <BookOpen size={17} className="text-[#4F46E5]" />
+                  <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <BookOpen size={17} className="text-[#4F46E5] dark:text-indigo-400" />
                     Update Class Level &amp; Offered Subjects
                   </h2>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1.5">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1.5">
                         Class Level
                       </label>
                       <select
@@ -576,7 +575,7 @@ export default function StudentSubscriptionsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-2">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-2">
                       Subjects You Offer ({selectedSubjectIds.length} selected)
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -590,7 +589,7 @@ export default function StudentSubscriptionsPage() {
                             className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
                               active
                                 ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white border-[#4F46E5]"
-                                : "bg-[#FAF8FF] text-[#43466E] border-[#E4E1F5] hover:bg-[#F5F3FF]"
+                                : "bg-[var(--surface-lavender)] text-[var(--foreground-muted)] border-[var(--border)] hover:bg-[var(--surface-subtle)]"
                             }`}
                           >
                             {active ? "✓ " : ""}
@@ -611,8 +610,8 @@ export default function StudentSubscriptionsPage() {
 
               {showUpgradePanel && (
                 <div className="learnova-card p-6 space-y-5">
-                  <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <CreditCard size={17} className="text-[#7C3AED]" />
+                  <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <CreditCard size={17} className="text-[#7C3AED] dark:text-violet-400" />
                     Upgrade or Renew Ahead of Expiry (₦)
                   </h2>
                   <div className="grid md:grid-cols-2 gap-3">
@@ -621,8 +620,8 @@ export default function StudentSubscriptionsPage() {
                         key={p.id}
                         className={`block border rounded-2xl p-4 cursor-pointer transition ${
                           selectedPlanId === p.id
-                            ? "border-[#7C3AED] bg-[#F5F3FF]"
-                            : "border-[#E4E1F5] bg-[#FAF8FF] hover:bg-white"
+                            ? "border-[#7C3AED] bg-[var(--surface-subtle)]"
+                            : "border-[var(--border)] bg-[var(--surface-lavender)] hover:bg-[var(--surface)]"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
@@ -635,17 +634,17 @@ export default function StudentSubscriptionsPage() {
                               className="accent-[#4F46E5]"
                             />
                             <div>
-                              <p className="font-bold text-[#0B1230] text-sm">{p.name}</p>
-                              <p className="text-xs text-[#6B6F94]">
+                              <p className="font-bold text-[var(--foreground)] text-sm">{p.name}</p>
+                              <p className="text-xs text-[var(--foreground-subtle)]">
                                 {p.billingCycle} · {p.durationDays} days
                               </p>
                             </div>
                           </div>
-                          <span className="text-lg font-extrabold text-[#4F46E5] tabular-nums">
+                          <span className="text-lg font-extrabold text-[#4F46E5] dark:text-indigo-400 tabular-nums">
                             ₦{Number(p.priceNgn).toLocaleString()}
                           </span>
                         </div>
-                        <p className="text-xs text-[#43466E] mt-1.5 ml-6">{p.description}</p>
+                        <p className="text-xs text-[var(--foreground-muted)] mt-1.5 ml-6">{p.description}</p>
                       </label>
                     ))}
                   </div>
@@ -670,17 +669,17 @@ export default function StudentSubscriptionsPage() {
                 className="learnova-card p-6 space-y-5"
               >
                 <div>
-                  <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <BookOpen size={17} className="text-[#4F46E5]" />
+                  <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <BookOpen size={17} className="text-[#4F46E5] dark:text-indigo-400" />
                     Step 1: Confirm Class Level &amp; Subjects
                   </h2>
-                  <p className="text-xs text-[#6B6F94] mt-1">
+                  <p className="text-xs text-[var(--foreground-subtle)] mt-1">
                     Choose your secondary level and select the subjects you plan to study.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-1.5">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1.5">
                     Your Class Level
                   </label>
                   <select
@@ -700,7 +699,7 @@ export default function StudentSubscriptionsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-2">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-2">
                     Subjects You Offer ({selectedSubjectIds.length} selected)
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -714,7 +713,7 @@ export default function StudentSubscriptionsPage() {
                           className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
                             active
                               ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white border-[#4F46E5]"
-                              : "bg-[#FAF8FF] text-[#43466E] border-[#E4E1F5] hover:bg-[#F5F3FF]"
+                              : "bg-[var(--surface-lavender)] text-[var(--foreground-muted)] border-[var(--border)] hover:bg-[var(--surface-subtle)]"
                           }`}
                         >
                           {active ? "✓ " : ""}
@@ -736,11 +735,11 @@ export default function StudentSubscriptionsPage() {
               {/* Step 2: Subscription Plans & Payment Verification */}
               <div className="learnova-card p-6 space-y-5">
                 <div>
-                  <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <CreditCard size={17} className="text-[#7C3AED]" />
+                  <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <CreditCard size={17} className="text-[#7C3AED] dark:text-violet-400" />
                     Step 2: Choose Subscription Plan (₦)
                   </h2>
-                  <p className="text-xs text-[#6B6F94] mt-1">
+                  <p className="text-xs text-[var(--foreground-subtle)] mt-1">
                     Access unlocks automatically as soon as your payment is verified on the server.
                   </p>
                 </div>
@@ -751,8 +750,8 @@ export default function StudentSubscriptionsPage() {
                       key={p.id}
                       className={`block border rounded-2xl p-4 cursor-pointer transition ${
                         selectedPlanId === p.id
-                          ? "border-[#7C3AED] bg-[#F5F3FF]"
-                          : "border-[#E4E1F5] bg-[#FAF8FF] hover:bg-white"
+                          ? "border-[#7C3AED] bg-[var(--surface-subtle)]"
+                          : "border-[var(--border)] bg-[var(--surface-lavender)] hover:bg-[var(--surface)]"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -765,33 +764,33 @@ export default function StudentSubscriptionsPage() {
                             className="accent-[#4F46E5]"
                           />
                           <div>
-                            <p className="font-bold text-[#0B1230] text-sm">{p.name}</p>
-                            <p className="text-xs text-[#6B6F94]">
+                            <p className="font-bold text-[var(--foreground)] text-sm">{p.name}</p>
+                            <p className="text-xs text-[var(--foreground-subtle)]">
                               {p.billingCycle} · {p.durationDays} days
                             </p>
                           </div>
                         </div>
-                        <span className="text-lg font-extrabold text-[#4F46E5] tabular-nums">
+                        <span className="text-lg font-extrabold text-[#4F46E5] dark:text-indigo-400 tabular-nums">
                           ₦{Number(p.priceNgn).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-xs text-[#43466E] mt-1.5 ml-6">{p.description}</p>
+                      <p className="text-xs text-[var(--foreground-muted)] mt-1.5 ml-6">{p.description}</p>
                     </label>
                   ))}
                 </div>
 
                 {/* Paystack Instant Checkout + Callback Verification */}
                 {gatewayInfo.paystackServerEnabled && (
-                  <div className="border-t border-[#E4E1F5] pt-4 space-y-3">
+                  <div className="border-t border-[var(--border)] pt-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
-                        <ShieldCheck size={14} className="text-[#4F46E5]" />
+                      <p className="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                        <ShieldCheck size={14} className="text-[#4F46E5] dark:text-indigo-400" />
                         Pay Instantly via Paystack (Card / Bank / USSD)
                       </p>
                       <button
                         type="button"
                         onClick={() => setShowManualVerify((v) => !v)}
-                        className="text-[11px] font-semibold text-[#6D28D9] hover:underline shrink-0"
+                        className="text-[11px] font-semibold text-[#6D28D9] dark:text-violet-400 hover:underline shrink-0"
                       >
                         {showManualVerify ? "Hide manual verify" : "Verify ref"}
                       </button>
@@ -817,7 +816,7 @@ export default function StudentSubscriptionsPage() {
                         />
                         <button
                           disabled={paymentStage !== "idle"}
-                          className="px-4 py-2 rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] hover:bg-[#EDE9FE] text-[#4F46E5] text-xs font-bold transition"
+                          className="px-4 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] hover:bg-[var(--surface-subtle)] text-[#4F46E5] dark:text-indigo-300 text-xs font-bold transition"
                         >
                           Verify
                         </button>
@@ -830,10 +829,10 @@ export default function StudentSubscriptionsPage() {
                 {gatewayInfo.allowManualBankTransfer && (
                   <form
                     onSubmit={handleBankTransferSubmit}
-                    className="border-t border-[#E4E1F5] pt-4 space-y-3"
+                    className="border-t border-[var(--border)] pt-4 space-y-3"
                   >
-                    <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
-                      <Clock size={14} className="text-amber-600" />
+                    <p className="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                      <Clock size={14} className="text-amber-600 dark:text-amber-400" />
                       Bank Transfer Confirmation (Verified by School Admin)
                     </p>
                     <input
@@ -864,32 +863,32 @@ export default function StudentSubscriptionsPage() {
           {/* Student Payment History */}
           {payments.length > 0 && (
             <div className="learnova-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-[#E4E1F5]">
-                <h2 className="landing-display text-base font-bold text-[#0B1230]">
+              <div className="px-6 py-4 border-b border-[var(--border)]">
+                <h2 className="landing-display text-base font-bold text-[var(--foreground)]">
                   Payment History
                 </h2>
               </div>
-              <div className="divide-y divide-[#E4E1F5]">
+              <div className="divide-y divide-[var(--border)]">
                 {payments.map((p) => (
                   <div
                     key={p.id}
                     className="px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                   >
                     <div>
-                      <p className="font-bold text-[#0B1230] tabular-nums">
+                      <p className="font-bold text-[var(--foreground)] tabular-nums">
                         {p.planName} · ₦{Number(p.amountNgn).toLocaleString()}
                       </p>
-                      <p className="text-[#6B6F94]">
+                      <p className="text-[var(--foreground-subtle)]">
                         {p.provider} · Ref: <span className="font-mono">{p.reference}</span>
                       </p>
                     </div>
                     <span
                       className={`font-bold shrink-0 ${
                         p.status === "VERIFIED"
-                          ? "text-emerald-700"
+                          ? "text-emerald-700 dark:text-emerald-400"
                           : p.status === "AWAITING_CONFIRMATION"
-                          ? "text-amber-700"
-                          : "text-rose-700"
+                          ? "text-amber-700 dark:text-amber-400"
+                          : "text-rose-700 dark:text-rose-400"
                       }`}
                     >
                       {p.status.replace(/_/g, " ")}
@@ -909,54 +908,54 @@ export default function StudentSubscriptionsPage() {
             aria-labelledby="payment-success-title"
             className="fixed inset-0 z-[80] flex items-center justify-center bg-[#070D24]/70 backdrop-blur-xs p-4"
           >
-            <div className="relative w-full max-w-md rounded-3xl border border-[#E4E1F5] bg-white p-7 shadow-2xl space-y-5">
+            <div className="relative w-full max-w-md rounded-3xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] p-7 shadow-2xl space-y-5">
               <button
                 type="button"
                 onClick={() => setSuccessReceipt(null)}
                 aria-label="Close modal"
-                className="absolute right-4 top-4 p-2 rounded-xl text-[#6B6F94] hover:bg-[#FAF8FF] hover:text-[#0B1230] transition"
+                className="absolute right-4 top-4 p-2 rounded-xl text-[var(--foreground-subtle)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
               >
                 <X size={18} />
               </button>
 
               <div className="text-center space-y-2.5 pt-1">
-                <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center">
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <CheckCircle2 size={30} />
                 </div>
                 <h2
                   id="payment-success-title"
-                  className="landing-display text-2xl font-extrabold text-[#0B1230]"
+                  className="landing-display text-2xl font-extrabold text-[var(--foreground)]"
                 >
                   Payment Successful
                 </h2>
-                <p className="text-xs text-[#43466E] leading-relaxed">
+                <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
                   Your transaction has been verified on the Learnova server and your subscription access is now live.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-2.5 text-xs">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 space-y-2.5 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[#6B6F94]">Plan Name</span>
-                  <span className="font-bold text-[#0B1230] text-right">
+                  <span className="text-[var(--foreground-subtle)]">Plan Name</span>
+                  <span className="font-bold text-[var(--foreground)] text-right">
                     {successReceipt.planName}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[#6B6F94]">Amount Paid</span>
-                  <span className="font-extrabold text-[#4F46E5] tabular-nums">
+                  <span className="text-[var(--foreground-subtle)]">Amount Paid</span>
+                  <span className="font-extrabold text-[#4F46E5] dark:text-indigo-400 tabular-nums">
                     ₦{Number(successReceipt.amountNgn).toLocaleString()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[#6B6F94]">Access Status</span>
-                  <span className="font-bold text-emerald-700">
+                  <span className="text-[var(--foreground-subtle)]">Access Status</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">
                     {successReceipt.accessStatus.replace(/_/g, " ")}
                   </span>
                 </div>
                 {successReceipt.expiresAt && (
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[#6B6F94]">Valid Until</span>
-                    <span className="font-semibold text-[#0B1230]">
+                    <span className="text-[var(--foreground-subtle)]">Valid Until</span>
+                    <span className="font-semibold text-[var(--foreground)]">
                       {new Date(successReceipt.expiresAt).toLocaleDateString("en-NG", {
                         dateStyle: "medium",
                       })}
@@ -980,7 +979,7 @@ export default function StudentSubscriptionsPage() {
                 <Link
                   href="/live-classes"
                   onClick={() => setSuccessReceipt(null)}
-                  className="inline-flex items-center justify-center rounded-xl border border-[#DCD7F5] bg-white px-4 py-3 text-xs font-bold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+                  className="inline-flex items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] px-4 py-3 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-subtle)] transition"
                 >
                   Open Live Classes
                 </Link>

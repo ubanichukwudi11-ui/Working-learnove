@@ -43,10 +43,10 @@ export default function ProtectedRoute({ children, roles }: Props) {
 
   if (loading || shouldCompleteStudentProfile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] bg-learnova-dots-lavender">
         <div className="text-center space-y-2.5">
           <div className="h-9 w-9 animate-spin rounded-full border-3 border-[#4F46E5] border-t-transparent mx-auto" />
-          <p className="text-xs font-semibold text-[#43466E]">
+          <p className="text-xs font-semibold text-[var(--foreground-muted)]">
             {shouldCompleteStudentProfile
               ? "Opening your student profile setup..."
               : "Verifying your Learnova session..."}
@@ -61,15 +61,15 @@ export default function ProtectedRoute({ children, roles }: Props) {
   if (roles && !roles.includes(user.role)) {
     const homeHref = getDashboardRoute(user.role);
     return (
-      <div className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-2xl border border-[#E4E1F5] bg-white p-8 text-center shadow-lg shadow-[#0B1230]/6 space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-2xl learnova-card p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400 flex items-center justify-center mx-auto">
             <ShieldAlert size={24} />
           </div>
-          <h1 className="landing-display text-xl font-extrabold text-[#0B1230]">
+          <h1 className="landing-display text-xl font-extrabold text-[var(--foreground)]">
             Access Restricted
           </h1>
-          <p className="text-xs text-[#43466E] leading-relaxed">
+          <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
             Your signed-in role (<strong>{user.role.replace("_", " ")}</strong>) does not have permission to open this workspace.
           </p>
           <Link
@@ -95,23 +95,23 @@ export default function ProtectedRoute({ children, roles }: Props) {
     const isRejectedOrSuspended =
       user.status === "REJECTED" || user.status === "SUSPENDED";
     return (
-      <div className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender flex items-center justify-center p-6">
-        <div className="max-w-lg w-full rounded-2xl border border-[#E4E1F5] bg-white p-8 text-center shadow-lg shadow-[#0B1230]/6 space-y-4">
+      <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender flex items-center justify-center p-6">
+        <div className="max-w-lg w-full rounded-2xl learnova-card p-8 text-center space-y-4">
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center mx-auto ${
               isRejectedOrSuspended
-                ? "bg-rose-50 text-rose-600"
-                : "bg-amber-50 text-amber-600"
+                ? "bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
+                : "bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400"
             }`}
           >
             {isRejectedOrSuspended ? <ShieldAlert size={24} /> : <Clock size={24} />}
           </div>
-          <h1 className="landing-display text-xl font-extrabold text-[#0B1230]">
+          <h1 className="landing-display text-xl font-extrabold text-[var(--foreground)]">
             {isRejectedOrSuspended
               ? "Educator Account Approval Required"
               : "Verification Pending School Admin Approval"}
           </h1>
-          <p className="text-xs text-[#43466E] leading-relaxed">
+          <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
             {isRejectedOrSuspended
               ? `Your educator account is currently marked ${user.status.toLowerCase()}. Live teaching and student management tools remain locked until a School Administrator approves your subject application.`
               : "Your teacher credentials are currently under review by School Administration. Live classes, attendance, notes, and student tools will unlock once your account is approved."}
@@ -126,7 +126,7 @@ export default function ProtectedRoute({ children, roles }: Props) {
             </Link>
             <Link
               href="/teacher"
-              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-[#DCD7F5] bg-white text-[#0B1230] text-xs font-bold hover:bg-[#FAF8FF] transition"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--foreground)] text-xs font-bold hover:bg-[var(--surface-lavender)] transition"
             >
               <ArrowLeft size={14} />
               Teacher Desk

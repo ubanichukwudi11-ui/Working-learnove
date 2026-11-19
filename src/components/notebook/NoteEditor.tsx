@@ -196,35 +196,35 @@ value
             value={title}
             onChange={(e) => updateTitle(e.target.value)}
             placeholder="Untitled Note"
-            className="landing-display bg-transparent outline-none text-2xl sm:text-3xl font-bold text-[#0B1230] placeholder:text-[#9CA0C2] w-full"
+            className="landing-display bg-transparent outline-none text-2xl sm:text-3xl font-bold text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] w-full"
           />
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#4F46E5] shrink-0">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">
           <Check size={15} />
           {status}
         </div>
       </div>
 
       {/* Toolbar */}
-      <div className="flex gap-2 border-b border-[#E4E1F5] pb-4 mb-5">
+      <div className="flex gap-2 border-b border-[var(--border)] pb-4 mb-5">
         <button
           type="button"
-          className="p-2 rounded-lg hover:bg-[#FAF8FF] text-[#43466E] hover:text-[#4F46E5] transition"
+          className="p-2 rounded-lg hover:bg-[var(--surface-lavender)] text-[var(--foreground-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 transition"
         >
           <Bold size={18} />
         </button>
 
         <button
           type="button"
-          className="p-2 rounded-lg hover:bg-[#FAF8FF] text-[#43466E] hover:text-[#4F46E5] transition"
+          className="p-2 rounded-lg hover:bg-[var(--surface-lavender)] text-[var(--foreground-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 transition"
         >
           <Italic size={18} />
         </button>
 
         <button
           type="button"
-          className="p-2 rounded-lg hover:bg-[#FAF8FF] text-[#43466E] hover:text-[#4F46E5] transition"
+          className="p-2 rounded-lg hover:bg-[var(--surface-lavender)] text-[var(--foreground-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 transition"
         >
           <Underline size={18} />
         </button>
@@ -235,7 +235,7 @@ value
         value={content}
         onChange={(e) => updateContent(e.target.value)}
         placeholder="Start writing your notes..."
-        className="w-full min-h-[400px] resize-none bg-transparent outline-none text-[#0B1230] placeholder:text-[#9CA0C2] leading-7 text-sm sm:text-base"
+        className="w-full min-h-[400px] resize-none bg-transparent outline-none text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] leading-7 text-sm sm:text-base"
       />
     </div>
   );

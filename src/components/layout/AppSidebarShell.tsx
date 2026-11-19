@@ -2,15 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
-  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { useSidebar } from "@/context/SidebarContext";
 
 export type SidebarNavItem = {
@@ -31,6 +30,7 @@ type AppSidebarShellProps = {
   brandIcon: LucideIcon;
   groups: SidebarNavGroup[];
   accentTextColor?: string;
+  settingsHref?: string;
 };
 
 export default function AppSidebarShell({
@@ -39,10 +39,9 @@ export default function AppSidebarShell({
   brandIcon: BrandIcon,
   groups,
   accentTextColor = "text-[#22D3EE]",
+  settingsHref = "/profile",
 }: AppSidebarShellProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { logout } = useAuth();
   const { collapsed, toggleSidebar, mobileOpen, closeMobile } = useSidebar();
   const [hoveredTip, setHoveredTip] = useState<{
     label: string;
@@ -67,18 +66,15 @@ export default function AppSidebarShell({
       ? pathname === item.href
       : pathname === item.href || pathname.startsWith(item.href + "/");
 
-  const handleLogout = async () => {
-    closeMobile();
-    await logout();
-    router.replace("/login");
-  };
+  const isSettingsActive =
+    pathname === settingsHref || pathname.startsWith(settingsHref + "/");
 
   return (
     <>
       {/* Desktop & Tablet Collapsible Sidebar */}
       <aside
         aria-label={`${workspaceLabel} Navigation`}
-        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 bg-[#070D24] text-white flex-col border-r border-white/10 transition-[width] duration-200 ease-out ${
+        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 bg-[#070D24] dark:bg-[#050918] text-white flex-col border-r border-white/10 transition-[width] duration-200 ease-out ${
           collapsed ? "w-[76px]" : "w-64"
         }`}
       >
@@ -200,32 +196,35 @@ export default function AppSidebarShell({
           ))}
         </nav>
 
-        {/* Sign Out */}
+        {/* Bottom Profile & Settings Quick Anchor (no permanent Sign Out in sidebar) */}
         <div className="border-t border-white/10 p-3 shrink-0">
-          <button
-            type="button"
-            onClick={handleLogout}
+          <Link
+            href={settingsHref}
+            aria-label="Profile & Settings"
             onMouseEnter={(e) => {
               if (!collapsed) return;
               const rect = e.currentTarget.getBoundingClientRect();
               setHoveredTip({
-                label: "Sign Out",
+                label: "Profile & Settings",
                 top: rect.top + rect.height / 2,
               });
             }}
             onMouseLeave={() => setHoveredTip(null)}
-            aria-label="Sign Out"
-            className={`w-full flex items-center gap-3 rounded-xl text-sm font-medium text-indigo-100/75 hover:bg-red-500/15 hover:text-red-300 transition ${
+            className={`w-full flex items-center gap-3 rounded-xl text-sm font-medium transition ${
               collapsed ? "justify-center px-2 py-2.5" : "justify-start px-3 py-2.5"
+            } ${
+              isSettingsActive
+                ? "bg-white/15 text-white"
+                : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
             }`}
           >
-            <LogOut size={18} className="shrink-0" />
-            {!collapsed && <span>Sign Out</span>}
-          </button>
+            <Settings size={18} className="shrink-0 text-indigo-200/80" />
+            {!collapsed && <span className="truncate">Profile &amp; Settings</span>}
+          </Link>
         </div>
       </aside>
 
-      {/* Floating Tooltip for Collapsed Mode (unclipped outside overflow container) */}
+      {/* Floating Tooltip for Collapsed Mode */}
       {collapsed && hoveredTip && (
         <div
           role="tooltip"
@@ -236,7 +235,7 @@ export default function AppSidebarShell({
         </div>
       )}
 
-      {/* Mobile Slide-Out Drawer */}
+      {/* Mobile Slide-Out Drawer (also opened via Bottom Nav "More" button) */}
       <div
         className={`md:hidden fixed inset-0 z-[70] transition-opacity duration-200 ${
           mobileOpen
@@ -245,16 +244,14 @@ export default function AppSidebarShell({
         }`}
         aria-hidden={!mobileOpen}
       >
-        {/* Backdrop closes drawer on click */}
         <div
           onClick={closeMobile}
-          className="absolute inset-0 bg-[#070D24]/65 backdrop-blur-xs"
+          className="absolute inset-0 bg-[#070D24]/70 backdrop-blur-xs"
         />
 
-        {/* Drawer Panel */}
         <aside
           aria-label={`${workspaceLabel} Mobile Navigation`}
-          className={`relative w-72 max-w-[85vw] h-full bg-[#070D24] text-white flex flex-col border-r border-white/10 shadow-2xl transition-transform duration-200 ease-out ${
+          className={`relative w-72 max-w-[85vw] h-full bg-[#070D24] dark:bg-[#050918] text-white flex flex-col border-r border-white/10 shadow-2xl transition-transform duration-200 ease-out ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -325,14 +322,18 @@ export default function AppSidebarShell({
           </nav>
 
           <div className="border-t border-white/10 p-3 shrink-0">
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-indigo-100/75 hover:bg-red-500/15 hover:text-red-300 transition"
+            <Link
+              href={settingsHref}
+              onClick={closeMobile}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                isSettingsActive
+                  ? "bg-white/15 text-white"
+                  : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
+              }`}
             >
-              <LogOut size={18} className="shrink-0" />
-              <span>Sign Out</span>
-            </button>
+              <Settings size={18} className="shrink-0" />
+              <span>Profile &amp; Settings</span>
+            </Link>
           </div>
         </aside>
       </div>

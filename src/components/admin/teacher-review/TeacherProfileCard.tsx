@@ -26,23 +26,25 @@ export default function TeacherProfileCard({ teacher }: TeacherReviewProps) {
             )}
 
             <div className="pt-8">
-              <h2 className="landing-display text-2xl font-bold text-[#0D1438]">
+              <h2 className="landing-display text-2xl font-bold text-[var(--foreground)]">
                 {teacher.fullName}
               </h2>
-              <p className="text-xs text-[#6B6F94] mt-1">
+              <p className="text-xs text-[var(--foreground-subtle)] mt-1">
                 {teacher.email} · {teacher.subject || "General"} ·{" "}
                 {teacher.qualification || "Educator"} ·{" "}
-                <span className="font-bold text-[#4F46E5]">{teacher.status}</span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                  {teacher.status}
+                </span>
               </p>
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 w-full lg:w-80 space-y-3">
-            <div className="flex justify-between text-xs font-bold text-[#0D1438] tabular-nums">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 w-full lg:w-80 space-y-3">
+            <div className="flex justify-between text-xs font-bold text-[var(--foreground)] tabular-nums">
               <span>Dossier Completeness</span>
               <span>{completion}%</span>
             </div>
-            <div className="w-full h-2 rounded-full bg-[#E4E1F5] overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-[var(--border)] overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-[#4F46E5] to-[#06B6D4] transition-all duration-500"
                 style={{ width: `${completion}%` }}
@@ -50,12 +52,16 @@ export default function TeacherProfileCard({ teacher }: TeacherReviewProps) {
             </div>
             <div className="grid grid-cols-2 gap-3 text-xs pt-1">
               <div>
-                <p className="text-[#6B6F94]">Experience</p>
-                <p className="font-bold text-[#0D1438]">{teacher.experience || "N/A"}</p>
+                <p className="text-[var(--foreground-subtle)]">Experience</p>
+                <p className="font-bold text-[var(--foreground)]">
+                  {teacher.experience || "N/A"}
+                </p>
               </div>
               <div>
-                <p className="text-[#6B6F94]">Institution</p>
-                <p className="font-bold text-[#0D1438] truncate">{teacher.institution || "N/A"}</p>
+                <p className="text-[var(--foreground-subtle)]">Institution</p>
+                <p className="font-bold text-[var(--foreground)] truncate">
+                  {teacher.institution || "N/A"}
+                </p>
               </div>
             </div>
           </div>

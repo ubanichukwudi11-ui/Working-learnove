@@ -15,10 +15,10 @@ export default function DocumentsGrid({ teacher }: TeacherReviewProps) {
   return (
     <div className="learnova-card p-6 space-y-4">
       <div>
-        <h2 className="landing-display text-lg font-bold text-[#0D1438]">
+        <h2 className="landing-display text-lg font-bold text-[var(--foreground)]">
           Uploaded Credentials
         </h2>
-        <p className="text-xs text-[#6B6F94] mt-0.5">
+        <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
           Inspect submitted certificates and identification before approval.
         </p>
       </div>
@@ -34,11 +34,11 @@ export default function DocumentsGrid({ teacher }: TeacherReviewProps) {
           return (
             <div
               key={doc.title}
-              className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] overflow-hidden flex flex-col justify-between"
+              className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] overflow-hidden flex flex-col justify-between"
             >
-              <div className="h-36 bg-[#F5F3FF] flex items-center justify-center overflow-hidden">
+              <div className="h-36 bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center overflow-hidden">
                 {!doc.file ? (
-                  <div className="text-center text-[#6B6F94]">
+                  <div className="text-center text-[var(--foreground-subtle)]">
                     <FileText size={28} className="mx-auto mb-1 opacity-60" />
                     <span className="text-xs">Not uploaded</span>
                   </div>
@@ -50,8 +50,8 @@ export default function DocumentsGrid({ teacher }: TeacherReviewProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="text-center text-[#0D1438]">
-                    <FileText size={28} className="mx-auto mb-1 text-[#4F46E5]" />
+                  <div className="text-center text-[var(--foreground)]">
+                    <FileText size={28} className="mx-auto mb-1 text-indigo-600 dark:text-indigo-400" />
                     <span className="text-xs font-semibold">Document Uploaded</span>
                   </div>
                 )}
@@ -59,8 +59,8 @@ export default function DocumentsGrid({ teacher }: TeacherReviewProps) {
 
               <div className="p-4 flex items-center justify-between gap-2">
                 <div>
-                  <p className="text-xs font-bold text-[#0D1438]">{doc.title}</p>
-                  <p className="text-[11px] text-[#6B6F94]">
+                  <p className="text-xs font-bold text-[var(--foreground)]">{doc.title}</p>
+                  <p className="text-[11px] text-[var(--foreground-subtle)]">
                     {doc.file ? "Available for review" : "Missing file"}
                   </p>
                 </div>
@@ -68,7 +68,7 @@ export default function DocumentsGrid({ teacher }: TeacherReviewProps) {
                   <a
                     href={doc.file}
                     download
-                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition"
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition whitespace-nowrap"
                   >
                     Open
                   </a>

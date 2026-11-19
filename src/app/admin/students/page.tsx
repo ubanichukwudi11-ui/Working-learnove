@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, EmptyState, CardSkeleton } from "@/components/ui";
 import Link from "next/link";
 import { Users, CheckCircle2, AlertCircle } from "lucide-react";
 
@@ -70,33 +71,26 @@ export default function AdminStudentsPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-                Student Enrolment Registry
-              </p>
-              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-                Students &amp; Class Level Placement
-              </h1>
-              <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
-                View all registered students, verify their assigned class levels (JSS1–SS3), and
-                inspect subscription entitlement status.
-              </p>
-            </div>
-            <Link
-              href="/admin/payments"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shrink-0 shadow-xs"
-            >
-              Manage Payments &amp; Scholarships
-            </Link>
-          </div>
+          <PageHeader
+            kicker="Student Enrolment Registry"
+            title="Students & Class Level Placement"
+            description="View all registered students, verify their assigned class levels (JSS1–SS3), and inspect subscription entitlement status."
+            actions={
+              <Link
+                href="/admin/payments"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shrink-0 shadow-xs"
+              >
+                Manage Payments &amp; Scholarships
+              </Link>
+            }
+          />
 
           {feedback && (
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -105,23 +99,18 @@ export default function AdminStudentsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading students...
-            </div>
+            <CardSkeleton lines={6} />
           ) : students.length === 0 ? (
-            <div className="learnova-card border-dashed p-12 text-center space-y-2">
-              <Users size={30} className="mx-auto text-[#6B6F94]" />
-              <p className="font-bold text-[#0B1230]">No Registered Students Yet</p>
-              <p className="text-xs text-[#6B6F94]">
-                Students who create accounts will appear here automatically for enrolment and
-                classroom placement.
-              </p>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No Registered Students Yet"
+              description="Students who create accounts will appear here automatically for enrolment and classroom placement."
+            />
           ) : (
             <div className="learnova-card overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
+                  <thead className="bg-[var(--surface-lavender)] text-xs text-[var(--foreground-subtle)] uppercase border-b border-[var(--border)]">
                     <tr>
                       <th className="px-5 py-3.5 font-semibold">Student</th>
                       <th className="px-5 py-3.5 font-semibold">Enrolled Class Level</th>
@@ -129,7 +118,7 @@ export default function AdminStudentsPage() {
                       <th className="px-5 py-3.5 font-semibold text-right">Place / Reassign Level</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E4E1F5]">
+                  <tbody className="divide-y divide-[var(--border)]">
                     {students.map((st) => {
                       const enr = enrolments.find((e) => e.studentUserId === st.id);
                       const ent = entitlements.find((e) => e.studentUserId === st.id);
@@ -141,21 +130,21 @@ export default function AdminStudentsPage() {
                         "Unassigned";
 
                       return (
-                        <tr key={st.id} className="hover:bg-[#FAF8FF]/70 transition">
+                        <tr key={st.id} className="hover:bg-[var(--surface-lavender)] transition">
                           <td className="px-5 py-3.5">
-                            <p className="font-semibold text-[#0B1230]">{st.fullName}</p>
-                            <p className="text-xs text-[#6B6F94]">{st.email}</p>
+                            <p className="font-semibold text-[var(--foreground)]">{st.fullName}</p>
+                            <p className="text-xs text-[var(--foreground-subtle)]">{st.email}</p>
                           </td>
-                          <td className="px-5 py-3.5 font-bold text-[#0B1230]">{lvlCode}</td>
+                          <td className="px-5 py-3.5 font-bold text-[var(--foreground)]">{lvlCode}</td>
                           <td className="px-5 py-3.5">
                             <span
                               className={`text-xs font-bold ${
                                 activeStatus === "ACTIVE_PAID" ||
                                 activeStatus === "SCHOLARSHIP_GRANTED"
-                                  ? "text-emerald-700"
+                                  ? "text-emerald-700 dark:text-emerald-400"
                                   : activeStatus === "AWAITING_CONFIRMATION"
-                                  ? "text-amber-700"
-                                  : "text-[#6B6F94]"
+                                  ? "text-amber-700 dark:text-amber-400"
+                                  : "text-[var(--foreground-subtle)]"
                               }`}
                             >
                               {activeStatus.replace(/_/g, " ")}

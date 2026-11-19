@@ -224,16 +224,16 @@ export default function AdminAiCopilot({
   return (
     <div className="learnova-card overflow-hidden">
       {/* Header & Mode Switcher */}
-      <div className="bg-[#FAF8FF] border-b border-[#E4E1F5] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-[var(--surface-lavender)] border-b border-[var(--border)] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-xs">
             <Sparkles size={18} />
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm sm:text-base font-extrabold text-[#0B1230]">
+            <h2 className="text-sm sm:text-base font-extrabold text-[var(--foreground)]">
               Learnova Admin AI Copilot
             </h2>
-            <p className="text-xs text-[#6B6F94]">
+            <p className="text-xs text-[var(--foreground-subtle)]">
               {snapshot
                 ? `${snapshot.counts?.approvedTeacherPairs || 0} approved teacher slots · ${snapshot.counts?.pendingTeacherApplications || 0} pending approvals · ${snapshot.counts?.pendingBankTransfers || 0} pending transfers`
                 : "Grounded in live school approvals, timetables, and enrolments"}
@@ -241,14 +241,14 @@ export default function AdminAiCopilot({
           </div>
         </div>
 
-        <div className="inline-flex rounded-xl bg-white border border-[#E4E1F5] p-1 shrink-0">
+        <div className="inline-flex rounded-xl bg-[var(--surface)] border border-[var(--border)] p-1 shrink-0">
           <button
             type="button"
             onClick={() => setActiveTab("timetable")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
               activeTab === "timetable"
                 ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
-                : "text-[#43466E] hover:text-[#0B1230]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
             }`}
           >
             <CalendarDays size={14} /> Timetable Planner
@@ -256,10 +256,10 @@ export default function AdminAiCopilot({
           <button
             type="button"
             onClick={() => setActiveTab("copilot")}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
               activeTab === "copilot"
                 ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
-                : "text-[#43466E] hover:text-[#0B1230]"
+                : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
             }`}
           >
             <MessageSquare size={14} /> Operations Assistant
@@ -271,8 +271,8 @@ export default function AdminAiCopilot({
         <div
           className={`mx-6 mt-4 rounded-xl px-4 py-2.5 text-xs font-semibold flex items-center gap-2 border ${
             aiFeedback.type === "ok"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-rose-50 text-rose-700 border-rose-200"
+              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+              : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
           }`}
         >
           {aiFeedback.type === "ok" ? <CheckCircle2 size={15} /> : <AlertTriangle size={15} />}
@@ -286,7 +286,7 @@ export default function AdminAiCopilot({
           <form onSubmit={handleGenerateTimetable} className="space-y-3">
             <div className="grid md:grid-cols-4 gap-3">
               <div className="md:col-span-3">
-                <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                   Scheduling Goal or Constraint
                 </label>
                 <input
@@ -298,7 +298,7 @@ export default function AdminAiCopilot({
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                   Class Level Scope
                 </label>
                 <select
@@ -323,7 +323,7 @@ export default function AdminAiCopilot({
                     key={i}
                     type="button"
                     onClick={() => setGoal(preset)}
-                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-[#F5F3FF] border border-[#DCD7F5] hover:border-[#4F46E5] text-[#43466E] hover:text-[#4F46E5] transition"
+                    className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-[var(--surface-lavender)] border border-[var(--border-strong)] hover:border-indigo-500 text-[var(--foreground-muted)] hover:text-indigo-600 dark:hover:text-indigo-400 transition whitespace-nowrap"
                   >
                     {i === 0 ? "Morning Core" : i === 1 ? "WAEC SS1–SS3" : "Fill Weekly Gaps"}
                   </button>
@@ -333,7 +333,7 @@ export default function AdminAiCopilot({
               <button
                 type="submit"
                 disabled={planning}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs sm:text-sm font-bold disabled:opacity-50 transition shadow-xs"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs sm:text-sm font-bold disabled:opacity-50 transition shadow-xs whitespace-nowrap"
               >
                 {planning ? (
                   <>
@@ -349,8 +349,8 @@ export default function AdminAiCopilot({
           </form>
 
           {planSummary && (
-            <div className="rounded-xl bg-[#FAF8FF] border border-[#E4E1F5] p-4 text-xs sm:text-sm text-[#43466E]">
-              <span className="font-extrabold text-[#0B1230]">AI Assessment: </span>
+            <div className="rounded-xl bg-[var(--surface-lavender)] border border-[var(--border)] p-4 text-xs sm:text-sm text-[var(--foreground-muted)]">
+              <span className="font-extrabold text-[var(--foreground)]">AI Assessment: </span>
               {planSummary}
             </div>
           )}
@@ -364,25 +364,25 @@ export default function AdminAiCopilot({
                     key={s.tempId}
                     className={`rounded-2xl border p-4 space-y-3 ${
                       s.validation.valid
-                        ? "border-[#E4E1F5] bg-white"
-                        : "border-amber-200 bg-amber-50/40"
+                        ? "border-[var(--border)] bg-[var(--surface)]"
+                        : "border-amber-200 dark:border-amber-800/60 bg-amber-50/40 dark:bg-amber-950/20"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="text-sm font-extrabold text-[#0B1230]">
+                        <p className="text-sm font-extrabold text-[var(--foreground)]">
                           {s.classLevelCode} · {s.subjectName}
                         </p>
-                        <p className="text-xs text-[#43466E] mt-0.5 flex items-center gap-2 tabular-nums">
-                          <Clock size={12} className="text-[#4F46E5]" />
+                        <p className="text-xs text-[var(--foreground-muted)] mt-0.5 flex items-center gap-2 tabular-nums">
+                          <Clock size={12} className="text-indigo-600 dark:text-indigo-400" />
                           {s.dayOfWeek} · {s.startTime}–{s.endTime} WAT ({s.mode})
                         </p>
                       </div>
                       <span
                         className={`text-[11px] font-bold shrink-0 ${
                           isPublished || s.validation.valid
-                            ? "text-emerald-700"
-                            : "text-rose-700"
+                            ? "text-emerald-700 dark:text-emerald-300"
+                            : "text-rose-700 dark:text-rose-300"
                         }`}
                       >
                         {isPublished
@@ -393,28 +393,28 @@ export default function AdminAiCopilot({
                       </span>
                     </div>
 
-                    <div className="text-xs text-[#43466E] space-y-1">
+                    <div className="text-xs text-[var(--foreground-muted)] space-y-1">
                       <p className="flex items-center gap-1.5">
-                        <Users size={12} className="text-[#6B6F94]" />
+                        <Users size={12} className="text-[var(--foreground-subtle)]" />
                         <span>
-                          <strong className="text-[#0B1230]">Teachers:</strong>{" "}
+                          <strong className="text-[var(--foreground)]">Teachers:</strong>{" "}
                           {s.teacherNames.length > 0 ? s.teacherNames.join(", ") : "None assigned"}
                         </span>
                       </p>
-                      <p>
-                        <strong className="text-[#0B1230]">Demand:</strong> {s.eligibleStudentCount} entitled student(s) · Max{" "}
+                      <p className="tabular-nums">
+                        <strong className="text-[var(--foreground)]">Demand:</strong> {s.eligibleStudentCount} entitled student(s) · Max{" "}
                         {s.maxCapacityPerRoom}/room
                       </p>
-                      {s.rationale && <p className="text-[#6B6F94] italic">{s.rationale}</p>}
+                      {s.rationale && <p className="text-[var(--foreground-subtle)] italic">{s.rationale}</p>}
                     </div>
 
                     {!s.validation.valid && s.validation.errors.length > 0 && (
-                      <div className="rounded-lg bg-rose-50 border border-rose-200 p-2 text-[11px] text-rose-700">
+                      <div className="rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 p-2 text-[11px] text-rose-700 dark:text-rose-300">
                         {s.validation.errors.join(" ")}
                       </div>
                     )}
                     {s.validation.warnings.length > 0 && (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-800">
+                      <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-2 text-[11px] text-amber-800 dark:text-amber-300">
                         {s.validation.warnings.join(" ")}
                       </div>
                     )}
@@ -424,7 +424,7 @@ export default function AdminAiCopilot({
                         <button
                           type="button"
                           onClick={() => onLoadSuggestionIntoForm(s)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#DCD7F5] hover:bg-[#FAF8FF] text-xs font-semibold text-[#0B1230] transition"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--border-strong)] hover:bg-[var(--surface-lavender)] text-xs font-semibold text-[var(--foreground)] transition whitespace-nowrap"
                         >
                           <Plus size={12} /> Load into Form
                         </button>
@@ -433,7 +433,7 @@ export default function AdminAiCopilot({
                         type="button"
                         disabled={!s.validation.valid || publishingId === s.tempId || isPublished}
                         onClick={() => handlePublishSuggestion(s)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold disabled:opacity-50 transition"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold disabled:opacity-50 transition whitespace-nowrap"
                       >
                         {publishingId === s.tempId
                           ? "Publishing..."
@@ -449,10 +449,10 @@ export default function AdminAiCopilot({
           )}
 
           {suggestions.length === 0 && !planning && (
-            <div className="rounded-xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-4 text-xs text-[#6B6F94] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-lavender)] p-4 text-xs text-[var(--foreground-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span>
-                Only subjects with <strong className="text-[#0B1230]">approved teachers</strong> in{" "}
-                <Link href="/admin/teachers" className="text-[#4F46E5] font-bold underline">
+                Only subjects with <strong className="text-[var(--foreground)]">approved teachers</strong> in{" "}
+                <Link href="/admin/teachers" className="text-indigo-600 dark:text-indigo-400 font-bold underline">
                   Teacher Approvals
                 </Link>{" "}
                 can be scheduled automatically.
@@ -460,7 +460,7 @@ export default function AdminAiCopilot({
               {!compact && (
                 <Link
                   href="/admin/timetable"
-                  className="inline-flex items-center gap-1 font-bold text-[#0B1230] hover:text-[#4F46E5] hover:underline shrink-0"
+                  className="inline-flex items-center gap-1 font-bold text-[var(--foreground)] hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline shrink-0"
                 >
                   Open Timetable Builder <ArrowRight size={13} />
                 </Link>
@@ -480,7 +480,7 @@ export default function AdminAiCopilot({
                 type="button"
                 disabled={chatting}
                 onClick={() => handleSendChat(p)}
-                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-[#FAF8FF] border border-[#DCD7F5] hover:border-[#4F46E5] hover:text-[#4F46E5] text-[#43466E] transition text-left"
+                className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg bg-[var(--surface-lavender)] border border-[var(--border-strong)] hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 text-[var(--foreground-muted)] transition text-left"
               >
                 {p}
               </button>
@@ -488,7 +488,7 @@ export default function AdminAiCopilot({
           </div>
 
           <div
-            className={`rounded-2xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-3 overflow-y-auto ${
+            className={`rounded-2xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 space-y-3 overflow-y-auto ${
               compact ? "max-h-72" : "h-96"
             }`}
           >
@@ -500,8 +500,8 @@ export default function AdminAiCopilot({
                 <div
                   className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed ${
                     m.role === "user"
-                      ? "bg-[#0B1230] text-white"
-                      : "bg-white border border-[#E4E1F5] text-[#0B1230]"
+                      ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                      : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
                   }`}
                 >
                   {m.text}
@@ -510,8 +510,8 @@ export default function AdminAiCopilot({
             ))}
             {chatting && (
               <div className="flex justify-start">
-                <div className="bg-white border border-[#E4E1F5] rounded-2xl px-4 py-3 text-xs text-[#6B6F94] flex items-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-[#4F46E5]" />
+                <div className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl px-4 py-3 text-xs text-[var(--foreground-subtle)] flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-indigo-600 dark:text-indigo-400" />
                   Analyzing live school records...
                 </div>
               </div>
@@ -535,7 +535,7 @@ export default function AdminAiCopilot({
             <button
               type="submit"
               disabled={chatting || !chatInput.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition shrink-0 shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold disabled:opacity-50 transition shrink-0 shadow-xs whitespace-nowrap"
             >
               <Send size={15} /> Ask
             </button>

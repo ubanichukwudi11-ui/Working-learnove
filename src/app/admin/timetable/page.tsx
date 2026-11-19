@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, EmptyState, CardSkeleton } from "@/components/ui";
 import Link from "next/link";
 import AdminAiCopilot, { type AiTimetableSuggestion } from "@frontend/components/admin/AdminAiCopilot";
 import {
@@ -143,37 +144,29 @@ export default function AdminTimetablePage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-                Official WAT Timetable &amp; Automatic Group Allocation
-              </p>
-              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-                Official Timetable Builder
-              </h1>
-              <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
-                Only School Administrators publish official timetables. The system blocks teacher
-                or cohort scheduling overlaps, restricts assignments strictly to approved
-                teachers, and automatically splits large classes into capacity-bounded groups.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2.5 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowAiPlanner((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shadow-xs"
-              >
-                <Sparkles size={15} />
-                {showAiPlanner ? "Hide AI Assistant" : "AI Timetable Assistant"}
-              </button>
-              <Link
-                href="/admin/classrooms"
-                className="px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition"
-              >
-                Classroom Control Centre
-              </Link>
-            </div>
-          </div>
+          <PageHeader
+            kicker="Official WAT Timetable & Automatic Group Allocation"
+            title="Official Timetable Builder"
+            description="Only School Administrators publish official timetables. The system blocks teacher or cohort scheduling overlaps, restricts assignments strictly to approved teachers, and automatically splits large classes into capacity-bounded groups."
+            actions={
+              <div className="flex flex-wrap gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowAiPlanner((prev) => !prev)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shadow-xs"
+                >
+                  <Sparkles size={15} />
+                  {showAiPlanner ? "Hide AI Assistant" : "AI Timetable Assistant"}
+                </button>
+                <Link
+                  href="/admin/classrooms"
+                  className="px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition"
+                >
+                  Classroom Control Centre
+                </Link>
+              </div>
+            }
+          />
 
           {showAiPlanner && (
             <AdminAiCopilot
@@ -201,8 +194,8 @@ export default function AdminTimetablePage() {
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -211,8 +204,11 @@ export default function AdminTimetablePage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading official timetable...
+            <div className="grid lg:grid-cols-3 gap-6">
+              <CardSkeleton lines={6} />
+              <div className="lg:col-span-2">
+                <CardSkeleton lines={6} />
+              </div>
             </div>
           ) : (
             <div className="grid lg:grid-cols-3 gap-6">
@@ -221,14 +217,14 @@ export default function AdminTimetablePage() {
                 onSubmit={handleCreate}
                 className="learnova-card p-6 space-y-4 h-fit"
               >
-                <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                  <Plus size={16} className="text-[#4F46E5]" />
+                <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                  <Plus size={16} className="text-[#4F46E5] dark:text-indigo-400" />
                   Schedule Official Lesson
                 </h2>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Class Level
                     </label>
                     <select
@@ -247,7 +243,7 @@ export default function AdminTimetablePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Subject
                     </label>
                     <select
@@ -269,7 +265,7 @@ export default function AdminTimetablePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Day
                     </label>
                     <select
@@ -285,7 +281,7 @@ export default function AdminTimetablePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Start (WAT)
                     </label>
                     <input
@@ -297,7 +293,7 @@ export default function AdminTimetablePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       End (WAT)
                     </label>
                     <input
@@ -312,7 +308,7 @@ export default function AdminTimetablePage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Teaching Mode
                     </label>
                     <select
@@ -326,7 +322,7 @@ export default function AdminTimetablePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Room Capacity
                     </label>
                     <input
@@ -342,18 +338,18 @@ export default function AdminTimetablePage() {
 
                 {/* Strict Approved Teachers Filter */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-[#43466E]">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)]">
                     Assign Approved Teacher(s) for {lvlLabel(classLevelId)} {subLabel(subjectId)}
                   </label>
                   {eligibleTeachers.length === 0 ? (
-                    <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+                    <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-3 text-xs text-amber-800 dark:text-amber-300">
                       No teachers are currently approved for {subLabel(subjectId)} ({lvlLabel(classLevelId)}).{" "}
                       <Link href="/admin/teachers" className="font-bold underline">
                         Approve a teacher first →
                       </Link>
                     </div>
                   ) : (
-                    <div className="space-y-1.5 max-h-40 overflow-y-auto border border-[#E4E1F5] bg-[#FAF8FF] rounded-xl p-2">
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto border border-[var(--border)] bg-[var(--surface-lavender)] rounded-xl p-2">
                       {eligibleTeachers.map((ap) => {
                         const checked = selectedTeacherIds.includes(ap.teacherUserId);
                         return (
@@ -361,8 +357,8 @@ export default function AdminTimetablePage() {
                             key={ap.id}
                             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition ${
                               checked
-                                ? "bg-[#EEF2FF] text-[#4F46E5]"
-                                : "text-[#0B1230] hover:bg-white"
+                                ? "bg-[var(--surface-subtle)] text-[#4F46E5] dark:text-indigo-300"
+                                : "text-[var(--foreground)] hover:bg-[var(--surface)]"
                             }`}
                           >
                             <input
@@ -379,7 +375,7 @@ export default function AdminTimetablePage() {
                   )}
                 </div>
 
-                <label className="flex items-center gap-2 text-xs font-semibold text-[#43466E]">
+                <label className="flex items-center gap-2 text-xs font-semibold text-[var(--foreground-muted)]">
                   <input
                     type="checkbox"
                     checked={publishOnSave}
@@ -400,16 +396,11 @@ export default function AdminTimetablePage() {
               {/* Official Timetable & Group Allocation Cards */}
               <div className="lg:col-span-2 space-y-4">
                 {entries.length === 0 ? (
-                  <div className="learnova-card border-dashed p-12 text-center space-y-2">
-                    <CalendarDays size={32} className="mx-auto text-[#6B6F94]" />
-                    <h2 className="text-base font-bold text-[#0B1230]">
-                      Official Timetable is Empty
-                    </h2>
-                    <p className="text-xs text-[#6B6F94] max-w-md mx-auto">
-                      Schedule your first class slot on the left. Once published, entitled
-                      students will be automatically divided into capacity-bounded classrooms.
-                    </p>
-                  </div>
+                  <EmptyState
+                    icon={CalendarDays}
+                    title="Official Timetable is Empty"
+                    description="Schedule your first class slot on the left. Once published, entitled students will be automatically divided into capacity-bounded classrooms."
+                  />
                 ) : (
                   entries.map((entry) => {
                     const entryGroups = groups.filter((g) => g.timetableEntryId === entry.id);
@@ -421,33 +412,33 @@ export default function AdminTimetablePage() {
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-sm font-extrabold text-[#0B1230]">
+                              <span className="text-sm font-extrabold text-[var(--foreground)]">
                                 {lvlLabel(entry.classLevelId)} · {subLabel(entry.subjectId)}
                               </span>
-                              <span aria-hidden="true" className="text-[#6B6F94]">·</span>
+                              <span aria-hidden="true" className="text-[var(--foreground-subtle)]">·</span>
                               <span
                                 className={`text-xs font-bold ${
                                   entry.publicationStatus === "PUBLISHED"
-                                    ? "text-emerald-700"
+                                    ? "text-emerald-700 dark:text-emerald-400"
                                     : entry.publicationStatus === "CANCELLED"
-                                    ? "text-rose-700"
-                                    : "text-amber-700"
+                                    ? "text-rose-700 dark:text-rose-400"
+                                    : "text-amber-700 dark:text-amber-400"
                                 }`}
                               >
                                 {entry.publicationStatus}
                               </span>
                               {entry.allocationStatus === "SHORTFALL" && (
                                 <>
-                                  <span aria-hidden="true" className="text-[#6B6F94]">·</span>
-                                  <span className="text-xs font-bold text-rose-700">
+                                  <span aria-hidden="true" className="text-[var(--foreground-subtle)]">·</span>
+                                  <span className="text-xs font-bold text-rose-700 dark:text-rose-400">
                                     SHORTFALL: {entry.shortfallCount} students need another teacher
                                   </span>
                                 </>
                               )}
                             </div>
-                            <p className="text-xs text-[#6B6F94] mt-1 tabular-nums">
+                            <p className="text-xs text-[var(--foreground-subtle)] mt-1 tabular-nums">
                               {entry.dayOfWeek} · {entry.startTime}–{entry.endTime} WAT ({entry.durationMinutes} mins) · {entry.mode} · Max {entry.maxCapacityPerRoom}/room ·{" "}
-                              <strong className="text-[#0B1230]">{entry.eligibleStudentCount}</strong> entitled student(s)
+                              <strong className="text-[var(--foreground)]">{entry.eligibleStudentCount}</strong> entitled student(s)
                             </p>
                           </div>
 
@@ -475,7 +466,7 @@ export default function AdminTimetablePage() {
                                     "Student group allocations recalculated."
                                   )
                                 }
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
                               >
                                 <RefreshCw size={12} /> Sync Groups
                               </button>
@@ -489,7 +480,7 @@ export default function AdminTimetablePage() {
                                     "Timetable lesson cancelled and participants notified."
                                   )
                                 }
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                               >
                                 <Ban size={12} /> Cancel
                               </button>
@@ -498,13 +489,13 @@ export default function AdminTimetablePage() {
                         </div>
 
                         {/* Allocated Parallel Classroom Groups */}
-                        <div className="border-t border-[#E4E1F5] pt-3">
-                          <p className="text-xs font-bold text-[#43466E] mb-2 flex items-center gap-1.5">
-                            <Users size={13} className="text-[#4F46E5]" />
+                        <div className="border-t border-[var(--border)] pt-3">
+                          <p className="text-xs font-bold text-[var(--foreground-muted)] mb-2 flex items-center gap-1.5">
+                            <Users size={13} className="text-[#4F46E5] dark:text-indigo-400" />
                             Allocated Classroom Groups ({entryGroups.length})
                           </p>
                           {entryGroups.length === 0 ? (
-                            <p className="text-xs text-[#6B6F94]">
+                            <p className="text-xs text-[var(--foreground-subtle)]">
                               No classroom groups created yet.
                             </p>
                           ) : (
@@ -512,13 +503,13 @@ export default function AdminTimetablePage() {
                               {entryGroups.map((grp) => (
                                 <div
                                   key={grp.id}
-                                  className="rounded-xl bg-[#FAF8FF] border border-[#E4E1F5] px-3 py-2.5 flex items-center justify-between text-xs"
+                                  className="rounded-xl bg-[var(--surface-lavender)] border border-[var(--border)] px-3 py-2.5 flex items-center justify-between text-xs"
                                 >
                                   <div>
-                                    <p className="font-bold text-[#0B1230]">{grp.groupName}</p>
-                                    <p className="text-[#6B6F94]">{grp.teacherName}</p>
+                                    <p className="font-bold text-[var(--foreground)]">{grp.groupName}</p>
+                                    <p className="text-[var(--foreground-subtle)]">{grp.teacherName}</p>
                                   </div>
-                                  <span className="font-extrabold text-[#4F46E5] tabular-nums">
+                                  <span className="font-extrabold text-[#4F46E5] dark:text-indigo-400 tabular-nums">
                                     {grp.studentUserIds?.length || 0} / {grp.maxCapacity}
                                   </span>
                                 </div>

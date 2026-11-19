@@ -149,13 +149,13 @@ export default function StudentRegistrationPage() {
   }
 
   const inputClass =
-    "w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] py-3 pl-11 pr-4 text-sm text-[#0B1230] placeholder:text-[#6B6F94] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15";
+    "learnova-input w-full py-3 pl-11 pr-4 text-sm";
   const selectClass =
-    "w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-3 text-sm text-[#0B1230] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15";
+    "learnova-input w-full p-3 text-sm";
 
   return (
-    <main className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender py-10 px-4 sm:px-6 text-[#0B1230]">
-      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-[#E4E1F5] bg-white shadow-xl shadow-[#0B1230]/6">
+    <main className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender py-10 px-4 sm:px-6 text-[var(--foreground)]">
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl learnova-card shadow-xl">
         <div className="learnova-banner-dark bg-architectural-grid-dark px-6 py-8 sm:px-10 text-white">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Logo dark href="/" variant="learnova" />
@@ -177,18 +177,18 @@ export default function StudentRegistrationPage() {
 
         <div className="p-6 sm:p-10">
           {error && (
-            <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+            <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 p-4 text-sm font-medium text-rose-700 dark:text-rose-300">
               {error}
             </div>
           )}
 
           {!confirmationEmail && (
-            <div className="mb-8 rounded-2xl border border-[#E4E1F5] bg-[#FAF8FF] p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--surface-lavender)] p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <p className="text-sm font-bold text-[#0B1230]">
+                <p className="text-sm font-bold text-[var(--foreground)]">
                   Quick Student Sign-Up with Google
                 </p>
-                <p className="text-xs text-[#43466E] mt-0.5">
+                <p className="text-xs text-[var(--foreground-muted)] mt-0.5">
                   Prefills your verified Google name and email, then asks only for your school, class level, and age.
                 </p>
               </div>
@@ -196,11 +196,11 @@ export default function StudentRegistrationPage() {
                 type="button"
                 disabled={googleLoading || loading}
                 onClick={handleGoogleStudentSignup}
-                className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-[#DCD7F5] bg-white px-4 py-2.5 text-xs font-bold text-[#0B1230] hover:border-[#7C3AED] hover:bg-white transition shrink-0 disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] px-4 py-2.5 text-xs font-bold text-[var(--foreground)] hover:border-[#7C3AED] transition shrink-0 disabled:opacity-60"
               >
                 {googleLoading ? (
                   <>
-                    <Loader2 size={15} className="animate-spin text-[#4F46E5]" />
+                    <Loader2 size={15} className="animate-spin text-indigo-600 dark:text-indigo-400" />
                     Redirecting...
                   </>
                 ) : (
@@ -218,12 +218,12 @@ export default function StudentRegistrationPage() {
           )}
 
           {confirmationEmail ? (
-            <div className="rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF] p-8 text-center space-y-4">
-              <CheckCircle2 size={42} className="mx-auto text-[#0891B2]" />
-              <h2 className="landing-display text-xl font-extrabold text-[#0B1230]">
+            <div className="rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] p-8 text-center space-y-4">
+              <CheckCircle2 size={42} className="mx-auto text-cyan-600 dark:text-cyan-400" />
+              <h2 className="landing-display text-xl font-extrabold text-[var(--foreground)]">
                 Confirm Your Email Address
               </h2>
-              <p className="text-sm text-[#43466E] max-w-md mx-auto leading-relaxed">
+              <p className="text-sm text-[var(--foreground-muted)] max-w-md mx-auto leading-relaxed">
                 We sent a verification link to <strong>{confirmationEmail}</strong>. Click the link in your inbox to activate your Learnova student account, then sign in.
               </p>
               <div className="pt-2">
@@ -239,15 +239,15 @@ export default function StudentRegistrationPage() {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Profile Picture */}
             <div>
-              <label className="mb-3 block text-sm font-bold text-[#0B1230]">
+              <label className="mb-3 block text-sm font-bold text-[var(--foreground)]">
                 Profile Picture{" "}
-                <span className="ml-1.5 text-xs font-normal text-[#6B6F94]">
+                <span className="ml-1.5 text-xs font-normal text-[var(--foreground-subtle)]">
                   (Optional)
                 </span>
               </label>
 
               <div className="flex flex-wrap items-center gap-5">
-                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF]">
+                <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-lavender)]">
                   {preview ? (
                     <Image
                       src={preview}
@@ -257,11 +257,11 @@ export default function StudentRegistrationPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <User size={34} className="text-[#6B6F94]" />
+                    <User size={34} className="text-[var(--foreground-subtle)]" />
                   )}
                 </div>
 
-                <label className="inline-flex cursor-pointer items-center gap-2.5 rounded-xl border border-[#DCD7F5] bg-[#F5F3FF] px-4 py-2.5 text-xs font-bold text-[#6D28D9] hover:bg-[#EDE9FE] transition">
+                <label className="inline-flex cursor-pointer items-center gap-2.5 rounded-xl border border-violet-200 bg-violet-50 hover:bg-violet-100 dark:border-violet-800/60 dark:bg-violet-950/50 dark:hover:bg-violet-900/50 px-4 py-2.5 text-xs font-bold text-violet-700 dark:text-violet-300 transition">
                   <Upload size={16} />
                   Upload Photo
                   <input
@@ -277,12 +277,12 @@ export default function StudentRegistrationPage() {
             {/* Personal Information */}
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Full Name
                 </label>
                 <div className="relative">
                   <User
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -295,12 +295,12 @@ export default function StudentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Email
                 </label>
                 <div className="relative">
                   <Mail
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -314,12 +314,12 @@ export default function StudentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Password
                 </label>
                 <div className="relative">
                   <Lock
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -333,12 +333,12 @@ export default function StudentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Class
                 </label>
                 <div className="relative">
                   <GraduationCap
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <select
@@ -365,12 +365,12 @@ export default function StudentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   School Name
                 </label>
                 <div className="relative">
                   <Building2
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -384,12 +384,12 @@ export default function StudentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Age
                 </label>
                 <div className="relative">
                   <Calendar
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -407,9 +407,9 @@ export default function StudentRegistrationPage() {
             </div>
 
             {/* Study Habits */}
-            <div className="border-t border-[#E4E1F5] pt-6 grid gap-5 md:grid-cols-2">
+            <div className="border-t border-[var(--border)] pt-6 grid gap-5 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   How many hours do you study daily?
                 </label>
                 <select
@@ -427,7 +427,7 @@ export default function StudentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Best Time To Study
                 </label>
                 <select
@@ -448,7 +448,7 @@ export default function StudentRegistrationPage() {
 
             {/* Goal */}
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+              <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                 What is your biggest learning goal?
               </label>
               <textarea
@@ -456,13 +456,13 @@ export default function StudentRegistrationPage() {
                 value={form.learningGoal}
                 onChange={(e) => updateField("learningGoal", e.target.value)}
                 placeholder="Example: I want to score above 320 in JAMB and gain admission into UNILAG."
-                className="w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-3.5 text-sm text-[#0B1230] placeholder:text-[#6B6F94] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+                className="learnova-input w-full p-3.5 text-sm"
               />
             </div>
 
             {/* Reminders */}
             <div>
-              <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+              <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                 Daily Study Reminder?
               </label>
               <select
@@ -493,9 +493,9 @@ export default function StudentRegistrationPage() {
           </form>
           )}
 
-          <div className="mt-7 text-center text-xs text-[#43466E]">
+          <div className="mt-7 text-center text-xs text-[var(--foreground-muted)]">
             Already registered?{" "}
-            <Link href="/login" className="font-bold text-[#6D28D9] hover:underline">
+            <Link href="/login" className="font-bold text-violet-600 dark:text-violet-400 hover:underline">
               Sign In
             </Link>
           </div>

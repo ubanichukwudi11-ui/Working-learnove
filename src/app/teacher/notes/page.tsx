@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader } from "@/components/ui";
 import { FileText, Plus, Download } from "lucide-react";
 
 export default function TeacherNotesPage() {
@@ -47,23 +48,17 @@ export default function TeacherNotesPage() {
     <ProtectedRoute roles={["TEACHER", "ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-              Curriculum Materials
-            </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-              Lesson Notes &amp; Study Guides
-            </h1>
-            <p className="text-sm text-[#C4B5FD] mt-1">
-              Publish curriculum-aligned study outlines and downloadable revision sheets for your cohorts.
-            </p>
-          </div>
+          <PageHeader
+            eyebrow="Curriculum Materials"
+            title="Lesson Notes & Study Guides"
+            description="Publish curriculum-aligned study outlines and downloadable revision sheets for your cohorts."
+          />
 
           <form
             onSubmit={publishNote}
             className="learnova-card p-6 space-y-4"
           >
-            <h2 className="text-base font-bold text-[#0B1230]">Publish New Lesson Material</h2>
+            <h2 className="text-base font-bold text-[var(--foreground)]">Publish New Lesson Material</h2>
             <div className="grid sm:grid-cols-2 gap-3">
               <input
                 value={title}
@@ -93,7 +88,7 @@ export default function TeacherNotesPage() {
             />
             <button
               type="submit"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-xs"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-xs whitespace-nowrap"
             >
               <Plus size={15} />
               Publish Material
@@ -107,14 +102,14 @@ export default function TeacherNotesPage() {
                 className="learnova-card p-6 flex flex-col justify-between"
               >
                 <div>
-                  <span className="text-xs font-bold text-[#4F46E5] inline-flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 inline-flex items-center gap-1.5">
                     <FileText size={13} />
                     {m.subject}
                   </span>
-                  <h3 className="text-lg font-bold text-[#0B1230] mt-2">{m.title}</h3>
-                  <p className="text-sm text-[#43466E] mt-2 leading-relaxed">{m.summary}</p>
+                  <h3 className="text-lg font-bold text-[var(--foreground)] mt-2">{m.title}</h3>
+                  <p className="text-sm text-[var(--foreground-muted)] mt-2 leading-relaxed">{m.summary}</p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#E4E1F5] flex items-center justify-between text-xs text-[#6B6F94]">
+                <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between text-xs text-[var(--foreground-subtle)]">
                   <span>{m.updated}</span>
                   <button
                     onClick={() => {
@@ -128,7 +123,7 @@ export default function TeacherNotesPage() {
                       a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="inline-flex items-center gap-1 font-bold text-[#0B1230] hover:text-[#4F46E5] transition"
+                    className="inline-flex items-center gap-1 font-bold text-[var(--foreground)] hover:text-indigo-600 dark:hover:text-indigo-400 transition whitespace-nowrap"
                   >
                     <Download size={13} />
                     Export

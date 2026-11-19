@@ -5,7 +5,7 @@ import Link from "next/link";
 import AppLayout from "@/components/layout/AppLayout";
 import { NIGERIAN_SUBJECTS } from "@/lib/nigerianCurriculum";
 import { lessonData } from "@/lib/lessonData";
-import { ArrowLeft, BookOpen, Clock, Sparkles, Video } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock, PlaySquare, Sparkles, Video } from "lucide-react";
 
 export default function SubjectDetailPage({
   params,
@@ -46,16 +46,23 @@ export default function SubjectDetailPage({
             </div>
           </div>
 
-          <div className="flex gap-2 shrink-0">
+          <div className="flex flex-wrap gap-2 shrink-0">
             <Link
-              href="/live-classes/math-001"
+              href={`/videos?subjectId=${encodeURIComponent(subject.id)}`}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition whitespace-nowrap"
+            >
+              <PlaySquare size={14} className="text-[#22D3EE]" />
+              Topic Videos
+            </Link>
+            <Link
+              href="/live-classes"
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition whitespace-nowrap"
             >
               <Video size={14} />
-              Join Live Class
+              Live Classrooms
             </Link>
             <Link
-              href="/nova"
+              href={`/nova?subject=${encodeURIComponent(subject.name)}`}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/15 bg-white/10 hover:bg-white/15 text-white text-xs font-bold transition whitespace-nowrap"
             >
               <Sparkles size={14} className="text-[#22D3EE]" />
@@ -69,6 +76,7 @@ export default function SubjectDetailPage({
           {topicKeys.map((key) => (
             <button
               key={key}
+              type="button"
               onClick={() => {
                 setSelectedTopic(key);
                 setActiveLessonIndex(0);
@@ -76,7 +84,7 @@ export default function SubjectDetailPage({
               className={`px-4 py-2 rounded-xl text-xs font-bold capitalize transition whitespace-nowrap ${
                 selectedTopic === key
                   ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-xs"
-                  : "bg-white border border-[#E4E1F5] text-[#43466E] hover:bg-[#FAF8FF]"
+                  : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)]"
               }`}
             >
               {key}
@@ -87,23 +95,24 @@ export default function SubjectDetailPage({
         <div className="grid lg:grid-cols-[320px_1fr] gap-6 items-start">
           {/* Lesson List */}
           <div className="learnova-card p-4 space-y-2 min-w-0">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#6B6F94] px-2 pb-1">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[var(--foreground-subtle)] px-2 pb-1">
               Lessons ({lessons.length})
             </h2>
             {lessons.map((lesson, idx) => (
               <button
                 key={lesson.slug}
+                type="button"
                 onClick={() => setActiveLessonIndex(idx)}
                 className={`w-full text-left p-3 rounded-xl border transition ${
                   idx === activeLessonIndex
-                    ? "bg-[#0B1230] text-white border-[#0B1230]"
-                    : "bg-[#FAF8FF] text-[#0B1230] border-[#E4E1F5] hover:border-[#C4B5FD] hover:bg-white"
+                    ? "bg-[#0B1230] dark:bg-[#1E293B] text-white border-[#0B1230] dark:border-[#334155]"
+                    : "bg-[var(--surface-lavender)] text-[var(--foreground)] border-[var(--border)] hover:border-[var(--border-strong)] hover:bg-[var(--surface)]"
                 }`}
               >
                 <p className="text-xs font-bold">{lesson.title}</p>
                 <p
                   className={`text-[11px] mt-1 flex items-center gap-1 ${
-                    idx === activeLessonIndex ? "text-[#22D3EE]" : "text-[#6B6F94]"
+                    idx === activeLessonIndex ? "text-[#22D3EE]" : "text-[var(--foreground-subtle)]"
                   }`}
                 >
                   <Clock size={11} />
@@ -117,32 +126,32 @@ export default function SubjectDetailPage({
           <div className="learnova-card p-6 space-y-5 min-w-0">
             {activeLesson ? (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E4E1F5]">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[var(--border)]">
                   <div>
-                    <span className="text-xs font-bold text-[#4F46E5] uppercase tracking-wider">
+                    <span className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] uppercase tracking-wider">
                       {selectedTopic} Module
                     </span>
-                    <h2 className="text-xl font-bold text-[#0B1230] mt-0.5">
+                    <h2 className="text-xl font-bold text-[var(--foreground)] mt-0.5">
                       {activeLesson.title}
                     </h2>
                   </div>
-                  <span className="text-xs font-semibold text-[#6B6F94]">
+                  <span className="text-xs font-semibold text-[var(--foreground-subtle)]">
                     Instructor: {subject.teacher}
                   </span>
                 </div>
 
-                <div className="rounded-xl bg-[#FAF8FF] border border-[#E4E1F5] p-5">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#6D28D9] flex items-center gap-1.5 mb-2">
+                <div className="rounded-xl bg-[var(--surface-lavender)] border border-[var(--border)] p-5">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#6D28D9] dark:text-[#C4B5FD] flex items-center gap-1.5 mb-2">
                     <BookOpen size={14} />
                     Study Notes &amp; Key Principles
                   </h3>
-                  <pre className="whitespace-pre-wrap font-sans text-sm text-[#0B1230] leading-relaxed">
+                  <pre className="whitespace-pre-wrap font-sans text-sm text-[var(--foreground)] leading-relaxed">
                     {activeLesson.notes.trim()}
                   </pre>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-[#6B6F94]">Select a lesson to begin.</p>
+              <p className="text-sm text-[var(--foreground-subtle)]">Select a lesson to begin.</p>
             )}
           </div>
         </div>

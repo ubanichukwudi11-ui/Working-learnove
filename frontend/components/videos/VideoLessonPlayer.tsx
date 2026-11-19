@@ -85,23 +85,23 @@ export default function VideoLessonPlayer({
       <div className="space-y-2">
         <div className="learnova-ambient-stage-soft rounded-2xl">
           <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-white/15 shadow-sm">
-          <iframe
-            key={ytId}
-            src={`https://www.youtube.com/embed/${ytId}?rel=0`}
-            title={video.title}
-            className="w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+            <iframe
+              key={ytId}
+              src={`https://www.youtube.com/embed/${ytId}?rel=0`}
+              title={video.title}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
         </div>
-        <div className="flex items-center justify-between text-xs text-[#6B6F94] px-1">
+        <div className="flex items-center justify-between text-xs text-[var(--foreground-subtle)] px-1">
           <span>Curated YouTube Lesson</span>
           <a
             href={`https://www.youtube.com/watch?v=${ytId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 font-semibold text-[#4F46E5] hover:text-[#6D28D9]"
+            className="inline-flex items-center gap-1 font-semibold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
           >
             Open in YouTube
             <ExternalLink size={12} />
@@ -117,16 +117,16 @@ export default function VideoLessonPlayer({
   ) {
     return (
       <div className="learnova-ambient-stage-soft rounded-2xl">
-      <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-white/15 shadow-sm">
-        <video
-          key={video.videoUrl}
-          src={video.videoUrl}
-          controls
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-contain"
-        />
-      </div>
+        <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#070D24] border border-white/15 shadow-sm">
+          <video
+            key={video.videoUrl}
+            src={video.videoUrl}
+            controls
+            playsInline
+            preload="metadata"
+            className="w-full h-full object-contain"
+          />
+        </div>
       </div>
     );
   }

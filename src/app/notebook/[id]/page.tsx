@@ -13,7 +13,7 @@ export default async function NotePage({
 
   return (
     <AppLayout>
-      <div className="min-h-screen text-[#0B1230] grid lg:grid-cols-[1fr_340px] gap-6 items-start">
+      <div className="min-h-screen text-[var(--foreground)] grid lg:grid-cols-[1fr_340px] gap-6 items-start">
         <main className="min-w-0">
           <NoteEditor noteId={id} />
         </main>

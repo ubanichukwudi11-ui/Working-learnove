@@ -11,6 +11,7 @@ import {
   MonitorCheck,
   Sparkles,
   PlaySquare,
+  Bell,
 } from "lucide-react";
 import AppSidebarShell, { type SidebarNavGroup } from "./AppSidebarShell";
 
@@ -20,6 +21,7 @@ const groups: SidebarNavGroup[] = [
     items: [
       { name: "Platform Console", href: "/super-admin", icon: ShieldCheck, exact: true },
       { name: "School Admin", href: "/admin", icon: LayoutDashboard, exact: true },
+      { name: "Notifications", href: "/notifications", icon: Bell },
     ],
   },
   {
@@ -54,6 +56,7 @@ export default function SuperAdminSidebar() {
       workspaceLabel="Super Admin"
       brandIcon={ShieldCheck}
       accentTextColor="text-[#C4B5FD]"
+      settingsHref="/profile"
       groups={groups}
     />
   );

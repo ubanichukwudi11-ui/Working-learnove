@@ -182,29 +182,29 @@ export default function ChatInput({
 
   return (
     <div className="space-y-1.5">
-      <div className="rounded-2xl border border-[#DCD7F5] focus-within:border-[#7C3AED] focus-within:ring-3 focus-within:ring-[#7C3AED]/10 bg-[#FAF8FF] focus-within:bg-white transition p-2.5 shadow-2xs">
+      <div className="rounded-2xl border border-[var(--border-strong)] focus-within:border-[#7C3AED] focus-within:ring-3 focus-within:ring-[#7C3AED]/10 bg-[var(--surface-lavender)] focus-within:bg-[var(--surface)] transition p-2.5 shadow-2xs">
         {attachedImage && (
           <div className="mb-2 px-2 flex items-center gap-3">
             <div className="relative inline-block">
               <img
                 src={attachedImage.previewUrl}
                 alt={attachedImage.fileName}
-                className="h-16 w-16 object-cover rounded-xl border border-[#DCD7F5] bg-white"
+                className="h-16 w-16 object-cover rounded-xl border border-[var(--border-strong)] bg-[var(--surface)]"
               />
               <button
                 type="button"
                 onClick={() => setAttachedImage(null)}
                 aria-label="Remove attached photo"
-                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#0B1230] text-white flex items-center justify-center shadow"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center shadow"
               >
                 <X size={11} />
               </button>
             </div>
             <div className="min-w-0 text-xs">
-              <p className="font-bold text-[#0B1230] truncate">
+              <p className="font-bold text-[var(--foreground)] truncate">
                 Snap &amp; Solve Photo Attached
               </p>
-              <p className="text-[11px] text-[#4A5073] truncate">
+              <p className="text-[11px] text-[var(--foreground-muted)] truncate">
                 {attachedImage.fileName}
               </p>
             </div>
@@ -233,11 +233,11 @@ export default function ChatInput({
               ? `Ask Nova about ${subjectLabel} — or snap a homework photo...`
               : "Ask Nova Classroom AI to explain a topic, solve a snapped photo, or draft notes..."
           }
-          className="w-full resize-none bg-transparent px-2 py-1.5 text-sm text-[#0B1230] placeholder:text-[#7C82A1] outline-none leading-relaxed max-h-40"
+          className="w-full resize-none bg-transparent px-2 py-1.5 text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] outline-none leading-relaxed max-h-40"
         />
 
         <div className="flex items-center justify-between gap-2 pt-1.5 px-1">
-          <p className="text-[11px] text-[#7C82A1] hidden sm:block">
+          <p className="text-[11px] text-[var(--foreground-subtle)] hidden sm:block">
             Press Enter to send · Attach textbook or homework photo (PNG/JPG/WEBP)
           </p>
 
@@ -254,9 +254,9 @@ export default function ChatInput({
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || recording || transcribing}
               title="Snap & Solve: upload homework or equation photo"
-              className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition border bg-white hover:bg-[#F5F3FF] text-[#0B1230] border-[#DCD7F5] whitespace-nowrap"
+              className="h-9 px-3 rounded-xl flex items-center gap-1.5 text-xs font-semibold transition border bg-[var(--surface)] hover:bg-[var(--surface-lavender)] text-[var(--foreground)] border-[var(--border-strong)] whitespace-nowrap"
             >
-              <ImagePlus size={14} className="text-[#6D28D9]" />
+              <ImagePlus size={14} className="text-violet-600 dark:text-violet-400" />
               <span className="hidden sm:inline">Snap Photo</span>
             </button>
 
@@ -273,8 +273,8 @@ export default function ChatInput({
                 recording
                   ? "bg-red-600 hover:bg-red-700 text-white border-red-600"
                   : transcribing
-                  ? "bg-amber-50 text-amber-800 border-amber-200"
-                  : "bg-white hover:bg-[#F5F3FF] text-[#0B1230] border-[#DCD7F5]"
+                  ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60"
+                  : "bg-[var(--surface)] hover:bg-[var(--surface-lavender)] text-[var(--foreground)] border-[var(--border-strong)]"
               }`}
             >
               {transcribing ? (
@@ -282,7 +282,7 @@ export default function ChatInput({
               ) : recording ? (
                 <Square size={13} />
               ) : (
-                <Mic size={14} className="text-[#0891B2]" />
+                <Mic size={14} className="text-cyan-600 dark:text-cyan-400" />
               )}
               <span>
                 {recording ? `${seconds}s` : transcribing ? "Transcribing" : "Dictate"}
@@ -308,7 +308,9 @@ export default function ChatInput({
       </div>
 
       {micError && (
-        <p className="text-[11px] font-medium text-red-600 px-1">{micError}</p>
+        <p className="text-[11px] font-medium text-rose-600 dark:text-rose-400 px-1">
+          {micError}
+        </p>
       )}
     </div>
   );

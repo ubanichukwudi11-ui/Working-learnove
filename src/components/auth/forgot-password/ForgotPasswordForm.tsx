@@ -45,17 +45,17 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
   return (
     <>
       <div className="mb-6">
-        <h1 className="landing-display text-2xl font-extrabold text-[#0B1230]">
+        <h1 className="landing-display text-2xl font-extrabold text-[var(--foreground)]">
           Forgot Password
         </h1>
-        <p className="mt-1.5 text-sm text-[#43466E]">
+        <p className="mt-1.5 text-sm text-[var(--foreground-muted)]">
           Enter your email address and we&apos;ll send you a password reset link.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-[#0B1230] mb-1.5">
+          <label className="block text-xs font-bold text-[var(--foreground)] mb-1.5">
             Email Address
           </label>
           <input
@@ -66,13 +66,11 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
               setError("");
             }}
             placeholder="student@school.ng"
-            className={`w-full h-11 px-3.5 rounded-xl bg-[#FAF8FF] border text-sm text-[#0B1230] placeholder:text-[#6B6F94] focus:outline-none transition ${
-              error
-                ? "border-rose-500"
-                : "border-[#DCD7F5] focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+            className={`learnova-input w-full h-11 px-3.5 text-sm ${
+              error ? "!border-rose-500" : ""
             }`}
           />
-          {error && <p className="text-rose-600 text-xs mt-1.5 font-medium">{error}</p>}
+          {error && <p className="text-rose-600 dark:text-rose-400 text-xs mt-1.5 font-medium">{error}</p>}
         </div>
 
         <button
@@ -84,7 +82,7 @@ export default function ForgotPasswordForm({ onSuccess }: Props) {
         </button>
 
         <div className="text-center pt-1">
-          <Link href="/login" className="text-xs font-bold text-[#6D28D9] hover:text-[#4F46E5] hover:underline">
+          <Link href="/login" className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:underline">
             Back to Sign In
           </Link>
         </div>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, CardSkeleton, EmptyState } from "@/components/ui";
 import {
   FileBadge2,
   CheckCircle2,
@@ -108,26 +109,18 @@ export default function TeacherApplicationsPage() {
     <ProtectedRoute roles={["TEACHER"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#22D3EE]">
-              Educator Accreditation &amp; Teaching Scope
-            </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold mt-1">
-              Subject Teaching Applications
-            </h1>
-            <p className="text-sm text-slate-300 mt-1 max-w-2xl">
-              Apply to teach specific Nigerian syllabus subjects across JSS or SSS class levels.
-              Once School Admin approves a subject-level pair, you become eligible for official
-              timetable assignment.
-            </p>
-          </div>
+          <PageHeader
+            eyebrow="Educator Accreditation & Teaching Scope"
+            title="Subject Teaching Applications"
+            description="Apply to teach specific Nigerian syllabus subjects across JSS or SSS class levels. Once School Admin approves a subject-level pair, you become eligible for official timetable assignment."
+          />
 
           {feedback && (
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -136,20 +129,18 @@ export default function TeacherApplicationsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading teaching applications...
-            </div>
+            <CardSkeleton lines={6} />
           ) : (
             <div className="grid lg:grid-cols-3 gap-6">
               {/* New / Edit Application Form */}
               <div className="learnova-card p-6 space-y-4 h-fit">
-                <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                  <FileBadge2 size={16} className="text-[#4F46E5]" />
+                <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                  <FileBadge2 size={16} className="text-indigo-600 dark:text-indigo-400" />
                   {editingId ? "Update Application" : "Apply to Teach a Subject"}
                 </h2>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                     Subject
                   </label>
                   <select
@@ -169,7 +160,7 @@ export default function TeacherApplicationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-1.5">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1.5">
                     Class Levels You Can Teach
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -180,10 +171,10 @@ export default function TeacherApplicationsPage() {
                           type="button"
                           key={lvl.id}
                           onClick={() => toggleLevel(lvl.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
+                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition whitespace-nowrap ${
                             active
-                              ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white border-[#4F46E5]"
-                              : "bg-[#FAF8FF] text-[#43466E] border-[#E4E1F5] hover:bg-[#F5F3FF]"
+                              ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white border-indigo-600"
+                              : "bg-[var(--surface-lavender)] text-[var(--foreground-muted)] border-[var(--border)] hover:bg-[var(--surface-subtle)]"
                           }`}
                         >
                           {lvl.code}
@@ -194,7 +185,7 @@ export default function TeacherApplicationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                     Highest Qualification
                   </label>
                   <input
@@ -207,7 +198,7 @@ export default function TeacherApplicationsPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Institution
                     </label>
                     <input
@@ -218,7 +209,7 @@ export default function TeacherApplicationsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Experience
                     </label>
                     <input
@@ -231,7 +222,7 @@ export default function TeacherApplicationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                     TRCN / Teaching License Number (Optional)
                   </label>
                   <input
@@ -243,7 +234,7 @@ export default function TeacherApplicationsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                  <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                     Teaching Notes / Bio
                   </label>
                   <textarea
@@ -259,7 +250,7 @@ export default function TeacherApplicationsPage() {
                     type="button"
                     disabled={saving || selectedLevels.length === 0}
                     onClick={() => submitForm("SAVE_DRAFT")}
-                    className="flex-1 py-2.5 rounded-xl border border-[#DCD7F5] text-[#43466E] text-xs font-semibold hover:bg-[#FAF8FF] inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition"
+                    className="flex-1 py-2.5 rounded-xl border border-[var(--border-strong)] text-[var(--foreground-muted)] text-xs font-semibold hover:bg-[var(--surface-lavender)] inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition whitespace-nowrap"
                   >
                     <Save size={13} /> Save Draft
                   </button>
@@ -267,7 +258,7 @@ export default function TeacherApplicationsPage() {
                     type="button"
                     disabled={saving || selectedLevels.length === 0}
                     onClick={() => submitForm("SUBMIT_APPLICATION")}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition shadow-sm"
+                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5 disabled:opacity-50 transition shadow-sm whitespace-nowrap"
                   >
                     <Send size={13} /> Submit for Approval
                   </button>
@@ -278,12 +269,12 @@ export default function TeacherApplicationsPage() {
               <div className="lg:col-span-2 space-y-6 min-w-0">
                 {/* Approved Authorizations */}
                 <div className="learnova-card p-6">
-                  <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2 mb-3">
-                    <Award size={16} className="text-[#4F46E5]" />
+                  <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2 mb-3">
+                    <Award size={16} className="text-indigo-600 dark:text-indigo-400" />
                     Approved Subjects &amp; Class Levels ({approvals.filter((a) => a.status === "APPROVED").length})
                   </h2>
                   {approvals.filter((a) => a.status === "APPROVED").length === 0 ? (
-                    <p className="text-xs text-[#6B6F94]">
+                    <p className="text-xs text-[var(--foreground-subtle)]">
                       You have no approved subject-level authorizations yet. Submit an
                       application on the left for School Admin review.
                     </p>
@@ -294,7 +285,7 @@ export default function TeacherApplicationsPage() {
                         .map((ap) => (
                           <div
                             key={ap.id}
-                            className="px-3.5 py-2.5 rounded-xl bg-[#F5F3FF] border border-[#DCD7F5] text-[#4F46E5] text-xs font-bold"
+                            className="px-3.5 py-2.5 rounded-xl bg-[var(--surface-lavender)] border border-[var(--border-strong)] text-indigo-600 dark:text-indigo-300 text-xs font-bold"
                           >
                             {ap.subjectName} · {ap.classLevelName}
                           </div>
@@ -305,23 +296,27 @@ export default function TeacherApplicationsPage() {
 
                 {/* Application History */}
                 <div className="learnova-card overflow-hidden">
-                  <div className="px-6 py-4 border-b border-[#E4E1F5]">
-                    <h2 className="landing-display text-base font-bold text-[#0B1230]">
+                  <div className="px-6 py-4 border-b border-[var(--border)]">
+                    <h2 className="landing-display text-base font-bold text-[var(--foreground)]">
                       Submitted Applications ({applications.length})
                     </h2>
                   </div>
                   {applications.length === 0 ? (
-                    <div className="p-10 text-center text-xs text-[#6B6F94]">
-                      No subject applications recorded yet.
+                    <div className="p-6">
+                      <EmptyState
+                        icon={FileBadge2}
+                        title="No subject applications recorded yet"
+                        description="Complete the form on the left to request subject-level approval."
+                      />
                     </div>
                   ) : (
-                    <div className="divide-y divide-[#E4E1F5]">
+                    <div className="divide-y divide-[var(--border)]">
                       {applications.map((app) => (
                         <div key={app.id} className="p-5 sm:px-6 space-y-2">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div>
-                              <p className="font-bold text-[#0B1230]">{app.subjectName}</p>
-                              <p className="text-xs text-[#6B6F94]">
+                              <p className="font-bold text-[var(--foreground)]">{app.subjectName}</p>
+                              <p className="text-xs text-[var(--foreground-subtle)]">
                                 Requested Levels:{" "}
                                 {(app.classLevelIds || []).map(levelCode).join(", ")} ·{" "}
                                 {app.qualification}
@@ -330,20 +325,20 @@ export default function TeacherApplicationsPage() {
                             <span
                               className={`text-xs font-bold shrink-0 ${
                                 app.status === "APPROVED"
-                                  ? "text-emerald-700"
+                                  ? "text-emerald-700 dark:text-emerald-300"
                                   : app.status === "PENDING_REVIEW"
-                                  ? "text-amber-700"
+                                  ? "text-amber-700 dark:text-amber-300"
                                   : app.status === "DRAFT"
-                                  ? "text-[#6B6F94]"
-                                  : "text-rose-700"
+                                  ? "text-[var(--foreground-subtle)]"
+                                  : "text-rose-700 dark:text-rose-300"
                               }`}
                             >
                               {app.status.replace(/_/g, " ")}
                             </span>
                           </div>
                           {app.adminExplanation && (
-                            <p className="text-xs bg-[#FAF8FF] border border-[#E4E1F5] rounded-xl px-3 py-2 text-[#43466E]">
-                              <strong className="text-[#0B1230]">Admin Note:</strong> {app.adminExplanation}
+                            <p className="text-xs bg-[var(--surface-lavender)] border border-[var(--border)] rounded-xl px-3 py-2 text-[var(--foreground-muted)]">
+                              <strong className="text-[var(--foreground)]">Admin Note:</strong> {app.adminExplanation}
                             </p>
                           )}
                           {(app.status === "DRAFT" || app.status === "RESUBMISSION_REQUIRED") && (
@@ -358,7 +353,7 @@ export default function TeacherApplicationsPage() {
                                 setLicenseNumber(app.licenseNumber || "");
                                 setBio(app.bio || "");
                               }}
-                              className="text-xs font-bold text-[#4F46E5] hover:underline"
+                              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
                             >
                               Edit &amp; Resubmit Application →
                             </button>

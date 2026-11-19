@@ -25,10 +25,12 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
         <div className="text-center space-y-3">
           <div className="w-9 h-9 rounded-full border-2 border-[#4F46E5] border-t-transparent animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-[#43466E]">Loading Learnova workspace...</p>
+          <p className="text-sm font-semibold text-[var(--foreground-muted)]">
+            Loading Learnova workspace...
+          </p>
         </div>
       </div>
     );
@@ -44,7 +46,7 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+    <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
       <ServiceWorkerRegistrar />
       <RoleSidebar role={user.role} />
 

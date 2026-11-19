@@ -453,19 +453,21 @@ export default function ClassroomTools({
 
           {isSubmittingModal && (
             <div className="fixed inset-0 z-50 bg-[#070D24]/75 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white text-[#0B1230] p-6 space-y-4 shadow-2xl">
-                <h3 className="landing-display text-base font-extrabold">{assignment.title}</h3>
+              <div className="w-full max-w-md rounded-2xl learnova-card p-6 space-y-4 shadow-2xl">
+                <h3 className="landing-display text-base font-extrabold text-[var(--foreground)]">
+                  {assignment.title}
+                </h3>
                 <textarea
                   rows={4}
                   value={submissionText}
                   onChange={(e) => setSubmissionText(e.target.value)}
                   placeholder="Write your working steps and final answer..."
-                  className="w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-3 text-xs text-[#0B1230] focus:outline-none focus:border-[#7C3AED]"
+                  className="learnova-input w-full p-3 text-xs"
                 />
                 <div className="flex justify-end gap-2">
                   <button
                     onClick={() => setIsSubmittingModal(false)}
-                    className="px-4 py-2 rounded-xl border border-[#E4E1F5] text-xs font-bold text-[#4A5073] hover:bg-[#FAF8FF]"
+                    className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)]"
                   >
                     Cancel
                   </button>

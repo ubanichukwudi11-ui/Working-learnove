@@ -118,16 +118,16 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5 w-full max-w-md">
       <div className="text-center pb-1">
-        <h2 className="landing-display text-2xl font-extrabold tracking-tight text-[#0B1230]">
+        <h2 className="landing-display text-2xl font-extrabold tracking-tight text-[var(--foreground)]">
           Sign in to Learnova
         </h2>
-        <p className="text-sm text-[#43466E] mt-1">
+        <p className="text-sm text-[var(--foreground-muted)] mt-1">
           Continue your classes, assignments, and Nova AI study
         </p>
       </div>
 
       <div>
-        <label className="block mb-1.5 text-sm font-semibold text-[#0B1230]">
+        <label className="block mb-1.5 text-sm font-semibold text-[var(--foreground)]">
           Email Address
         </label>
 
@@ -139,20 +139,20 @@ export default function LoginForm() {
             setErrors((prev) => ({ ...prev, email: "" }));
           }}
           placeholder="you@school.edu.ng"
-          className={`w-full rounded-xl border bg-[#FAF8FF] text-[#0B1230] placeholder:text-[#6B6F94] px-3.5 py-2.5 text-sm outline-none transition ${
+          className={`w-full rounded-xl border bg-[var(--surface-lavender)] text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] px-3.5 py-2.5 text-sm outline-none transition ${
             errors.email
-              ? "border-red-500"
-              : "border-[#DCD7F5] focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+              ? "border-rose-500"
+              : "border-[var(--border-strong)] focus:border-[#7C3AED] focus:bg-[var(--surface)] focus:ring-2 focus:ring-[#7C3AED]/15"
           }`}
         />
 
         {errors.email && (
-          <p className="mt-1.5 text-xs text-red-600">{errors.email}</p>
+          <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{errors.email}</p>
         )}
       </div>
 
       <div>
-        <label className="block mb-1.5 text-sm font-semibold text-[#0B1230]">
+        <label className="block mb-1.5 text-sm font-semibold text-[var(--foreground)]">
           Password
         </label>
 
@@ -165,48 +165,48 @@ export default function LoginForm() {
               setErrors((prev) => ({ ...prev, password: "" }));
             }}
             placeholder="Enter password"
-            className={`w-full rounded-xl border bg-[#FAF8FF] text-[#0B1230] placeholder:text-[#6B6F94] px-3.5 py-2.5 pr-11 text-sm outline-none transition ${
+            className={`w-full rounded-xl border bg-[var(--surface-lavender)] text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] px-3.5 py-2.5 pr-11 text-sm outline-none transition ${
               errors.password
-                ? "border-red-500"
-                : "border-[#DCD7F5] focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15"
+                ? "border-rose-500"
+                : "border-[var(--border-strong)] focus:border-[#7C3AED] focus:bg-[var(--surface)] focus:ring-2 focus:ring-[#7C3AED]/15"
             }`}
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94] hover:text-[#4F46E5] transition"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)] hover:text-indigo-600 dark:hover:text-indigo-400 transition"
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
 
         {errors.password && (
-          <p className="mt-1.5 text-xs text-red-600">{errors.password}</p>
+          <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400">{errors.password}</p>
         )}
       </div>
 
       <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-xs font-medium text-[#43466E]">
+        <label className="flex items-center gap-2 text-xs font-medium text-[var(--foreground-muted)]">
           <input
             type="checkbox"
             checked={rememberMe}
             onChange={() => setRememberMe(!rememberMe)}
-            className="rounded border-[#DCD7F5] accent-[#4F46E5]"
+            className="rounded border-[var(--border-strong)] accent-[#4F46E5]"
           />
           Remember me
         </label>
 
         <Link
           href="/forgot-password"
-          className="text-xs font-semibold text-[#6D28D9] hover:text-[#4F46E5] hover:underline"
+          className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline"
         >
           Forgot Password?
         </Link>
       </div>
 
       {errors.general && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3.5">
-          <p className="text-xs font-medium text-red-700">{errors.general}</p>
+        <div className="rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 p-3.5">
+          <p className="text-xs font-medium text-rose-700 dark:text-rose-300">{errors.general}</p>
         </div>
       )}
 
@@ -227,11 +227,11 @@ export default function LoginForm() {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#E4E1F5]" />
+          <div className="w-full border-t border-[var(--border)]" />
         </div>
 
         <div className="relative flex justify-center">
-          <span className="bg-white px-3 text-xs font-medium text-[#6B6F94]">
+          <span className="bg-[var(--surface)] px-3 text-xs font-medium text-[var(--foreground-subtle)]">
             OR
           </span>
         </div>
@@ -241,11 +241,11 @@ export default function LoginForm() {
         type="button"
         disabled={isBusy}
         onClick={handleGoogleLogin}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[#DCD7F5] bg-white py-2.5 text-sm font-semibold text-[#0B1230] transition hover:bg-[#FAF8FF] hover:border-[#C4B5FD] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] py-2.5 text-sm font-semibold text-[var(--foreground)] transition hover:bg-[var(--surface-lavender)] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {googleLoading ? (
           <>
-            <Loader2 size={16} className="animate-spin text-[#4F46E5]" />
+            <Loader2 size={16} className="animate-spin text-indigo-600 dark:text-indigo-400" />
             <span>Redirecting to Google...</span>
           </>
         ) : (
@@ -260,15 +260,15 @@ export default function LoginForm() {
         )}
       </button>
 
-      <p className="text-center text-[11px] text-[#6B6F94]">
+      <p className="text-center text-[11px] text-[var(--foreground-subtle)]">
         Google sign-in is available for Students &amp; Parents. Teachers sign in with educator email &amp; password above.
       </p>
 
-      <div className="text-center text-xs text-[#43466E]">
+      <div className="text-center text-xs text-[var(--foreground-muted)]">
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-semibold text-[#6D28D9] hover:text-[#4F46E5] hover:underline"
+          className="font-semibold text-violet-600 dark:text-violet-400 hover:underline"
         >
           Create Account
         </Link>

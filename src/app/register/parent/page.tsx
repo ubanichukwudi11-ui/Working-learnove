@@ -79,11 +79,11 @@ export default function ParentRegistrationPage() {
   }
 
   const inputClass =
-    "w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] py-3 pl-11 pr-4 text-sm text-[#0B1230] placeholder:text-[#6B6F94] outline-none transition focus:border-[#7C3AED] focus:bg-white focus:ring-2 focus:ring-[#7C3AED]/15";
+    "learnova-input w-full py-3 pl-11 pr-4 text-sm";
 
   return (
-    <main className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender py-10 px-4 sm:px-6 text-[#0B1230]">
-      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-[#E4E1F5] bg-white shadow-xl shadow-[#0B1230]/6">
+    <main className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender py-10 px-4 sm:px-6 text-[var(--foreground)]">
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl learnova-card shadow-xl">
         <div className="learnova-banner-dark bg-architectural-grid-dark px-6 py-8 sm:px-10 text-white">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <Logo dark href="/" variant="learnova" />
@@ -105,18 +105,18 @@ export default function ParentRegistrationPage() {
 
         <div className="p-6 sm:p-10">
           {error && (
-            <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+            <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 p-4 text-sm font-medium text-rose-700 dark:text-rose-300">
               {error}
             </div>
           )}
 
           {confirmationEmail ? (
-            <div className="rounded-2xl border border-[#DCD7F5] bg-[#FAF8FF] p-8 text-center space-y-4">
-              <CheckCircle2 size={42} className="mx-auto text-[#0891B2]" />
-              <h2 className="landing-display text-xl font-extrabold text-[#0B1230]">
+            <div className="rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] p-8 text-center space-y-4">
+              <CheckCircle2 size={42} className="mx-auto text-cyan-600 dark:text-cyan-400" />
+              <h2 className="landing-display text-xl font-extrabold text-[var(--foreground)]">
                 Confirm Your Email Address
               </h2>
-              <p className="text-sm text-[#43466E] max-w-md mx-auto leading-relaxed">
+              <p className="text-sm text-[var(--foreground-muted)] max-w-md mx-auto leading-relaxed">
                 We sent a verification link to <strong>{confirmationEmail}</strong>. Click the link in your inbox to activate your parent account, then sign in.
               </p>
               <div className="pt-2">
@@ -132,12 +132,12 @@ export default function ParentRegistrationPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Full Name
                 </label>
                 <div className="relative">
                   <User
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -152,12 +152,12 @@ export default function ParentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Email Address
                 </label>
                 <div className="relative">
                   <Mail
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -172,12 +172,12 @@ export default function ParentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Password
                 </label>
                 <div className="relative">
                   <Lock
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -192,12 +192,12 @@ export default function ParentRegistrationPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                   Phone Number
                 </label>
                 <div className="relative">
                   <Phone
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                     size={17}
                   />
                   <input
@@ -211,20 +211,20 @@ export default function ParentRegistrationPage() {
               </div>
             </div>
 
-            <div className="border-t border-[#E4E1F5] pt-6">
-              <h2 className="landing-display text-lg font-extrabold mb-4 text-[#0B1230] flex items-center gap-2">
-                <GraduationCap className="text-[#4F46E5]" size={20} />
+            <div className="border-t border-[var(--border)] pt-6">
+              <h2 className="landing-display text-lg font-extrabold mb-4 text-[var(--foreground)] flex items-center gap-2">
+                <GraduationCap className="text-indigo-600 dark:text-indigo-400" size={20} />
                 Student Information
               </h2>
 
               <div className="grid gap-5 md:grid-cols-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                  <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                     Child&apos;s Full Name
                   </label>
                   <div className="relative">
                     <User
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                       size={17}
                     />
                     <input
@@ -239,12 +239,12 @@ export default function ParentRegistrationPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                  <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                     Student ID Number
                   </label>
                   <div className="relative">
                     <Hash
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                       size={17}
                     />
                     <input
@@ -259,12 +259,12 @@ export default function ParentRegistrationPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-[#0B1230]">
+                  <label className="mb-1.5 block text-xs font-bold text-[var(--foreground)]">
                     Relationship
                   </label>
                   <div className="relative">
                     <Users
-                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6F94]"
+                      className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)]"
                       size={17}
                     />
                     <select
@@ -302,9 +302,9 @@ export default function ParentRegistrationPage() {
           </form>
           )}
 
-          <div className="mt-7 text-center text-xs text-[#43466E]">
+          <div className="mt-7 text-center text-xs text-[var(--foreground-muted)]">
             Already have an account?{" "}
-            <Link href="/login" className="font-bold text-[#6D28D9] hover:underline">
+            <Link href="/login" className="font-bold text-violet-600 dark:text-violet-400 hover:underline">
               Sign In
             </Link>
           </div>

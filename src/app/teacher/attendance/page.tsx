@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
-import { Check, CalendarCheck, AlertCircle } from "lucide-react";
+import { PageHeader, CardSkeleton, EmptyState } from "@/components/ui";
+import { Check, CalendarCheck, AlertCircle, Users } from "lucide-react";
 
 type AttStatus = "PRESENT" | "LATE" | "ABSENT";
 
@@ -91,57 +92,52 @@ export default function TeacherAttendancePage() {
     <ProtectedRoute roles={["TEACHER", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-                Official Classroom Register
-              </p>
-              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
-                Class Attendance Register
-              </h1>
-            </div>
-
-            {activeRoom && studentIds.length > 0 && (
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-xs font-bold text-[#22D3EE] tabular-nums">
-                  {presentCount}/{studentIds.length} Present
-                </span>
-                <button
-                  disabled={saving}
-                  onClick={handleSave}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm disabled:opacity-50"
-                >
-                  {savedMsg ? <Check size={15} /> : <CalendarCheck size={15} />}
-                  {saving ? "Saving..." : "Save Attendance"}
-                </button>
-              </div>
-            )}
-          </div>
+          <PageHeader
+            eyebrow="Official Classroom Register"
+            title="Class Attendance Register"
+            description="Record daily student presence, lateness, and absences per allocated classroom group."
+            actions={
+              activeRoom && studentIds.length > 0 ? (
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs font-bold text-[#22D3EE] tabular-nums">
+                    {presentCount}/{studentIds.length} Present
+                  </span>
+                  <button
+                    disabled={saving}
+                    onClick={handleSave}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {savedMsg ? <Check size={15} /> : <CalendarCheck size={15} />}
+                    {saving ? "Saving..." : "Save Attendance"}
+                  </button>
+                </div>
+              ) : undefined
+            }
+          />
 
           {savedMsg && (
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs font-semibold text-emerald-700">
+            <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
               {savedMsg}
             </div>
           )}
           {error && (
-            <div className="rounded-xl bg-rose-50 border border-rose-200 px-4 py-2.5 text-xs font-semibold text-rose-700 flex items-center gap-1.5">
+            <div className="rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 px-4 py-2.5 text-xs font-semibold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
               <AlertCircle size={14} /> {error}
             </div>
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading classroom rosters...
-            </div>
+            <CardSkeleton lines={5} />
           ) : classrooms.length === 0 ? (
-            <div className="bg-white border border-dashed border-[#DCD7F5] rounded-2xl p-12 text-center text-sm text-[#6B6F94]">
-              No classrooms assigned yet. Attendance registers will appear once School Admin
-              schedules your classroom groups.
-            </div>
+            <EmptyState
+              icon={CalendarCheck}
+              title="No classrooms assigned yet"
+              description="Attendance registers will appear once School Admin schedules your classroom groups."
+            />
           ) : (
             <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-3">
-                <label className="text-xs font-bold text-[#43466E]">
+                <label className="text-xs font-bold text-[var(--foreground-muted)]">
                   Select Classroom Group:
                 </label>
                 <select
@@ -158,32 +154,34 @@ export default function TeacherAttendancePage() {
               </div>
 
               {studentIds.length === 0 ? (
-                <div className="bg-white border border-dashed border-[#DCD7F5] rounded-2xl p-10 text-center text-xs text-[#6B6F94]">
-                  No entitled students are allocated to this group yet.
-                </div>
+                <EmptyState
+                  icon={Users}
+                  title="No students allocated to this group"
+                  description="No entitled students are allocated to this classroom group yet."
+                />
               ) : (
                 <div className="learnova-card overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                      <thead className="bg-[#FAF8FF] text-[#43466E] text-xs uppercase border-b border-[#E4E1F5]">
+                      <thead className="bg-[var(--surface-lavender)] text-[var(--foreground-muted)] text-xs uppercase border-b border-[var(--border)]">
                         <tr>
                           <th className="text-left px-6 py-3">Student</th>
                           <th className="text-left px-6 py-3">Group</th>
                           <th className="text-left px-6 py-3">Mark Attendance</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E4E1F5]">
+                      <tbody className="divide-y divide-[var(--border)]">
                         {studentIds.map((sid) => {
                           const st = studentsMap[sid];
                           return (
-                            <tr key={sid} className="hover:bg-[#FAF8FF] transition">
+                            <tr key={sid} className="hover:bg-[var(--surface-lavender)]/60 transition">
                               <td className="px-6 py-4">
-                                <p className="font-bold text-[#0B1230]">
+                                <p className="font-bold text-[var(--foreground)]">
                                   {st?.fullName || sid}
                                 </p>
-                                <p className="text-xs text-[#6B6F94]">{st?.email || ""}</p>
+                                <p className="text-xs text-[var(--foreground-subtle)]">{st?.email || ""}</p>
                               </td>
-                              <td className="px-6 py-4 text-[#43466E] font-semibold">
+                              <td className="px-6 py-4 text-[var(--foreground-muted)] font-semibold">
                                 {activeRoom.groupName}
                               </td>
                               <td className="px-6 py-4">
@@ -194,14 +192,14 @@ export default function TeacherAttendancePage() {
                                       onClick={() =>
                                         setStatuses((prev) => ({ ...prev, [sid]: opt }))
                                       }
-                                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                                         statuses[sid] === opt
                                           ? opt === "PRESENT"
                                             ? "bg-emerald-600 text-white"
                                             : opt === "LATE"
                                             ? "bg-amber-600 text-white"
                                             : "bg-rose-600 text-white"
-                                          : "bg-[#FAF8FF] border border-[#E4E1F5] text-[#43466E] hover:bg-[#F5F3FF]"
+                                          : "bg-[var(--surface-lavender)] border border-[var(--border)] text-[var(--foreground-muted)] hover:bg-[var(--surface-subtle)]"
                                       }`}
                                     >
                                       {opt}

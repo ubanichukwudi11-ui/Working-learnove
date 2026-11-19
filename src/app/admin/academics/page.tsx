@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, CardSkeleton } from "@/components/ui";
 import {
   BookOpenCheck,
   Layers,
@@ -89,25 +90,18 @@ export default function AdminAcademicsPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-              Curriculum &amp; School Structure
-            </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-              Class Levels, Subjects &amp; Academic Terms
-            </h1>
-            <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
-              Configure Nigerian secondary/primary class levels (JSS1–SS3 or custom), map
-              subjects to eligible class levels, and manage active academic sessions and terms.
-            </p>
-          </div>
+          <PageHeader
+            kicker="Curriculum & School Structure"
+            title="Class Levels, Subjects & Academic Terms"
+            description="Configure Nigerian secondary/primary class levels (JSS1–SS3 or custom), map subjects to eligible class levels, and manage active academic sessions and terms."
+          />
 
           {feedback && (
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -116,8 +110,9 @@ export default function AdminAcademicsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading academic structure...
+            <div className="grid lg:grid-cols-2 gap-6">
+              <CardSkeleton lines={5} />
+              <CardSkeleton lines={5} />
             </div>
           ) : (
             <div className="space-y-8">
@@ -142,13 +137,13 @@ export default function AdminAcademicsPage() {
                   }}
                   className="learnova-card p-6 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <Layers size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <Layers size={16} className="text-[#4F46E5] dark:text-indigo-400" />
                     Add Class Level
                   </h2>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Code
                       </label>
                       <input
@@ -160,7 +155,7 @@ export default function AdminAcademicsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Category
                       </label>
                       <select
@@ -176,7 +171,7 @@ export default function AdminAcademicsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Full Display Name
                     </label>
                     <input
@@ -196,25 +191,25 @@ export default function AdminAcademicsPage() {
                 </form>
 
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                    <h2 className="text-base font-bold text-[#0B1230]">
+                  <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]">
+                    <h2 className="text-base font-bold text-[var(--foreground)]">
                       Configured Class Levels ({classLevels.length})
                     </h2>
                   </div>
-                  <div className="divide-y divide-[#E4E1F5]">
+                  <div className="divide-y divide-[var(--border)]">
                     {classLevels.map((lvl) => (
                       <div
                         key={lvl.id}
                         className="px-6 py-3.5 flex items-center justify-between gap-3"
                       >
                         <div className="min-w-0">
-                          <span className="font-bold text-[#0B1230]">{lvl.code}</span>
-                          <span className="text-sm text-[#43466E] ml-2">{lvl.name}</span>
+                          <span className="font-bold text-[var(--foreground)]">{lvl.code}</span>
+                          <span className="text-sm text-[var(--foreground-muted)] ml-2">{lvl.name}</span>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                           <span
                             className={`text-xs font-bold ${
-                              lvl.isActive ? "text-emerald-700" : "text-[#6B6F94]"
+                              lvl.isActive ? "text-emerald-700 dark:text-emerald-400" : "text-[var(--foreground-subtle)]"
                             }`}
                           >
                             {lvl.isActive ? "Active" : "Disabled"}
@@ -227,7 +222,7 @@ export default function AdminAcademicsPage() {
                                 `Updated ${lvl.code}.`
                               )
                             }
-                            className="px-3 py-1 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+                            className="px-3 py-1 rounded-lg border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
                           >
                             {lvl.isActive ? "Disable" : "Enable"}
                           </button>
@@ -263,13 +258,13 @@ export default function AdminAcademicsPage() {
                   }}
                   className="learnova-card p-6 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <BookOpenCheck size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <BookOpenCheck size={16} className="text-[#4F46E5] dark:text-indigo-400" />
                     Create Subject
                   </h2>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Subject Name
                       </label>
                       <input
@@ -281,7 +276,7 @@ export default function AdminAcademicsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Code
                       </label>
                       <input
@@ -294,7 +289,7 @@ export default function AdminAcademicsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Department
                     </label>
                     <select
@@ -309,7 +304,7 @@ export default function AdminAcademicsPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1.5">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1.5">
                       Eligible Class Levels
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -321,7 +316,7 @@ export default function AdminAcademicsPage() {
                           className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition ${
                             subLevels.includes(lvl.id)
                               ? "bg-[#4F46E5] text-white border-[#4F46E5]"
-                              : "bg-[#FAF8FF] text-[#43466E] border-[#DCD7F5]"
+                              : "bg-[var(--surface-lavender)] text-[var(--foreground-muted)] border-[var(--border-strong)]"
                           }`}
                         >
                           {lvl.code}
@@ -330,7 +325,7 @@ export default function AdminAcademicsPage() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Syllabus Summary
                     </label>
                     <textarea
@@ -350,12 +345,12 @@ export default function AdminAcademicsPage() {
                 </form>
 
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                    <h2 className="text-base font-bold text-[#0B1230]">
+                  <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]">
+                    <h2 className="text-base font-bold text-[var(--foreground)]">
                       Subjects Registry ({subjects.length})
                     </h2>
                   </div>
-                  <div className="divide-y divide-[#E4E1F5]">
+                  <div className="divide-y divide-[var(--border)]">
                     {subjects.map((sub) => {
                       const levelCodes = (sub.classLevelIds || [])
                         .map((id: string) => classLevels.find((c) => c.id === id)?.code)
@@ -368,13 +363,13 @@ export default function AdminAcademicsPage() {
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-[#0B1230]">{sub.name}</span>
-                              <span className="text-xs font-semibold text-[#6B6F94]">
+                              <span className="font-bold text-[var(--foreground)]">{sub.name}</span>
+                              <span className="text-xs font-semibold text-[var(--foreground-subtle)]">
                                 ({sub.code} · {sub.department})
                               </span>
                             </div>
-                            <p className="text-xs text-[#6B6F94] mt-0.5">{sub.description}</p>
-                            <p className="text-xs font-semibold text-[#4F46E5] mt-1">
+                            <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">{sub.description}</p>
+                            <p className="text-xs font-semibold text-[#4F46E5] dark:text-indigo-400 mt-1">
                               Levels: {levelCodes || "None"}
                             </p>
                           </div>
@@ -386,7 +381,7 @@ export default function AdminAcademicsPage() {
                                 `Updated ${sub.name}.`
                               )
                             }
-                            className="px-3 py-1.5 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] shrink-0 transition"
+                            className="px-3 py-1.5 rounded-lg border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] shrink-0 transition"
                           >
                             {sub.isActive ? "Active · Disable" : "Disabled · Enable"}
                           </button>
@@ -420,12 +415,12 @@ export default function AdminAcademicsPage() {
                   }}
                   className="learnova-card p-6 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <CalendarRange size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <CalendarRange size={16} className="text-[#4F46E5] dark:text-indigo-400" />
                     Add Academic Term
                   </h2>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Term Name
                     </label>
                     <input
@@ -438,7 +433,7 @@ export default function AdminAcademicsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Start Date
                       </label>
                       <input
@@ -450,7 +445,7 @@ export default function AdminAcademicsPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         End Date
                       </label>
                       <input
@@ -464,32 +459,32 @@ export default function AdminAcademicsPage() {
                   </div>
                   <button
                     disabled={saving}
-                    className="w-full py-2.5 rounded-xl bg-[#0B1230] hover:bg-[#151A44] text-white text-sm font-bold transition"
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition shadow-xs"
                   >
                     Create Term
                   </button>
                 </form>
 
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                    <h2 className="text-base font-bold text-[#0B1230]">
+                  <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]">
+                    <h2 className="text-base font-bold text-[var(--foreground)]">
                       Academic Sessions &amp; Terms
                     </h2>
                   </div>
-                  <div className="divide-y divide-[#E4E1F5]">
+                  <div className="divide-y divide-[var(--border)]">
                     {terms.map((t) => (
                       <div
                         key={t.id}
                         className="px-6 py-4 flex items-center justify-between gap-3"
                       >
                         <div>
-                          <p className="font-bold text-[#0B1230]">{t.name}</p>
-                          <p className="text-xs text-[#6B6F94] tabular-nums">
+                          <p className="font-bold text-[var(--foreground)]">{t.name}</p>
+                          <p className="text-xs text-[var(--foreground-subtle)] tabular-nums">
                             {t.startsAt} → {t.endsAt}
                           </p>
                         </div>
                         {t.isCurrent ? (
-                          <span className="text-xs font-bold text-[#4F46E5]">
+                          <span className="text-xs font-bold text-[#4F46E5] dark:text-indigo-400">
                             Current Active Term
                           </span>
                         ) : (
@@ -501,7 +496,7 @@ export default function AdminAcademicsPage() {
                                 `${t.name} set as active term.`
                               )
                             }
-                            className="px-3 py-1.5 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+                            className="px-3 py-1.5 rounded-lg border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
                           >
                             Set Current Term
                           </button>

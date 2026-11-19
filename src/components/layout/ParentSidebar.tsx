@@ -4,7 +4,8 @@ import {
   LayoutDashboard,
   CalendarDays,
   Video,
-  User,
+  CreditCard,
+  Bell,
   HeartHandshake,
 } from "lucide-react";
 import AppSidebarShell, { type SidebarNavGroup } from "./AppSidebarShell";
@@ -13,15 +14,16 @@ const groups: SidebarNavGroup[] = [
   {
     label: "Family Portal",
     items: [
-      { name: "Overview", href: "/parent", icon: LayoutDashboard, exact: true },
-      { name: "Timetable", href: "/timetable", icon: CalendarDays },
-      { name: "Live Classes", href: "/live-classes", icon: Video },
+      { name: "Family Overview", href: "/parent", icon: LayoutDashboard, exact: true },
+      { name: "Ward Timetable", href: "/timetable", icon: CalendarDays },
+      { name: "Live Classrooms", href: "/live-classes", icon: Video },
     ],
   },
   {
-    label: "Account",
+    label: "Updates & Billing",
     items: [
-      { name: "Profile", href: "/profile", icon: User },
+      { name: "Notifications", href: "/notifications", icon: Bell },
+      { name: "Plans & Payments", href: "/subscriptions", icon: CreditCard },
     ],
   },
 ];
@@ -33,6 +35,7 @@ export default function ParentSidebar() {
       workspaceLabel="Parent Portal"
       brandIcon={HeartHandshake}
       accentTextColor="text-[#22D3EE]"
+      settingsHref="/profile"
       groups={groups}
     />
   );

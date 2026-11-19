@@ -32,12 +32,14 @@ export default function ProgressChart({
     <div className="learnova-card p-6 min-w-0">
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h3 className="font-bold text-base text-[#0B1230]">Term Assessment Trend</h3>
-          <p className="text-xs text-[#6B6F94] mt-0.5">
+          <h3 className="font-bold text-base text-[var(--foreground)]">
+            Term Assessment Trend
+          </h3>
+          <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
             Progression across topic quizzes, CBT &amp; classwork (%)
           </p>
         </div>
-        <span className="text-sm font-extrabold text-[#4F46E5] tabular-nums">
+        <span className="text-sm font-extrabold text-[#4F46E5] dark:text-[#A5B4FC] tabular-nums">
           {latestScore}%
         </span>
       </div>
@@ -45,24 +47,24 @@ export default function ProgressChart({
       <div className="h-[240px] mt-5">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E4E1F5" />
-            <XAxis dataKey="week" stroke="#6B6F94" fontSize={12} />
-            <YAxis domain={[0, 100]} stroke="#6B6F94" fontSize={12} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 224, 0.25)" />
+            <XAxis dataKey="week" stroke="#8B90B8" fontSize={12} />
+            <YAxis domain={[0, 100]} stroke="#8B90B8" fontSize={12} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#FFFFFF",
-                borderColor: "#E4E1F5",
+                backgroundColor: "var(--surface)",
+                borderColor: "var(--border)",
                 borderRadius: "12px",
-                color: "#0B1230",
+                color: "var(--foreground)",
                 fontSize: "12px",
               }}
             />
             <Line
               type="monotone"
               dataKey="score"
-              stroke="#4F46E5"
+              stroke="#6366F1"
               strokeWidth={3}
-              dot={{ r: 4, fill: "#7C3AED" }}
+              dot={{ r: 4, fill: "#8B5CF6" }}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -11,6 +11,7 @@ import {
   Shield,
   Sparkles,
   PlaySquare,
+  Bell,
 } from "lucide-react";
 import AppSidebarShell, { type SidebarNavGroup } from "./AppSidebarShell";
 
@@ -19,6 +20,7 @@ const groups: SidebarNavGroup[] = [
     label: "Overview",
     items: [
       { name: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
+      { name: "Notifications", href: "/notifications", icon: Bell },
     ],
   },
   {
@@ -53,6 +55,7 @@ export default function AdminSidebar() {
       workspaceLabel="School Admin"
       brandIcon={Shield}
       accentTextColor="text-[#C4B5FD]"
+      settingsHref="/profile"
       groups={groups}
     />
   );

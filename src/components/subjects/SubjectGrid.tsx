@@ -11,7 +11,7 @@ return (
 <section>
 
 
-      <h2 className="text-xl font-bold text-[#0B1230] mb-5">
+      <h2 className="text-xl font-bold text-[var(--foreground)] mb-5">
         Your Subjects
       </h2>
 

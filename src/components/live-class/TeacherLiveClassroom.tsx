@@ -920,22 +920,24 @@ function TeacherClassroomStageContent({
               setIsAnnouncementOpen(false);
               setAnnouncementText("");
             }}
-            className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white text-[#0B1230] p-6 space-y-4 shadow-2xl"
+            className="w-full max-w-md rounded-2xl learnova-card p-6 space-y-4 shadow-2xl"
           >
-            <h3 className="landing-display text-base font-extrabold">Broadcast Classroom Announcement</h3>
+            <h3 className="landing-display text-base font-extrabold text-[var(--foreground)]">
+              Broadcast Classroom Announcement
+            </h3>
             <textarea
               rows={3}
               required
               value={announcementText}
               onChange={(e) => setAnnouncementText(e.target.value)}
               placeholder="e.g. Copy formula 2 into your notebooks before our WAEC drill!"
-              className="w-full rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-3 text-xs text-[#0B1230] focus:outline-none focus:border-[#7C3AED]"
+              className="learnova-input w-full p-3 text-xs"
             />
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setIsAnnouncementOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[#E4E1F5] text-xs font-bold text-[#4A5073] hover:bg-[#FAF8FF]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)]"
               >
                 Cancel
               </button>
@@ -953,15 +955,17 @@ function TeacherClassroomStageContent({
       {/* End Class Confirmation Modal */}
       {isEndModalOpen && (
         <div className="fixed inset-0 z-50 bg-[#070D24]/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-sm rounded-2xl border border-[#E4E1F5] bg-white text-[#0B1230] p-6 space-y-4 shadow-2xl">
-            <h3 className="landing-display text-base font-extrabold">End Live Classroom?</h3>
-            <p className="text-xs text-[#4A5073] leading-relaxed">
+          <div className="w-full max-w-sm rounded-2xl learnova-card p-6 space-y-4 shadow-2xl">
+            <h3 className="landing-display text-base font-extrabold text-[var(--foreground)]">
+              End Live Classroom?
+            </h3>
+            <p className="text-xs text-[var(--foreground-muted)] leading-relaxed">
               This will end the live broadcast for all connected students and lock the stage.
             </p>
             <div className="flex justify-end gap-2">
               <button
                 onClick={() => setIsEndModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-[#E4E1F5] text-xs font-bold text-[#4A5073] hover:bg-[#FAF8FF]"
+                className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-bold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)]"
               >
                 Stay in Class
               </button>

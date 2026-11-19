@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, EmptyState, CardSkeleton } from "@/components/ui";
 import {
   CreditCard,
   CheckCircle2,
@@ -87,37 +88,30 @@ export default function AdminPaymentsPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-                Student Enrolment, Revenue &amp; Access Governance
-              </p>
-              <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-                Payments &amp; Subscription Access Control
-              </h1>
-              <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
-                Verify student bank transfers, inspect confirmed Paystack receipts, grant
-                authorized scholarships, or expire/revoke unpaid access.
-              </p>
-            </div>
-            <button
-              disabled={saving}
-              onClick={() =>
-                postAction({ action: "RUN_EXPIRY_CHECK" }, "Subscription expiry scan complete.")
-              }
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition shrink-0"
-            >
-              <RefreshCw size={15} />
-              Run Expiry Check
-            </button>
-          </div>
+          <PageHeader
+            kicker="Student Enrolment, Revenue & Access Governance"
+            title="Payments & Subscription Access Control"
+            description="Verify student bank transfers, inspect confirmed Paystack receipts, grant authorized scholarships, or expire/revoke unpaid access."
+            actions={
+              <button
+                disabled={saving}
+                onClick={() =>
+                  postAction({ action: "RUN_EXPIRY_CHECK" }, "Subscription expiry scan complete.")
+                }
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 text-white text-sm font-semibold border border-white/15 transition shrink-0"
+              >
+                <RefreshCw size={15} />
+                Run Expiry Check
+              </button>
+            }
+          />
 
           {feedback && (
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -126,8 +120,11 @@ export default function AdminPaymentsPage() {
           )}
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading payments and entitlements...
+            <div className="grid lg:grid-cols-3 gap-6">
+              <CardSkeleton lines={5} />
+              <div className="lg:col-span-2">
+                <CardSkeleton lines={5} />
+              </div>
             </div>
           ) : (
             <>
@@ -151,12 +148,12 @@ export default function AdminPaymentsPage() {
                   }}
                   className="learnova-card p-6 space-y-4 h-fit"
                 >
-                  <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                    <Gift size={16} className="text-[#4F46E5]" />
+                  <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                    <Gift size={16} className="text-[#4F46E5] dark:text-indigo-400" />
                     Grant Scholarship / Access
                   </h2>
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Student Account
                     </label>
                     <select
@@ -175,7 +172,7 @@ export default function AdminPaymentsPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Class Level
                       </label>
                       <select
@@ -191,7 +188,7 @@ export default function AdminPaymentsPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                      <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                         Validity (Days)
                       </label>
                       <input
@@ -203,7 +200,7 @@ export default function AdminPaymentsPage() {
                       />
                     </div>
                   </div>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-[#43466E]">
+                  <label className="flex items-center gap-2 text-xs font-semibold text-[var(--foreground-muted)]">
                     <input
                       type="checkbox"
                       checked={schAllSubjects}
@@ -228,7 +225,7 @@ export default function AdminPaymentsPage() {
                           className={`px-2 py-1 rounded text-xs font-semibold border transition ${
                             schSubjectIds.includes(s.id)
                               ? "bg-[#4F46E5] text-white border-[#4F46E5]"
-                              : "bg-[#FAF8FF] text-[#43466E] border-[#DCD7F5]"
+                              : "bg-[var(--surface-lavender)] text-[var(--foreground-muted)] border-[var(--border-strong)]"
                           }`}
                         >
                           {s.name}
@@ -237,7 +234,7 @@ export default function AdminPaymentsPage() {
                     </div>
                   )}
                   <div>
-                    <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                    <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                       Authorization Reason (Required)
                     </label>
                     <input
@@ -257,19 +254,22 @@ export default function AdminPaymentsPage() {
 
                 {/* PAYMENT VERIFICATION QUEUE */}
                 <div className="lg:col-span-2 learnova-card overflow-hidden">
-                  <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex items-center justify-between">
-                    <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-                      <CreditCard size={16} className="text-[#4F46E5]" />
+                  <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)] flex items-center justify-between">
+                    <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                      <CreditCard size={16} className="text-[#4F46E5] dark:text-indigo-400" />
                       Payment Records &amp; Bank Transfer Verification ({payments.length})
                     </h2>
                   </div>
                   {payments.length === 0 ? (
-                    <div className="p-10 text-center text-sm text-[#6B6F94]">
-                      No payment transactions submitted yet. Student Paystack checkouts and bank
-                      transfer references will appear here.
+                    <div className="p-6">
+                      <EmptyState
+                        icon={CreditCard}
+                        title="No payment transactions submitted yet"
+                        description="Student Paystack checkouts and bank transfer references will appear here."
+                      />
                     </div>
                   ) : (
-                    <div className="divide-y divide-[#E4E1F5]">
+                    <div className="divide-y divide-[var(--border)]">
                       {payments.map((pay) => (
                         <div
                           key={pay.id}
@@ -277,26 +277,26 @@ export default function AdminPaymentsPage() {
                         >
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-bold text-[#0B1230]">{pay.studentName}</p>
-                              <span className="text-xs font-bold text-[#0B1230] tabular-nums">
+                              <p className="font-bold text-[var(--foreground)]">{pay.studentName}</p>
+                              <span className="text-xs font-bold text-[var(--foreground)] tabular-nums">
                                 ₦{Number(pay.amountNgn).toLocaleString()}
                               </span>
-                              <span aria-hidden="true" className="text-[#6B6F94]">·</span>
+                              <span aria-hidden="true" className="text-[var(--foreground-subtle)]">·</span>
                               <span
                                 className={`text-xs font-bold ${
                                   pay.status === "VERIFIED"
-                                    ? "text-emerald-700"
+                                    ? "text-emerald-700 dark:text-emerald-400"
                                     : pay.status === "AWAITING_CONFIRMATION"
-                                    ? "text-amber-700"
-                                    : "text-rose-700"
+                                    ? "text-amber-700 dark:text-amber-400"
+                                    : "text-rose-700 dark:text-rose-400"
                                 }`}
                               >
                                 {pay.status.replace(/_/g, " ")}
                               </span>
                             </div>
-                            <p className="text-xs text-[#6B6F94] mt-1">
+                            <p className="text-xs text-[var(--foreground-subtle)] mt-1">
                               {pay.planName} · {levelCode(pay.classLevelId)} · {pay.provider} · Ref:{" "}
-                              <span className="font-mono font-semibold text-[#0B1230]">{pay.reference}</span>
+                              <span className="font-mono font-semibold text-[var(--foreground)]">{pay.reference}</span>
                             </p>
                           </div>
                           {pay.status === "AWAITING_CONFIRMATION" && (
@@ -326,7 +326,7 @@ export default function AdminPaymentsPage() {
                                     `Declined payment reference ${pay.reference}.`
                                   )
                                 }
-                                className="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                                className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                               >
                                 Decline
                               </button>
@@ -341,8 +341,8 @@ export default function AdminPaymentsPage() {
 
               {/* STUDENT ENTITLEMENTS TABLE */}
               <div className="learnova-card overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h2 className="text-base font-bold text-[#0B1230]">
+                <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h2 className="text-base font-bold text-[var(--foreground)]">
                     Student Access Entitlements ({filteredEntitlements.length})
                   </h2>
                   <div className="flex flex-wrap gap-1.5">
@@ -357,10 +357,10 @@ export default function AdminPaymentsPage() {
                       <button
                         key={st}
                         onClick={() => setStatusFilter(st)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                           statusFilter === st
-                            ? "bg-[#0B1230] text-white"
-                            : "bg-white text-[#43466E] border border-[#E4E1F5] hover:border-[#4F46E5]"
+                            ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
+                            : "bg-[var(--surface)] text-[var(--foreground-muted)] border border-[var(--border)] hover:border-[#4F46E5]"
                         }`}
                       >
                         {st.replace(/_/g, " ")}
@@ -370,13 +370,13 @@ export default function AdminPaymentsPage() {
                 </div>
 
                 {filteredEntitlements.length === 0 ? (
-                  <div className="p-10 text-center text-sm text-[#6B6F94]">
+                  <div className="p-10 text-center text-sm text-[var(--foreground-subtle)]">
                     No student entitlements match this filter.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                      <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
+                      <thead className="bg-[var(--surface-lavender)] text-xs text-[var(--foreground-subtle)] uppercase border-b border-[var(--border)]">
                         <tr>
                           <th className="px-5 py-3.5 font-semibold">Student</th>
                           <th className="px-5 py-3.5 font-semibold">Class Level</th>
@@ -385,14 +385,14 @@ export default function AdminPaymentsPage() {
                           <th className="px-5 py-3.5 font-semibold text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E4E1F5]">
+                      <tbody className="divide-y divide-[var(--border)]">
                         {filteredEntitlements.map((ent) => (
-                          <tr key={ent.id} className="hover:bg-[#FAF8FF]/70 transition">
+                          <tr key={ent.id} className="hover:bg-[var(--surface-lavender)] transition">
                             <td className="px-5 py-3.5">
-                              <p className="font-semibold text-[#0B1230]">{ent.studentName}</p>
-                              <p className="text-xs text-[#6B6F94]">{ent.studentEmail}</p>
+                              <p className="font-semibold text-[var(--foreground)]">{ent.studentName}</p>
+                              <p className="text-xs text-[var(--foreground-subtle)]">{ent.studentEmail}</p>
                             </td>
-                            <td className="px-5 py-3.5 font-semibold text-xs text-[#0B1230]">
+                            <td className="px-5 py-3.5 font-semibold text-xs text-[var(--foreground)]">
                               {levelCode(ent.classLevelId)} ·{" "}
                               {ent.allSubjects
                                 ? "All Subjects"
@@ -403,18 +403,18 @@ export default function AdminPaymentsPage() {
                                 className={`text-xs font-bold ${
                                   ent.accessStatus === "ACTIVE_PAID" ||
                                   ent.accessStatus === "SCHOLARSHIP_GRANTED"
-                                    ? "text-emerald-700"
+                                    ? "text-emerald-700 dark:text-emerald-400"
                                     : ent.accessStatus === "AWAITING_CONFIRMATION"
-                                    ? "text-amber-700"
+                                    ? "text-amber-700 dark:text-amber-400"
                                     : ent.accessStatus === "EXPIRED"
-                                    ? "text-rose-700"
-                                    : "text-[#6B6F94]"
+                                    ? "text-rose-700 dark:text-rose-400"
+                                    : "text-[var(--foreground-subtle)]"
                                 }`}
                               >
                                 {ent.accessStatus.replace(/_/g, " ")}
                               </span>
                             </td>
-                            <td className="px-5 py-3.5 text-xs text-[#6B6F94] tabular-nums">
+                            <td className="px-5 py-3.5 text-xs text-[var(--foreground-subtle)] tabular-nums">
                               {ent.expiresAt
                                 ? new Date(ent.expiresAt).toLocaleDateString("en-NG")
                                 : "—"}
@@ -435,7 +435,7 @@ export default function AdminPaymentsPage() {
                                       `Revoked classroom access for ${ent.studentName}.`
                                     )
                                   }
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                                 >
                                   <ShieldAlert size={13} />
                                   Revoke / Expire

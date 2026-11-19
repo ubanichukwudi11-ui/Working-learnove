@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { CardSkeleton, EmptyState, PageHeader } from "@/components/ui";
 import { TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
 import { CalendarDays, Clock, Video, CheckSquare, Plus } from "lucide-react";
 
@@ -73,22 +74,20 @@ export default function TimetablePlannerPage() {
   return (
     <ProtectedRoute roles={["STUDENT", "PARENT", "ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
-        <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-              Official Timetable · {TIMEZONE_LABEL}
-            </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              Class Timetable &amp; Study Planner
-            </h1>
-          </div>
+        <div className="space-y-6">
+          <PageHeader
+            kicker={`Official Timetable · ${TIMEZONE_LABEL}`}
+            title="Class Timetable & Study Planner"
+            description="View your weekly West Africa Time (WAT) schedule, join allocated classrooms, and organize personal revision goals."
+            breadcrumbs={[{ label: "Timetable" }]}
+          />
 
           <div className="grid lg:grid-cols-[1.5fr_1fr] gap-6 items-start">
             {/* Official Weekly Timetable */}
             <div className="learnova-card p-6 space-y-5 min-w-0">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                  <CalendarDays size={18} className="text-[#4F46E5]" />
+                <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                  <CalendarDays size={18} className="text-[#4F46E5] dark:text-[#A5B4FC]" />
                   Weekly Official Schedule (WAT)
                 </h2>
 
@@ -96,11 +95,12 @@ export default function TimetablePlannerPage() {
                   {days.map((day) => (
                     <button
                       key={day}
+                      type="button"
                       onClick={() => setSelectedDay(day)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                         selectedDay === day
                           ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-sm"
-                          : "bg-[#FAF8FF] border border-[#E4E1F5] text-[#43466E] hover:bg-[#F5F3FF]"
+                          : "bg-[var(--surface-lavender)] border border-[var(--border)] text-[var(--foreground-muted)] hover:bg-[var(--surface-subtle)]"
                       }`}
                     >
                       {day}
@@ -110,22 +110,22 @@ export default function TimetablePlannerPage() {
               </div>
 
               {loading ? (
-                <div className="py-10 text-center text-xs text-[#6B6F94]">
-                  Loading published timetable...
-                </div>
+                <CardSkeleton rows={4} />
               ) : visibleSlots.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-10 text-center space-y-2">
-                  <p className="text-sm font-bold text-[#0B1230]">
-                    No Published Lessons for Your Class Level Yet
-                  </p>
-                  <p className="text-xs text-[#6B6F94] max-w-md mx-auto">
-                    Ensure you have selected your class level and activated your subscription in{" "}
-                    <Link href="/subscriptions" className="text-[#4F46E5] font-bold underline">
-                      Subscriptions
+                <EmptyState
+                  compact
+                  icon={CalendarDays}
+                  title="No Published Lessons for This View"
+                  description="Ensure your class level and active subscription are confirmed under Subscriptions. School Admin publishes official lessons here."
+                  action={
+                    <Link
+                      href="/subscriptions"
+                      className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] underline"
+                    >
+                      Check Subscriptions →
                     </Link>
-                    . School Admin will publish your official schedule here.
-                  </p>
-                </div>
+                  }
+                />
               ) : (
                 <div className="space-y-3">
                   {visibleSlots.map((slot) => {
@@ -134,10 +134,10 @@ export default function TimetablePlannerPage() {
                     return (
                       <div
                         key={slot.id}
-                        className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                       >
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 text-xs font-bold text-[#4F46E5]">
+                          <div className="flex items-center gap-2 text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC]">
                             <span>{slot.dayOfWeek}</span>
                             <span>·</span>
                             <span>{slot.mode}</span>
@@ -148,10 +148,10 @@ export default function TimetablePlannerPage() {
                               </>
                             )}
                           </div>
-                          <h3 className="text-base font-bold text-[#0B1230] mt-0.5">
+                          <h3 className="text-base font-bold text-[var(--foreground)] mt-0.5">
                             {subName(slot.subjectId)} ({lvlCode(slot.classLevelId)})
                           </h3>
-                          <p className="text-xs text-[#6B6F94] mt-0.5">
+                          <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
                             {myGroup
                               ? `Assigned Teacher: ${myGroup.teacherName}`
                               : "Teacher allocation pending"}
@@ -159,8 +159,8 @@ export default function TimetablePlannerPage() {
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className="text-xs font-semibold text-[#43466E] inline-flex items-center gap-1 tabular-nums">
-                            <Clock size={14} className="text-[#0891B2]" />
+                          <span className="text-xs font-semibold text-[var(--foreground-muted)] inline-flex items-center gap-1 tabular-nums">
+                            <Clock size={14} className="text-[#0891B2] dark:text-[#22D3EE]" />
                             {slot.startTime}–{slot.endTime} WAT
                           </span>
                           {myRoom && (
@@ -182,8 +182,8 @@ export default function TimetablePlannerPage() {
 
             {/* Study Planner Checklist */}
             <div className="learnova-card p-6 space-y-4">
-              <h2 className="landing-display text-base font-bold text-[#0B1230] flex items-center gap-2">
-                <CheckSquare size={18} className="text-[#7C3AED]" />
+              <h2 className="landing-display text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                <CheckSquare size={18} className="text-[#7C3AED] dark:text-[#C4B5FD]" />
                 Personal Revision Goals
               </h2>
 
@@ -204,7 +204,7 @@ export default function TimetablePlannerPage() {
               </form>
 
               {goals.length === 0 ? (
-                <p className="text-xs text-[#6B6F94] text-center py-6">
+                <p className="text-xs text-[var(--foreground-subtle)] text-center py-6">
                   Add your personal study targets for this week above.
                 </p>
               ) : (
@@ -212,7 +212,7 @@ export default function TimetablePlannerPage() {
                   {goals.map((g) => (
                     <label
                       key={g.id}
-                      className="flex items-start gap-3 rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3.5 cursor-pointer hover:bg-white transition"
+                      className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-3.5 cursor-pointer hover:bg-[var(--surface)] transition"
                     >
                       <input
                         type="checkbox"
@@ -228,7 +228,9 @@ export default function TimetablePlannerPage() {
                       />
                       <span
                         className={`text-xs font-medium leading-relaxed ${
-                          g.done ? "line-through text-[#6B6F94]" : "text-[#0B1230]"
+                          g.done
+                            ? "line-through text-[var(--foreground-subtle)]"
+                            : "text-[var(--foreground)]"
                         }`}
                       >
                         {g.text}

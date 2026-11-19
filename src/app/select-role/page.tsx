@@ -128,10 +128,10 @@ export default function SelectRolePage() {
 
   if (checkingSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+      <div className="flex min-h-screen items-center justify-center bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
         <div className="text-center">
           <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-[#4F46E5] border-t-transparent" />
-          <p className="mt-3 text-xs font-semibold text-[#43466E]">
+          <p className="mt-3 text-xs font-semibold text-[var(--foreground-muted)]">
             Preparing account setup...
           </p>
         </div>
@@ -140,23 +140,23 @@ export default function SelectRolePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F5F4FB] bg-learnova-dots-lavender px-5 sm:px-6 py-12 flex items-center justify-center">
+    <main className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender px-5 sm:px-6 py-12 flex items-center justify-center">
       <div className="mx-auto max-w-3xl w-full">
         <div className="flex justify-center mb-6">
           <Logo href="/" variant="learnova" />
         </div>
 
         <div className="text-center mb-10">
-          <h1 className="landing-display text-3xl sm:text-4xl font-extrabold tracking-tight text-[#0B1230]">
+          <h1 className="landing-display text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--foreground)]">
             Complete Your Account Setup
           </h1>
-          <p className="mt-2.5 text-sm text-[#43466E] max-w-lg mx-auto">
+          <p className="mt-2.5 text-sm text-[var(--foreground-muted)] max-w-lg mx-auto">
             Choose whether you are joining Learnova as a student or a parent/guardian.
           </p>
         </div>
 
         {errorMsg && (
-          <div className="mb-6 max-w-xl mx-auto rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700 text-center">
+          <div className="mb-6 max-w-xl mx-auto rounded-xl border border-rose-200 bg-rose-50 dark:border-rose-800/60 dark:bg-rose-950/40 px-4 py-3 text-xs font-semibold text-rose-700 dark:text-rose-300 text-center">
             {errorMsg}
           </div>
         )}
@@ -165,15 +165,15 @@ export default function SelectRolePage() {
           <button
             disabled={loading}
             onClick={() => chooseRole("STUDENT")}
-            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 text-left hover:border-[#7C3AED] hover:shadow-lg hover:shadow-[#4F46E5]/8 transition-all disabled:opacity-50"
+            className="group learnova-card p-7 text-left hover:border-[#7C3AED] hover:shadow-lg transition-all disabled:opacity-50"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center mb-5 shadow-md shadow-[#4F46E5]/20">
               <GraduationCap size={24} />
             </div>
-            <h2 className="landing-display text-xl font-extrabold text-[#0B1230] group-hover:text-[#4F46E5] transition-colors">
+            <h2 className="landing-display text-xl font-extrabold text-[var(--foreground)] group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
               Student
             </h2>
-            <p className="mt-2 text-xs leading-relaxed text-[#43466E]">
+            <p className="mt-2 text-xs leading-relaxed text-[var(--foreground-muted)]">
               Continue to complete your school, class level, and study profile, then access live classes and Nova AI.
             </p>
           </button>
@@ -181,43 +181,43 @@ export default function SelectRolePage() {
           <button
             disabled={loading}
             onClick={() => chooseRole("PARENT")}
-            className="group rounded-2xl border border-[#E4E1F5] bg-white p-7 text-left hover:border-[#06B6D4] hover:shadow-lg hover:shadow-[#06B6D4]/8 transition-all disabled:opacity-50"
+            className="group learnova-card p-7 text-left hover:border-[#06B6D4] hover:shadow-lg transition-all disabled:opacity-50"
           >
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0891B2] to-[#06B6D4] text-white flex items-center justify-center mb-5 shadow-md shadow-[#06B6D4]/20">
               <Users size={24} />
             </div>
-            <h2 className="landing-display text-xl font-extrabold text-[#0B1230] group-hover:text-[#0891B2] transition-colors">
+            <h2 className="landing-display text-xl font-extrabold text-[var(--foreground)] group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
               Parent / Guardian
             </h2>
-            <p className="mt-2 text-xs leading-relaxed text-[#43466E]">
+            <p className="mt-2 text-xs leading-relaxed text-[var(--foreground-muted)]">
               Monitor your child&apos;s attendance, continuous assessment scores, and live WAT timetable.
             </p>
           </button>
         </div>
 
-        <div className="mt-8 rounded-2xl border border-[#E4E1F5] bg-white/85 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[#43466E]">
+        <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface)]/90 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-[var(--foreground-muted)]">
           <div className="flex items-start sm:items-center gap-2.5">
-            <ShieldAlert size={16} className="text-[#4F46E5] shrink-0 mt-0.5 sm:mt-0" />
+            <ShieldAlert size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5 sm:mt-0" />
             <span>
               <strong>Applying as a Teacher?</strong> Educator accounts require email, password, and credential verification instead of Google sign-up.
             </span>
           </div>
           <Link
             href="/register/teacher"
-            className="font-bold text-[#6D28D9] hover:underline shrink-0"
+            className="font-bold text-violet-600 dark:text-violet-400 hover:underline shrink-0"
           >
             Teacher Application &rarr;
           </Link>
         </div>
 
         {loading && (
-          <div className="mt-6 text-center text-xs font-bold text-[#6D28D9]">
+          <div className="mt-6 text-center text-xs font-bold text-violet-600 dark:text-violet-400">
             Setting up your Learnova workspace...
           </div>
         )}
 
         <div className="mt-6 text-center">
-          <Link href="/login" className="text-xs font-semibold text-[#6D28D9] hover:underline">
+          <Link href="/login" className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:underline">
             Cancel and return to Sign In
           </Link>
         </div>

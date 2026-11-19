@@ -19,6 +19,7 @@ import VideoLessonPlayer, {
   type VideoLessonItem,
   type VideoLessonMaterialItem,
 } from "./VideoLessonPlayer";
+import { PageHeader, CardSkeleton, EmptyState } from "@/components/ui";
 
 interface RequestItem {
   id: string;
@@ -383,33 +384,25 @@ export default function TeacherVideoStudio() {
   return (
     <div className="space-y-7">
       {/* Header */}
-      <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-            Educator Video Studio
-          </p>
-          <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-            Topic Video Lessons &amp; Admin Requests
-          </h1>
-          <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
-            Fulfill video upload requests from School Administration, upload your own recorded
-            lessons, or curate YouTube walkthroughs mapped to Subject, Term, and Topic.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-4 text-xs sm:text-sm font-semibold text-[#E0E7FF] tabular-nums shrink-0">
-          <span>{openRequests.length} open requests</span>
-          <span aria-hidden="true">·</span>
-          <span>{videos.length} library videos</span>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow="Educator Video Studio"
+        title="Topic Video Lessons & Admin Requests"
+        description="Fulfill video upload requests from School Administration, upload your own recorded lessons, or curate YouTube walkthroughs mapped to Subject, Term, and Topic."
+        actions={
+          <div className="flex items-center gap-4 text-xs sm:text-sm font-semibold text-[#E0E7FF] tabular-nums shrink-0">
+            <span>{openRequests.length} open requests</span>
+            <span aria-hidden="true">·</span>
+            <span>{videos.length} library videos</span>
+          </div>
+        }
+      />
 
       {feedback && (
         <div
           className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
             feedback.type === "ok"
-              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-              : "bg-rose-50 text-rose-700 border-rose-200"
+              ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+              : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
           }`}
         >
           {feedback.type === "ok" ? (
@@ -425,38 +418,39 @@ export default function TeacherVideoStudio() {
       <div className="learnova-card p-6 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold text-[#0B1230] flex items-center gap-2">
-              <ClipboardCheck size={18} className="text-[#4F46E5]" />
+            <h2 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+              <ClipboardCheck size={18} className="text-indigo-600 dark:text-indigo-400" />
               Assigned Admin Video Upload Requests ({requests.length})
             </h2>
-            <p className="text-xs text-[#6B6F94] mt-0.5">
+            <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
               Topics requested by your School Administrator for recording or curation.
             </p>
           </div>
         </div>
 
         {loading ? (
-          <p className="text-sm text-[#6B6F94]">Loading requests...</p>
+          <CardSkeleton lines={3} />
         ) : requests.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-6 text-center text-xs text-[#6B6F94]">
-            No pending video upload requests assigned to you right now. You can still upload
-            or curate topic videos directly below.
-          </div>
+          <EmptyState
+            icon={ClipboardCheck}
+            title="No pending video upload requests"
+            description="No admin upload requests are assigned to you right now. You can still upload or curate topic videos directly below."
+          />
         ) : (
-          <div className="divide-y divide-[#E4E1F5] border border-[#E4E1F5] rounded-xl overflow-hidden">
+          <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-xl overflow-hidden">
             {requests.map((reqItem) => (
               <div
                 key={reqItem.id}
-                className="p-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white"
+                className="p-5 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--surface)]"
               >
                 <div className="space-y-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">
-                    <span className="font-bold text-[#4F46E5]">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--foreground-subtle)]">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
                       {subName(reqItem.subjectId)} · {levelCode(reqItem.classLevelId)} ·{" "}
                       {termName(reqItem.termId)}
                     </span>
                     <span aria-hidden="true">·</span>
-                    <span className="font-semibold text-[#0B1230]">
+                    <span className="font-semibold text-[var(--foreground)]">
                       Status: {reqItem.status.replace(/_/g, " ")}
                     </span>
                     {reqItem.dueDate && (
@@ -466,12 +460,12 @@ export default function TeacherVideoStudio() {
                       </>
                     )}
                   </div>
-                  <p className="text-sm font-bold text-[#0B1230]">
+                  <p className="text-sm font-bold text-[var(--foreground)]">
                     Topic: {topicTitle(reqItem.topicId)}
                   </p>
-                  <p className="text-xs text-[#43466E]">{reqItem.instructions}</p>
+                  <p className="text-xs text-[var(--foreground-muted)]">{reqItem.instructions}</p>
                   {reqItem.adminReviewNotes && (
-                    <p className="text-xs text-amber-700 font-medium mt-1">
+                    <p className="text-xs text-amber-700 dark:text-amber-300 font-medium mt-1">
                       Admin feedback: {reqItem.adminReviewNotes}
                     </p>
                   )}
@@ -501,15 +495,15 @@ export default function TeacherVideoStudio() {
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-bold text-[#0B1230]">
+            <h2 className="text-base font-bold text-[var(--foreground)]">
               Add Video Lesson to Topic
             </h2>
-            <p className="text-xs text-[#6B6F94] mt-0.5">
+            <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
               Upload a recorded video file or attach a curated YouTube / lesson link.
             </p>
           </div>
 
-          <div className="inline-flex rounded-xl bg-[#F5F3FF] border border-[#E4E1F5] p-1">
+          <div className="inline-flex rounded-xl bg-[var(--surface-lavender)] border border-[var(--border)] p-1">
             <button
               type="button"
               onClick={() => {
@@ -517,10 +511,10 @@ export default function TeacherVideoStudio() {
                 setVideoUrl("");
                 setUploadedMeta(null);
               }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                 sourceMode === "UPLOADED_VIDEO"
-                  ? "bg-white text-[#0B1230] shadow-xs"
-                  : "text-[#6B6F94] hover:text-[#0B1230]"
+                  ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
+                  : "text-[var(--foreground-subtle)] hover:text-[var(--foreground)]"
               }`}
             >
               <UploadCloud size={14} /> Upload Video File
@@ -532,10 +526,10 @@ export default function TeacherVideoStudio() {
                 setVideoUrl("");
                 setUploadedMeta(null);
               }}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
                 sourceMode === "YOUTUBE"
-                  ? "bg-white text-[#0B1230] shadow-xs"
-                  : "text-[#6B6F94] hover:text-[#0B1230]"
+                  ? "bg-[var(--surface)] text-[var(--foreground)] shadow-xs"
+                  : "text-[var(--foreground-subtle)] hover:text-[var(--foreground)]"
               }`}
             >
               <Link2 size={14} /> YouTube / Link
@@ -544,7 +538,7 @@ export default function TeacherVideoStudio() {
         </div>
 
         {activeRequestId && (
-          <div className="rounded-xl bg-[#F5F3FF] border border-[#DCD7F5] px-4 py-2.5 flex items-center justify-between gap-2 text-xs text-[#4F46E5] font-semibold">
+          <div className="rounded-xl bg-[var(--surface-lavender)] border border-[var(--border-strong)] px-4 py-2.5 flex items-center justify-between gap-2 text-xs text-indigo-600 dark:text-indigo-300 font-semibold">
             <span>
               Fulfilling Admin Request for topic:{" "}
               <strong>{topicTitle(topicId)}</strong>
@@ -552,7 +546,7 @@ export default function TeacherVideoStudio() {
             <button
               type="button"
               onClick={() => setActiveRequestId("")}
-              className="underline hover:text-[#4338CA]"
+              className="underline hover:opacity-80"
             >
               Unlink Request
             </button>
@@ -562,7 +556,7 @@ export default function TeacherVideoStudio() {
         <form onSubmit={publishVideo} className="space-y-4">
           <div className="grid sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-[#43466E] mb-1">
+              <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                 Subject
               </label>
               <select
@@ -578,7 +572,7 @@ export default function TeacherVideoStudio() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#43466E] mb-1">
+              <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                 Academic Term
               </label>
               <select
@@ -594,7 +588,7 @@ export default function TeacherVideoStudio() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#43466E] mb-1">
+              <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                 Class Level
               </label>
               <select
@@ -613,13 +607,13 @@ export default function TeacherVideoStudio() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-[#43466E]">
+              <label className="block text-xs font-semibold text-[var(--foreground-muted)]">
                 Curriculum Topic
               </label>
               <button
                 type="button"
                 onClick={() => setShowNewTopic((v) => !v)}
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
                 <Plus size={13} />
                 {showNewTopic ? "Cancel New Topic" : "Create New Topic"}
@@ -627,19 +621,19 @@ export default function TeacherVideoStudio() {
             </div>
 
             {showNewTopic ? (
-              <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-3">
+              <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 space-y-3">
                 <div className="grid sm:grid-cols-3 gap-3">
                   <input
                     value={newTopicTitle}
                     onChange={(e) => setNewTopicTitle(e.target.value)}
                     placeholder="Topic title (e.g. Simultaneous Equations)"
-                    className="sm:col-span-2 learnova-input text-sm bg-white"
+                    className="sm:col-span-2 learnova-input text-sm"
                   />
                   <input
                     value={newTopicWeek}
                     onChange={(e) => setNewTopicWeek(e.target.value)}
                     placeholder="Week label (e.g. Week 5)"
-                    className="learnova-input text-sm bg-white"
+                    className="learnova-input text-sm"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -647,13 +641,13 @@ export default function TeacherVideoStudio() {
                     value={newTopicDesc}
                     onChange={(e) => setNewTopicDesc(e.target.value)}
                     placeholder="Brief objectives for students..."
-                    className="flex-1 learnova-input text-sm bg-white"
+                    className="flex-1 learnova-input text-sm"
                   />
                   <button
                     type="button"
                     disabled={saving || !newTopicTitle.trim()}
                     onClick={createInlineTopic}
-                    className="px-4 py-2 rounded-xl bg-[#0B1230] hover:bg-[#151A44] text-white text-xs font-bold disabled:opacity-50 transition"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold disabled:opacity-50 transition whitespace-nowrap"
                   >
                     Save Topic
                   </button>
@@ -683,7 +677,7 @@ export default function TeacherVideoStudio() {
 
           <div className="grid sm:grid-cols-3 gap-3">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-[#43466E] mb-1">
+              <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                 Video Lesson Title
               </label>
               <input
@@ -695,7 +689,7 @@ export default function TeacherVideoStudio() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-[#43466E] mb-1">
+              <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                 Duration (optional)
               </label>
               <input
@@ -708,17 +702,17 @@ export default function TeacherVideoStudio() {
           </div>
 
           {sourceMode === "UPLOADED_VIDEO" ? (
-            <div className="rounded-xl border border-dashed border-[#DCD7F5] bg-[#FAF8FF] p-5 space-y-3">
+            <div className="rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-lavender)] p-5 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold text-[#0B1230]">
+                  <p className="text-sm font-bold text-[var(--foreground)]">
                     Select Lesson Recording (.mp4, .webm, .mov)
                   </p>
-                  <p className="text-xs text-[#6B6F94]">
+                  <p className="text-xs text-[var(--foreground-subtle)]">
                     Uploaded videos stream directly inside the student topic theater (max 85 MB).
                   </p>
                 </div>
-                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0B1230] hover:bg-[#151A44] text-white text-xs font-bold cursor-pointer transition shrink-0">
+                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold cursor-pointer transition shrink-0 whitespace-nowrap">
                   <UploadCloud size={15} />
                   {uploadingFile ? "Uploading Video..." : "Choose Video File"}
                   <input
@@ -731,7 +725,7 @@ export default function TeacherVideoStudio() {
                 </label>
               </div>
               {videoUrl && (
-                <p className="text-xs font-semibold text-emerald-700">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                   Ready to publish: {uploadedMeta?.fileName || videoUrl}
                 </p>
               )}
@@ -739,7 +733,7 @@ export default function TeacherVideoStudio() {
           ) : (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#43466E] mb-1">
+                <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
                   YouTube URL or External Video Link
                 </label>
                 <input
@@ -751,7 +745,7 @@ export default function TeacherVideoStudio() {
                 />
               </div>
               {parsedPreviewYtId && (
-                <div className="max-w-md rounded-xl overflow-hidden border border-[#E4E1F5] aspect-video bg-[#070D24]">
+                <div className="max-w-md rounded-xl overflow-hidden border border-[var(--border)] aspect-video bg-[#070D24]">
                   <iframe
                     src={`https://www.youtube.com/embed/${parsedPreviewYtId}?rel=0`}
                     title="YouTube preview"
@@ -764,7 +758,7 @@ export default function TeacherVideoStudio() {
           )}
 
           <div>
-            <label className="block text-xs font-semibold text-[#43466E] mb-1">
+            <label className="block text-xs font-semibold text-[var(--foreground-muted)] mb-1">
               Lesson Summary / Key Takeaways
             </label>
             <textarea
@@ -777,18 +771,18 @@ export default function TeacherVideoStudio() {
           </div>
 
           {/* Optional Downloadable Lesson Materials */}
-          <div className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-4 space-y-3">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
-                <p className="text-xs font-bold text-[#0B1230]">
+                <p className="text-xs font-bold text-[var(--foreground)]">
                   Attach Downloadable Study Materials (Optional)
                 </p>
-                <p className="text-[11px] text-[#6B6F94]">
+                <p className="text-[11px] text-[var(--foreground-subtle)]">
                   Upload PDF notes, worksheets, or slides (.pdf, .docx, .pptx, .txt) for students to download alongside the video.
                 </p>
               </div>
-              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#DCD7F5] hover:border-[#4F46E5] text-xs font-bold text-[#0B1230] cursor-pointer shrink-0 transition">
-                <FileText size={14} className="text-[#4F46E5]" />
+              <label className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border-strong)] hover:border-indigo-500 text-xs font-bold text-[var(--foreground)] cursor-pointer shrink-0 transition whitespace-nowrap">
+                <FileText size={14} className="text-indigo-600 dark:text-indigo-400" />
                 {uploadingMaterial ? "Uploading..." : "Attach Material"}
                 <input
                   type="file"
@@ -805,9 +799,9 @@ export default function TeacherVideoStudio() {
                 {pendingMaterials.map((m, idx) => (
                   <div
                     key={`${m.url}-${idx}`}
-                    className="flex items-center justify-between gap-2 rounded-lg bg-white border border-[#E4E1F5] px-3 py-2 text-xs"
+                    className="flex items-center justify-between gap-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] px-3 py-2 text-xs"
                   >
-                    <span className="font-semibold text-[#0B1230] truncate">
+                    <span className="font-semibold text-[var(--foreground)] truncate">
                       {m.type} · {m.title}
                     </span>
                     <button
@@ -815,7 +809,7 @@ export default function TeacherVideoStudio() {
                       onClick={() =>
                         setPendingMaterials((prev) => prev.filter((_, i) => i !== idx))
                       }
-                      className="text-rose-700 font-semibold hover:underline shrink-0"
+                      className="text-rose-700 dark:text-rose-300 font-semibold hover:underline shrink-0"
                     >
                       Remove
                     </button>
@@ -828,7 +822,7 @@ export default function TeacherVideoStudio() {
           <button
             type="submit"
             disabled={saving || uploadingFile || uploadingMaterial || !topicId}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition disabled:opacity-50 shadow-xs"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-sm font-bold transition disabled:opacity-50 shadow-xs whitespace-nowrap"
           >
             <Film size={16} />
             {saving ? "Publishing..." : "Publish Video Lesson"}
@@ -838,60 +832,70 @@ export default function TeacherVideoStudio() {
 
       {/* Published Video Library */}
       <div className="learnova-card overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-          <h2 className="text-base font-bold text-[#0B1230]">
+        <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]">
+          <h2 className="text-base font-bold text-[var(--foreground)]">
             Curriculum Video Library ({videos.length})
           </h2>
         </div>
-        <div className="divide-y divide-[#E4E1F5]">
-          {videos.map((v) => (
-            <div
-              key={v.id}
-              className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-            >
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">
-                  <span className="font-bold text-[#4F46E5]">
-                    {subName(v.subjectId)} · {levelCode(v.classLevelId)} ·{" "}
-                    {termName(v.termId)}
-                  </span>
-                  <span aria-hidden="true">·</span>
-                  <span>
-                    {v.sourceType === "UPLOADED_VIDEO"
-                      ? "Uploaded Video"
-                      : v.sourceType === "YOUTUBE"
-                      ? "YouTube"
-                      : "External Link"}
-                  </span>
-                  <span aria-hidden="true">·</span>
-                  <span className="tabular-nums">{v.viewCount || 0} views</span>
+        {videos.length === 0 ? (
+          <div className="p-6">
+            <EmptyState
+              icon={Film}
+              title="No video lessons published yet"
+              description="Upload a recording or attach a YouTube walkthrough above to populate the curriculum library."
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-[var(--border)]">
+            {videos.map((v) => (
+              <div
+                key={v.id}
+                className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--foreground-subtle)]">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                      {subName(v.subjectId)} · {levelCode(v.classLevelId)} ·{" "}
+                      {termName(v.termId)}
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span>
+                      {v.sourceType === "UPLOADED_VIDEO"
+                        ? "Uploaded Video"
+                        : v.sourceType === "YOUTUBE"
+                        ? "YouTube"
+                        : "External Link"}
+                    </span>
+                    <span aria-hidden="true">·</span>
+                    <span className="tabular-nums">{v.viewCount || 0} views</span>
+                  </div>
+                  <p className="text-sm font-bold text-[var(--foreground)] mt-0.5">{v.title}</p>
+                  <p className="text-xs text-[var(--foreground-subtle)]">
+                    Topic: {topicTitle(v.topicId)} · By {v.uploadedByName}
+                  </p>
                 </div>
-                <p className="text-sm font-bold text-[#0B1230] mt-0.5">{v.title}</p>
-                <p className="text-xs text-[#6B6F94]">
-                  Topic: {topicTitle(v.topicId)} · By {v.uploadedByName}
-                </p>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setPreviewVideo(v)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] transition"
-                >
-                  <Eye size={13} /> Preview
-                </button>
-                <button
-                  type="button"
-                  disabled={saving}
-                  onClick={() => deleteVideo(v.id)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-semibold text-rose-700 hover:bg-rose-50 transition"
-                >
-                  <Trash2 size={13} /> Remove
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewVideo(v)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition whitespace-nowrap"
+                  >
+                    <Eye size={13} /> Preview
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => deleteVideo(v.id)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800/60 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition whitespace-nowrap"
+                  >
+                    <Trash2 size={13} /> Remove
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Preview Modal */}
@@ -900,17 +904,17 @@ export default function TeacherVideoStudio() {
           <div className="learnova-card max-w-3xl w-full p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-[#4F46E5]">
+                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
                   {subName(previewVideo.subjectId)} · {topicTitle(previewVideo.topicId)}
                 </p>
-                <h3 className="text-lg font-bold text-[#0B1230] truncate">
+                <h3 className="text-lg font-bold text-[var(--foreground)] truncate">
                   {previewVideo.title}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setPreviewVideo(null)}
-                className="p-2 rounded-xl hover:bg-[#FAF8FF] text-[#6B6F94]"
+                className="p-2 rounded-xl hover:bg-[var(--surface-lavender)] text-[var(--foreground-subtle)]"
               >
                 <X size={18} />
               </button>

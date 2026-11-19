@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, EmptyState } from "@/components/ui";
 import { NotebookPen, Plus, Search, Trash2, Sparkles, Layers } from "lucide-react";
 import {
   loadNotebookNotes,
@@ -74,33 +75,29 @@ export default function NotebookPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="learnova-banner-dark bg-architectural-grid-dark rounded-3xl p-6 sm:p-8 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-              Digital Study Notebook
-            </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1">
-              Class Notes &amp; Revision Summaries
-            </h1>
-          </div>
-
-          <div className="flex flex-wrap gap-2 shrink-0">
-            <Link
-              href="/nova"
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 text-white text-xs font-bold hover:bg-white/15 transition"
-            >
-              <Sparkles size={14} className="text-[#22D3EE]" />
-              Open Nova Classroom AI
-            </Link>
-            <button
-              onClick={() => setIsCreating(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm"
-            >
-              <Plus size={15} />
-              New Note
-            </button>
-          </div>
-        </div>
+        <PageHeader
+          eyebrow="Digital Study Notebook"
+          title="Class Notes & Revision Summaries"
+          description="Organize your subject summaries, lecture takeaways, and AI-generated flashcard decks."
+          actions={
+            <div className="flex flex-wrap gap-2 shrink-0">
+              <Link
+                href="/nova"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/20 bg-white/10 text-white text-xs font-bold hover:bg-white/15 transition whitespace-nowrap"
+              >
+                <Sparkles size={14} className="text-[#22D3EE]" />
+                Open Nova Classroom AI
+              </Link>
+              <button
+                onClick={() => setIsCreating(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] hover:from-[#4338CA] hover:to-[#6D28D9] text-white text-xs font-bold transition shadow-sm whitespace-nowrap"
+              >
+                <Plus size={15} />
+                New Note
+              </button>
+            </div>
+          }
+        />
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex flex-wrap gap-1.5">
@@ -108,10 +105,10 @@ export default function NotebookPage() {
               <button
                 key={f}
                 onClick={() => setActiveFolder(f)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
                   activeFolder === f
                     ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-sm"
-                    : "bg-white border border-[#E4E1F5] text-[#43466E] hover:bg-[#FAF8FF]"
+                    : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)]"
                 }`}
               >
                 {f}
@@ -119,13 +116,13 @@ export default function NotebookPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2 bg-white border border-[#DCD7F5] focus-within:border-[#4F46E5] rounded-xl px-3.5 py-2 sm:w-64 transition">
-            <Search size={15} className="text-[#6B6F94]" />
+          <div className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--border-strong)] focus-within:border-indigo-500 rounded-xl px-3.5 py-2 sm:w-64 transition">
+            <Search size={15} className="text-[var(--foreground-subtle)] shrink-0" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search notes..."
-              className="bg-transparent outline-none text-xs text-[#0B1230] placeholder:text-[#6B6F94] w-full"
+              className="bg-transparent outline-none text-xs text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] w-full"
             />
           </div>
         </div>
@@ -135,7 +132,7 @@ export default function NotebookPage() {
             onSubmit={handleCreate}
             className="learnova-card p-6 space-y-4"
           >
-            <h2 className="landing-display text-base font-bold text-[#0B1230]">
+            <h2 className="landing-display text-base font-bold text-[var(--foreground)]">
               Create New Note
             </h2>
             <div className="grid sm:grid-cols-2 gap-3">
@@ -168,7 +165,7 @@ export default function NotebookPage() {
               <button
                 type="button"
                 onClick={() => setIsCreating(false)}
-                className="px-4 py-2 rounded-xl border border-[#DCD7F5] text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF]"
+                className="px-4 py-2 rounded-xl border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] transition"
               >
                 Cancel
               </button>
@@ -183,10 +180,11 @@ export default function NotebookPage() {
         )}
 
         {filteredNotes.length === 0 ? (
-          <div className="bg-white border border-dashed border-[#DCD7F5] rounded-2xl p-12 text-center text-sm text-[#6B6F94]">
-            No study notes found in this subject folder yet. Save notes directly from Video
-            Lessons, Nova AI, or click New Note above.
-          </div>
+          <EmptyState
+            icon={NotebookPen}
+            title="No study notes found"
+            description="Save notes directly from Video Lessons, Nova AI, or create a new note above."
+          />
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredNotes.map((note) => (
@@ -196,27 +194,27 @@ export default function NotebookPage() {
               >
                 <div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#4F46E5] inline-flex items-center gap-1">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400 inline-flex items-center gap-1">
                       <NotebookPen size={13} />
                       {note.folder}
                     </span>
                     <button
                       onClick={() => handleDelete(note.id)}
                       aria-label="Delete note"
-                      className="text-[#6B6F94] hover:text-rose-600 transition"
+                      className="text-[var(--foreground-subtle)] hover:text-rose-600 dark:hover:text-rose-400 transition"
                     >
                       <Trash2 size={14} />
                     </button>
                   </div>
-                  <h3 className="landing-display text-base font-bold text-[#0B1230] mt-2">
+                  <h3 className="landing-display text-base font-bold text-[var(--foreground)] mt-2">
                     {note.title}
                   </h3>
-                  <p className="text-sm text-[#43466E] mt-2 leading-relaxed whitespace-pre-wrap line-clamp-6">
+                  <p className="text-sm text-[var(--foreground-muted)] mt-2 leading-relaxed whitespace-pre-wrap line-clamp-6">
                     {note.content}
                   </p>
                 </div>
-                <div className="mt-4 pt-3 border-t border-[#E4E1F5] flex items-center justify-between gap-2">
-                  <p className="text-[11px] text-[#6B6F94] truncate">
+                <div className="mt-4 pt-3 border-t border-[var(--border)] flex items-center justify-between gap-2">
+                  <p className="text-[11px] text-[var(--foreground-subtle)] truncate">
                     {note.date}
                     {note.sourceLabel ? ` · ${note.sourceLabel}` : ""}
                   </p>
@@ -246,7 +244,7 @@ export default function NotebookPage() {
                         setDeckLoading(false);
                       }
                     }}
-                    className="inline-flex items-center gap-1 text-[11px] font-bold text-[#7C3AED] hover:underline shrink-0"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline shrink-0 whitespace-nowrap"
                   >
                     <Layers size={12} />
                     Flashcards

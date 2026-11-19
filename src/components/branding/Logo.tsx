@@ -23,14 +23,14 @@ export default function Logo({
       <div className="leading-none">
         <span
           className={`landing-display text-lg font-extrabold tracking-tight ${
-            dark ? "text-white" : "text-[#0B1230]"
+            dark ? "text-white" : "text-[var(--foreground)]"
           }`}
         >
           Learnova
         </span>
         <span
           className={`block text-[10px] font-semibold tracking-wide mt-0.5 ${
-            dark ? "text-[#22D3EE]" : "text-[#6D28D9]"
+            dark ? "text-[#22D3EE]" : "text-violet-600 dark:text-violet-400"
           }`}
         >
           {subtitle}

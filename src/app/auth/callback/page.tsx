@@ -237,19 +237,19 @@ export default function AuthCallbackPage() {
 
   if (errorMessage) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender px-5 text-[#0B1230]">
-        <div className="w-full max-w-md rounded-2xl border border-[#E4E1F5] bg-white p-8 shadow-xl shadow-[#0B1230]/6 text-center space-y-5">
+      <main className="flex min-h-screen items-center justify-center bg-[var(--background)] bg-learnova-dots-lavender px-5 text-[var(--foreground)]">
+        <div className="w-full max-w-md rounded-2xl learnova-card p-8 text-center space-y-5">
           <div className="flex justify-center">
             <Logo href="/" variant="learnova" />
           </div>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
             <AlertCircle size={24} />
           </div>
           <div className="space-y-2">
-            <h1 className="landing-display text-xl font-extrabold text-[#0B1230]">
+            <h1 className="landing-display text-xl font-extrabold text-[var(--foreground)]">
               Authentication Error
             </h1>
-            <p className="text-xs leading-relaxed text-[#43466E]">{errorMessage}</p>
+            <p className="text-xs leading-relaxed text-[var(--foreground-muted)]">{errorMessage}</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 pt-1">
             <Link
@@ -261,7 +261,7 @@ export default function AuthCallbackPage() {
             </Link>
             <Link
               href="/register"
-              className="flex-1 inline-flex items-center justify-center rounded-xl border border-[#DCD7F5] bg-white px-4 py-2.5 text-xs font-bold text-[#0B1230] hover:bg-[#FAF8FF] transition"
+              className="flex-1 inline-flex items-center justify-center rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] px-4 py-2.5 text-xs font-bold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
             >
               Create Account
             </Link>
@@ -272,10 +272,10 @@ export default function AuthCallbackPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F5F4FB] bg-learnova-dots-lavender text-[#0B1230]">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
       <div className="text-center px-6">
         <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#4F46E5] border-t-transparent" />
-        <p className="mt-4 text-sm font-semibold text-[#43466E]">{statusMessage}</p>
+        <p className="mt-4 text-sm font-semibold text-[var(--foreground-muted)]">{statusMessage}</p>
       </div>
     </div>
   );

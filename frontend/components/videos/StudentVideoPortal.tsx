@@ -87,7 +87,10 @@ export default function StudentVideoPortal() {
   const [watchedIds, setWatchedIds] = useState<string[]>([]);
   const [nowMs, setNowMs] = useState(0);
 
-  // Stage 4 Study Companion, Flashcards & Notebook Drawer state
+  // Stage 4 Topic Workspace & Companion state
+  const [workspaceTab, setWorkspaceTab] = useState<
+    "videos" | "overview" | "notes" | "practice" | "questions" | "progress"
+  >("videos");
   const [companionTab, setCompanionTab] = useState<CompanionTab>("playlist");
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteTitle, setNoteTitle] = useState("");
@@ -238,6 +241,27 @@ export default function StudentVideoPortal() {
   const selectVideoAndRecordView = useCallback(async (video: VideoLessonItem) => {
     setActiveVideoId(video.id);
     try {
+      const subObj = subjects.find((s) => s.id === video.subjectId);
+      const topObj = topics.find((t) => t.id === video.topicId);
+      localStorage.setItem(
+        "learnova_last_learning",
+        JSON.stringify({
+          title: topObj?.title || video.title,
+          subjectName: subObj?.name || "My Learning",
+          href: `/videos?subjectId=${encodeURIComponent(
+            video.subjectId
+          )}&termId=${encodeURIComponent(
+            video.termId
+          )}&topicId=${encodeURIComponent(
+            video.topicId
+          )}&videoId=${encodeURIComponent(video.id)}`,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+    } catch {
+      // non-fatal
+    }
+    try {
       await fetch("/api/lms/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -246,7 +270,7 @@ export default function StudentVideoPortal() {
     } catch {
       // non-fatal
     }
-  }, []);
+  }, [subjects, topics]);
 
   const toggleWatched = (videoId: string) => {
     setWatchedIds((prev) => {
@@ -373,8 +397,8 @@ export default function StudentVideoPortal() {
           }}
           className={`font-semibold transition whitespace-nowrap ${
             currentStage === "SUBJECT"
-              ? "text-[#4F46E5]"
-              : "text-[#6B6F94] hover:text-[#0B1230]"
+              ? "text-[#4F46E5] dark:text-[#A5B4FC]"
+              : "text-[var(--foreground-subtle)] hover:text-[var(--foreground)]"
           }`}
         >
           1. Subjects
@@ -382,7 +406,7 @@ export default function StudentVideoPortal() {
 
         {selectedSubject && (
           <>
-            <ChevronRight size={14} className="text-[#6B6F94] shrink-0" />
+            <ChevronRight size={14} className="text-[var(--foreground-subtle)] shrink-0" />
             <button
               type="button"
               onClick={() => {
@@ -392,8 +416,8 @@ export default function StudentVideoPortal() {
               }}
               className={`font-semibold transition whitespace-nowrap ${
                 currentStage === "TERM"
-                  ? "text-[#4F46E5]"
-                  : "text-[#6B6F94] hover:text-[#0B1230]"
+                  ? "text-[#4F46E5] dark:text-[#A5B4FC]"
+                  : "text-[var(--foreground-subtle)] hover:text-[var(--foreground)]"
               }`}
             >
               2. {selectedSubject.name}
@@ -403,7 +427,7 @@ export default function StudentVideoPortal() {
 
         {selectedTerm && (
           <>
-            <ChevronRight size={14} className="text-[#6B6F94] shrink-0" />
+            <ChevronRight size={14} className="text-[var(--foreground-subtle)] shrink-0" />
             <button
               type="button"
               onClick={() => {
@@ -412,8 +436,8 @@ export default function StudentVideoPortal() {
               }}
               className={`font-semibold transition whitespace-nowrap ${
                 currentStage === "TOPIC"
-                  ? "text-[#4F46E5]"
-                  : "text-[#6B6F94] hover:text-[#0B1230]"
+                  ? "text-[#4F46E5] dark:text-[#A5B4FC]"
+                  : "text-[var(--foreground-subtle)] hover:text-[var(--foreground)]"
               }`}
             >
               3. {selectedTerm.name}
@@ -423,8 +447,8 @@ export default function StudentVideoPortal() {
 
         {selectedTopic && (
           <>
-            <ChevronRight size={14} className="text-[#6B6F94] shrink-0" />
-            <span className="font-bold text-[#0B1230] truncate max-w-xs sm:max-w-md">
+            <ChevronRight size={14} className="text-[var(--foreground-subtle)] shrink-0" />
+            <span className="font-bold text-[var(--foreground)] truncate max-w-xs sm:max-w-md">
               4. {selectedTopic.title}
             </span>
           </>
@@ -433,12 +457,12 @@ export default function StudentVideoPortal() {
 
       {/* Non-blocking Subscription Notice when no paid plan is active yet */}
       {!loading && !hasActiveSub && !isPrivilegedViewer && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-amber-50/90 dark:bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-sm font-bold text-amber-950">
+            <p className="text-sm font-bold text-amber-950 dark:text-amber-200">
               Open Curriculum Video Access · Live Classrooms Require an Active Plan
             </p>
-            <p className="text-xs text-amber-900/80 mt-0.5">
+            <p className="text-xs text-amber-900/80 dark:text-amber-200/80 mt-0.5">
               {enrolment?.classLevelId
                 ? "Browse recorded topic lessons freely. Activate a plan under Subscriptions for live classrooms and CBT modules."
                 : "Browse subject and term video lessons freely, or choose a subscription plan anytime."}
@@ -454,7 +478,7 @@ export default function StudentVideoPortal() {
       )}
 
       {loading ? (
-        <div className="learnova-card p-12 text-center text-sm text-[#6B6F94]">
+        <div className="learnova-card p-12 text-center text-sm text-[var(--foreground-subtle)]">
           Loading curriculum video library...
         </div>
       ) : currentStage === "SUBJECT" ? (
@@ -462,26 +486,26 @@ export default function StudentVideoPortal() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-[#0B1230]">
+              <h2 className="text-lg font-bold text-[var(--foreground)]">
                 Step 1 · Select a Subject ({visibleSubjects.length})
               </h2>
-              <p className="text-xs text-[#6B6F94]">
+              <p className="text-xs text-[var(--foreground-subtle)]">
                 Choose a subject to view its First, Second, and Third Term curriculum topics.
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-white border border-[#DCD7F5] focus-within:border-[#7C3AED] rounded-xl px-3.5 py-2 w-full sm:w-72 transition">
-              <Search size={15} className="text-[#6B6F94] shrink-0" />
+            <div className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--border-strong)] focus-within:border-[#7C3AED] rounded-xl px-3.5 py-2 w-full sm:w-72 transition">
+              <Search size={15} className="text-[var(--foreground-subtle)] shrink-0" />
               <input
                 value={subjectSearch}
                 onChange={(e) => setSubjectSearch(e.target.value)}
                 placeholder="Search subjects..."
-                className="bg-transparent outline-none text-sm text-[#0B1230] placeholder:text-[#6B6F94] w-full"
+                className="bg-transparent outline-none text-sm text-[var(--foreground)] placeholder:text-[var(--foreground-subtle)] w-full"
               />
             </div>
           </div>
 
           {visibleSubjects.length === 0 ? (
-            <div className="learnova-card border-dashed border-[#DCD7F5] p-12 text-center text-sm text-[#6B6F94]">
+            <div className="learnova-card border-dashed border-[var(--border-strong)] p-12 text-center text-sm text-[var(--foreground-subtle)]">
               No active subjects match this class level or filter.
             </div>
           ) : (
@@ -494,11 +518,11 @@ export default function StudentVideoPortal() {
                 return (
                   <div
                     key={sub.id}
-                    className="learnova-card p-6 flex flex-col justify-between gap-4 hover:border-[#7C3AED]/45 transition min-w-0"
+                    className="learnova-card p-6 flex flex-col justify-between gap-4 hover:border-[var(--border-strong)] transition min-w-0"
                   >
                     <div>
-                      <div className="flex items-center justify-between text-xs text-[#6B6F94] gap-2">
-                        <span className="font-semibold text-[#4F46E5] truncate">
+                      <div className="flex items-center justify-between text-xs text-[var(--foreground-subtle)] gap-2">
+                        <span className="font-semibold text-[#4F46E5] dark:text-[#A5B4FC] truncate">
                           {sub.code} · {sub.department}
                         </span>
                         <span className="tabular-nums shrink-0">
@@ -506,12 +530,12 @@ export default function StudentVideoPortal() {
                         </span>
                       </div>
 
-                      <h3 className="mt-2.5 text-lg font-bold text-[#0B1230] flex items-center gap-2">
-                        <BookOpen size={18} className="text-[#6D28D9] shrink-0" />
+                      <h3 className="mt-2.5 text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
+                        <BookOpen size={18} className="text-[#6D28D9] dark:text-[#C4B5FD] shrink-0" />
                         <span className="truncate">{sub.name}</span>
                       </h3>
 
-                      <p className="mt-1.5 text-sm text-[#43466E] leading-relaxed line-clamp-2">
+                      <p className="mt-1.5 text-sm text-[var(--foreground-muted)] leading-relaxed line-clamp-2">
                         {sub.description}
                       </p>
                     </div>
@@ -533,7 +557,7 @@ export default function StudentVideoPortal() {
                     ) : (
                       <Link
                         href="/subscriptions"
-                        className="w-full py-2.5 px-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold inline-flex items-center justify-center gap-1.5 hover:bg-amber-100 transition"
+                        className="w-full py-2.5 px-4 rounded-xl bg-amber-500/12 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-bold inline-flex items-center justify-center gap-1.5 hover:bg-amber-500/20 transition"
                       >
                         <Lock size={13} />
                         Subscribe to Unlock Videos
@@ -550,17 +574,17 @@ export default function StudentVideoPortal() {
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-[#0B1230]">
+              <h2 className="text-lg font-bold text-[var(--foreground)]">
                 Step 2 · Choose Term for {selectedSubject.name}
               </h2>
-              <p className="text-xs text-[#6B6F94]">
+              <p className="text-xs text-[var(--foreground-subtle)]">
                 Select an academic term to inspect scheduled curriculum topics and video lessons.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setSelectedSubjectId("")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#DCD7F5] bg-white text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF] shrink-0"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] shrink-0"
             >
               <ArrowLeft size={14} /> All Subjects
             </button>
@@ -583,24 +607,24 @@ export default function StudentVideoPortal() {
                 >
                   <div>
                     <div className="flex items-center justify-between text-xs gap-2">
-                      <span className="font-semibold text-[#4F46E5] inline-flex items-center gap-1">
+                      <span className="font-semibold text-[#4F46E5] dark:text-[#A5B4FC] inline-flex items-center gap-1">
                         <CalendarRange size={13} />
                         {term.isCurrent ? "Current Term" : "Academic Term"}
                       </span>
-                      <span className="text-[#6B6F94] tabular-nums">
+                      <span className="text-[var(--foreground-subtle)] tabular-nums">
                         {term.startsAt} – {term.endsAt}
                       </span>
                     </div>
-                    <h3 className="mt-3 text-xl font-bold text-[#0B1230]">
+                    <h3 className="mt-3 text-xl font-bold text-[var(--foreground)]">
                       {term.name}
                     </h3>
-                    <p className="mt-1.5 text-sm text-[#43466E] tabular-nums">
+                    <p className="mt-1.5 text-sm text-[var(--foreground-muted)] tabular-nums">
                       {tCount} curriculum {tCount === 1 ? "topic" : "topics"} ·{" "}
                       {vCount} video {vCount === 1 ? "lesson" : "lessons"}
                     </p>
                   </div>
 
-                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6D28D9]">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6D28D9] dark:text-[#C4B5FD]">
                     Open Term Topics <ArrowRight size={14} />
                   </span>
                 </button>
@@ -613,29 +637,29 @@ export default function StudentVideoPortal() {
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-[#0B1230]">
+              <h2 className="text-lg font-bold text-[var(--foreground)]">
                 Step 3 · {selectedSubject.name} — {selectedTerm.name} Topics
               </h2>
-              <p className="text-xs text-[#6B6F94]">
-                Select any topic to watch teacher-recorded walkthroughs and curated YouTube lessons.
+              <p className="text-xs text-[var(--foreground-subtle)]">
+                Select any topic to open its full Topic Learning Workspace with videos, notes, practice, Q&amp;A, and progress.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setSelectedTermId("")}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#DCD7F5] bg-white text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF] shrink-0"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] shrink-0"
             >
               <ArrowLeft size={14} /> Back to Terms
             </button>
           </div>
 
           {termTopics.length === 0 ? (
-            <div className="learnova-card border-dashed border-[#DCD7F5] p-12 text-center space-y-2">
-              <PlaySquare size={28} className="mx-auto text-[#6B6F94]" />
-              <p className="text-sm font-semibold text-[#0B1230]">
+            <div className="learnova-card border-dashed border-[var(--border-strong)] p-12 text-center space-y-2">
+              <PlaySquare size={28} className="mx-auto text-[var(--foreground-subtle)]" />
+              <p className="text-sm font-semibold text-[var(--foreground)]">
                 No topics published yet for {selectedSubject.name} ({selectedTerm.name})
               </p>
-              <p className="text-xs text-[#6B6F94]">
+              <p className="text-xs text-[var(--foreground-subtle)]">
                 Try another term or ask your subject teacher to add video lessons for this unit.
               </p>
             </div>
@@ -657,6 +681,7 @@ export default function StudentVideoPortal() {
                     type="button"
                     onClick={() => {
                       setSelectedTopicId(topic.id);
+                      setWorkspaceTab("videos");
                       if (vList[0]) {
                         selectVideoAndRecordView(vList[0]);
                       } else {
@@ -666,8 +691,8 @@ export default function StudentVideoPortal() {
                     className="w-full text-left learnova-card p-5 sm:p-6 hover:border-[#7C3AED] transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="space-y-1.5 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">
-                        <span className="font-bold text-[#4F46E5] tabular-nums">
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--foreground-subtle)]">
+                        <span className="font-bold text-[#4F46E5] dark:text-[#A5B4FC] tabular-nums">
                           {String(index + 1).padStart(2, "0")}.{" "}
                           {topic.weekLabel || `Topic ${topic.topicOrder}`}
                         </span>
@@ -690,23 +715,23 @@ export default function StudentVideoPortal() {
                         {allWatched && (
                           <>
                             <span aria-hidden="true">·</span>
-                            <span className="inline-flex items-center gap-1 font-semibold text-[#059669]">
+                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
                               <CheckCircle2 size={13} /> Completed
                             </span>
                           </>
                         )}
                       </div>
-                      <h3 className="text-base sm:text-lg font-bold text-[#0B1230]">
+                      <h3 className="text-base sm:text-lg font-bold text-[var(--foreground)]">
                         {topic.title}
                       </h3>
-                      <p className="text-sm text-[#43466E] leading-relaxed max-w-3xl">
+                      <p className="text-sm text-[var(--foreground-muted)] leading-relaxed max-w-3xl">
                         {topic.description}
                       </p>
                     </div>
 
                     <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold shrink-0 whitespace-nowrap shadow-xs">
                       <Play size={14} />
-                      {vList.length > 0 ? "Watch Lessons" : "View Topic"}
+                      {vList.length > 0 ? "Open Topic Workspace" : "View Topic"}
                     </span>
                   </button>
                 );
@@ -715,15 +740,15 @@ export default function StudentVideoPortal() {
           )}
         </div>
       ) : selectedTopic && selectedSubject && selectedTerm ? (
-        /* STAGE 4: TOPIC VIDEO THEATER */
+        /* STAGE 4: TOPIC LEARNING WORKSPACE */
         <div className="space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-semibold text-[#4F46E5]">
+              <p className="text-xs font-semibold text-[#4F46E5] dark:text-[#A5B4FC]">
                 {selectedSubject.name} · {selectedTerm.name} ·{" "}
                 {selectedTopic.weekLabel || `Topic ${selectedTopic.topicOrder}`}
               </p>
-              <h2 className="landing-display text-xl sm:text-2xl font-extrabold text-[#0B1230]">
+              <h2 className="landing-display text-xl sm:text-2xl font-extrabold text-[var(--foreground)]">
                 {selectedTopic.title}
               </h2>
             </div>
@@ -734,19 +759,156 @@ export default function StudentVideoPortal() {
                 setSelectedTopicId("");
                 setActiveVideoId("");
               }}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#DCD7F5] bg-white text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF] shrink-0"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] shrink-0"
             >
               <ArrowLeft size={14} /> Back to Topics
             </button>
           </div>
 
-          {topicVideos.length === 0 || !activeVideo ? (
-            <div className="learnova-card border-dashed border-[#DCD7F5] p-12 text-center space-y-3">
-              <Film size={32} className="mx-auto text-[#6B6F94]" />
-              <h3 className="text-base font-bold text-[#0B1230]">
+          {/* Topic Learning Workspace Navigation Bar */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-[var(--surface)] border border-[var(--border)]">
+            {(
+              [
+                { id: "videos", label: `Videos (${topicVideos.length})` },
+                { id: "overview", label: "Overview" },
+                { id: "notes", label: "Notes" },
+                { id: "practice", label: "Practice" },
+                { id: "questions", label: "Questions" },
+                { id: "progress", label: "Progress" },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  setWorkspaceTab(tab.id);
+                  if (tab.id === "notes") {
+                    setNoteOpen(true);
+                    if (!noteTitle && activeVideo) {
+                      setNoteTitle(`${selectedTopic.title}: ${activeVideo.title}`);
+                    }
+                    if (!noteBody && activeVideo) {
+                      setNoteBody(
+                        `Lesson: ${activeVideo.title}\nTerm: ${selectedTerm.name}\n\nKey Takeaways:\n- ${activeVideo.description}\n- `
+                      );
+                    }
+                  }
+                  if (tab.id === "practice") {
+                    setCompanionTab("quiz");
+                  }
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                  workspaceTab === tab.id
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-xs"
+                    : "text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-lavender)]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {workspaceTab === "overview" ? (
+            <div className="learnova-card p-6 space-y-5">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#4F46E5] dark:text-[#A5B4FC]">
+                  Topic Overview · {selectedTopic.weekLabel || `Unit ${selectedTopic.topicOrder}`}
+                </p>
+                <h3 className="landing-display text-xl font-bold text-[var(--foreground)] mt-1">
+                  {selectedTopic.title}
+                </h3>
+                <p className="text-sm text-[var(--foreground-muted)] mt-2 leading-relaxed">
+                  {selectedTopic.description}
+                </p>
+              </div>
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4">
+                  <p className="text-xs font-semibold text-[var(--foreground-subtle)]">Subject Track</p>
+                  <p className="text-sm font-bold text-[var(--foreground)] mt-1">{selectedSubject.name}</p>
+                </div>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4">
+                  <p className="text-xs font-semibold text-[var(--foreground-subtle)]">Academic Term</p>
+                  <p className="text-sm font-bold text-[var(--foreground)] mt-1">{selectedTerm.name}</p>
+                </div>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4">
+                  <p className="text-xs font-semibold text-[var(--foreground-subtle)]">Published Videos</p>
+                  <p className="text-sm font-bold text-[var(--foreground)] mt-1 tabular-nums">{topicVideos.length} lesson(s)</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceTab("videos")}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold"
+                >
+                  <Play size={14} /> Watch Video Lessons
+                </button>
+                <Link
+                  href={`/nova?subject=${encodeURIComponent(`${selectedSubject.name}: ${selectedTopic.title}`)}`}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border-strong)] bg-[var(--surface)] text-xs font-bold text-[var(--foreground)]"
+                >
+                  <Sparkles size={14} className="text-[#7C3AED] dark:text-[#C4B5FD]" /> Ask Nova AI Tutor
+                </Link>
+              </div>
+            </div>
+          ) : workspaceTab === "progress" ? (
+            <div className="learnova-card p-6 space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-base font-bold text-[var(--foreground)]">
+                    Topic Completion &amp; Watch Checklist
+                  </h3>
+                  <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
+                    Mark each lesson watched to track your WAEC/JAMB readiness for this topic.
+                  </p>
+                </div>
+                <span className="text-sm font-extrabold text-[#4F46E5] dark:text-[#A5B4FC] tabular-nums">
+                  {topicVideos.filter((v) => watchedIds.includes(v.id)).length}/{topicVideos.length} watched
+                </span>
+              </div>
+              {topicVideos.length === 0 ? (
+                <p className="text-xs text-[var(--foreground-subtle)]">No video lessons uploaded for this topic yet.</p>
+              ) : (
+                <div className="space-y-2.5">
+                  {topicVideos.map((vid, idx) => {
+                    const watched = watchedIds.includes(vid.id);
+                    return (
+                      <div
+                        key={vid.id}
+                        className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-4 flex items-center justify-between gap-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold text-[var(--foreground)] truncate">
+                            {idx + 1}. {vid.title}
+                          </p>
+                          <p className="text-xs text-[var(--foreground-subtle)]">
+                            {vid.uploadedByName} {vid.durationLabel ? `· ${vid.durationLabel}` : ""}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleWatched(vid.id)}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition shrink-0 ${
+                            watched
+                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                              : "bg-[var(--surface)] border border-[var(--border-strong)] text-[var(--foreground)]"
+                          }`}
+                        >
+                          {watched ? "Completed" : "Mark Watched"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : topicVideos.length === 0 || !activeVideo ? (
+            <div className="learnova-card border-dashed border-[var(--border-strong)] p-12 text-center space-y-3">
+              <Film size={32} className="mx-auto text-[var(--foreground-subtle)]" />
+              <h3 className="text-base font-bold text-[var(--foreground)]">
                 No video lessons uploaded for this topic yet
               </h3>
-              <p className="text-xs text-[#6B6F94] max-w-md mx-auto">
+              <p className="text-xs text-[var(--foreground-subtle)] max-w-md mx-auto">
                 {selectedTopic.description}
               </p>
               <div className="pt-2">
@@ -760,6 +922,101 @@ export default function StudentVideoPortal() {
                 </Link>
               </div>
             </div>
+          ) : workspaceTab === "questions" ? (
+            <VideoTimestampQA
+              videoId={activeVideo.id}
+              topicId={selectedTopic.id}
+              videoTitle={activeVideo.title}
+              subjectName={selectedSubject.name}
+              userRole={role}
+            />
+          ) : workspaceTab === "notes" ? (
+            <div className="learnova-card p-6 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-base font-bold text-[var(--foreground)]">
+                    Topic Study Notes — {selectedTopic.title}
+                  </h3>
+                  <p className="text-xs text-[var(--foreground-subtle)]">
+                    Draft revision notes manually or with Nova AI and save straight to your {selectedSubject.name} Notebook folder.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={draftingNote}
+                  onClick={async () => {
+                    setDraftingNote(true);
+                    try {
+                      const res = await fetch("/api/nova", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          message: `Create concise bullet-point study notes (formulas, key definitions, and 2 WAEC exam tips) for the lesson "${activeVideo.title}" under topic "${selectedTopic.title}" in ${selectedSubject.name}. Keep it structured for saving into a student notebook.`,
+                          mode: "fast",
+                          persona: "tutor",
+                          subjectHint: `${selectedSubject.name} · ${selectedTopic.title}`,
+                        }),
+                      });
+                      const json = await res.json();
+                      if (json.response) {
+                        setNoteBody(json.response);
+                      }
+                    } finally {
+                      setDraftingNote(false);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[var(--surface-lavender)] border border-[var(--border-strong)] hover:border-[#7C3AED] text-xs font-bold text-[var(--foreground)] disabled:opacity-50"
+                >
+                  {draftingNote ? (
+                    <Loader2 size={13} className="animate-spin text-[#4F46E5]" />
+                  ) : (
+                    <Sparkles size={13} className="text-[#6D28D9] dark:text-[#C4B5FD]" />
+                  )}
+                  {draftingNote ? "Drafting..." : "Auto-Draft Notes with Nova AI"}
+                </button>
+              </div>
+              <input
+                value={noteTitle}
+                onChange={(e) => setNoteTitle(e.target.value)}
+                placeholder="Note title..."
+                className="learnova-input"
+              />
+              <textarea
+                rows={7}
+                value={noteBody}
+                onChange={(e) => setNoteBody(e.target.value)}
+                placeholder="Write your revision summary, formulas, or timestamps..."
+                className="learnova-input"
+              />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Link href="/notebook" className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline">
+                  Open Study Notebook →
+                </Link>
+                <div className="flex items-center gap-3">
+                  {noteSaved && (
+                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                      <Check size={14} /> Saved to Notebook
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!noteTitle.trim() || !noteBody.trim()}
+                    onClick={() => {
+                      saveNoteToNotebook({
+                        title: noteTitle,
+                        folder: selectedSubject.name,
+                        content: noteBody,
+                        sourceLabel: `Video Lesson · ${selectedTopic.title}`,
+                      });
+                      setNoteSaved(true);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white text-xs font-bold disabled:opacity-50"
+                  >
+                    Save to Notebook
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : (
             <div className="space-y-6">
               <div className="grid lg:grid-cols-3 gap-6 items-start">
@@ -769,8 +1026,8 @@ export default function StudentVideoPortal() {
 
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pt-1">
                   <div className="space-y-1.5 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B6F94]">
-                      <span className="font-semibold text-[#4F46E5]">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--foreground-subtle)]">
+                      <span className="font-semibold text-[#4F46E5] dark:text-[#A5B4FC]">
                         {activeVideo.sourceType === "UPLOADED_VIDEO"
                           ? "Teacher Recorded Video"
                           : activeVideo.sourceType === "YOUTUBE"
@@ -792,10 +1049,10 @@ export default function StudentVideoPortal() {
                         {activeVideo.viewCount || 0} views
                       </span>
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-[#0B1230]">
+                    <h3 className="text-lg sm:text-xl font-bold text-[var(--foreground)]">
                       {activeVideo.title}
                     </h3>
-                    <p className="text-sm text-[#43466E] leading-relaxed">
+                    <p className="text-sm text-[var(--foreground-muted)] leading-relaxed">
                       {activeVideo.description}
                     </p>
                   </div>
@@ -805,8 +1062,8 @@ export default function StudentVideoPortal() {
                     onClick={() => toggleWatched(activeVideo.id)}
                     className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition shrink-0 whitespace-nowrap ${
                       watchedIds.includes(activeVideo.id)
-                        ? "bg-emerald-50 text-[#059669] border border-emerald-200"
-                        : "bg-[#0B1230] text-white hover:bg-[#151A44]"
+                        ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"
+                        : "bg-[#0B1230] dark:bg-[#1E293B] text-white hover:opacity-90"
                     }`}
                   >
                     <CheckCircle2 size={14} />
@@ -817,7 +1074,7 @@ export default function StudentVideoPortal() {
                 </div>
 
                 {/* Study Companion Actions */}
-                <div className="pt-4 border-t border-[#E4E1F5] space-y-4">
+                <div className="pt-4 border-t border-[var(--border)] space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-2.5">
                     <div className="flex flex-wrap gap-2">
                       <button
@@ -826,13 +1083,13 @@ export default function StudentVideoPortal() {
                         className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                           companionTab === "nova"
                             ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
-                            : "bg-[#FAF8FF] border border-[#E4E1F5] hover:border-[#C4B5FD] text-[#0B1230]"
+                            : "bg-[var(--surface-lavender)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--foreground)]"
                         }`}
                       >
                         <Sparkles
                           size={13}
                           className={
-                            companionTab === "nova" ? "text-[#22D3EE]" : "text-[#6D28D9]"
+                            companionTab === "nova" ? "text-[#22D3EE]" : "text-[#6D28D9] dark:text-[#C4B5FD]"
                           }
                         />
                         Ask Nova AI
@@ -854,11 +1111,11 @@ export default function StudentVideoPortal() {
                         }}
                         className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                           noteOpen || noteSaved
-                            ? "bg-[#F5F3FF] border border-[#C4B5FD] text-[#4F46E5]"
-                            : "bg-[#FAF8FF] border border-[#E4E1F5] hover:border-[#C4B5FD] text-[#0B1230]"
+                            ? "bg-[var(--surface-subtle)] border border-[#7C3AED] text-[#4F46E5] dark:text-[#A5B4FC]"
+                            : "bg-[var(--surface-lavender)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--foreground)]"
                         }`}
                       >
-                        {noteSaved ? <Check size={13} className="text-[#059669]" /> : <NotebookPen size={13} className="text-[#4F46E5]" />}
+                        {noteSaved ? <Check size={13} className="text-emerald-600 dark:text-emerald-400" /> : <NotebookPen size={13} className="text-[#4F46E5] dark:text-[#A5B4FC]" />}
                         {noteSaved ? "Saved to Notebook" : "Add to Notebook"}
                       </button>
 
@@ -868,7 +1125,7 @@ export default function StudentVideoPortal() {
                         className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                           companionTab === "materials"
                             ? "bg-[#4F46E5] text-white"
-                            : "bg-[#FAF8FF] border border-[#E4E1F5] hover:border-[#C4B5FD] text-[#0B1230]"
+                            : "bg-[var(--surface-lavender)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--foreground)]"
                         }`}
                       >
                         <Download size={13} />
@@ -880,8 +1137,8 @@ export default function StudentVideoPortal() {
                         onClick={() => setCompanionTab("quiz")}
                         className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                           companionTab === "quiz"
-                            ? "bg-[#0B1230] text-white"
-                            : "bg-[#FAF8FF] border border-[#E4E1F5] hover:border-[#C4B5FD] text-[#0B1230]"
+                            ? "bg-[#0B1230] dark:bg-[#1E293B] text-white"
+                            : "bg-[var(--surface-lavender)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--foreground)]"
                         }`}
                       >
                         <ClipboardCheck size={13} />
@@ -912,9 +1169,9 @@ export default function StudentVideoPortal() {
                             setFlashcardLoading(false);
                           }
                         }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[#FAF8FF] border border-[#E4E1F5] hover:border-[#C4B5FD] text-[#0B1230] transition"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-[var(--surface-lavender)] border border-[var(--border)] hover:border-[var(--border-strong)] text-[var(--foreground)] transition"
                       >
-                        <Layers size={13} className="text-[#0891B2]" />
+                        <Layers size={13} className="text-[#0891B2] dark:text-[#22D3EE]" />
                         Flashcards
                       </button>
                     </div>
@@ -924,7 +1181,7 @@ export default function StudentVideoPortal() {
                         href={activeVideo.videoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
                       >
                         Open Source Link <ExternalLink size={12} />
                       </a>
@@ -933,13 +1190,13 @@ export default function StudentVideoPortal() {
 
                   {/* Inline Add-to-Notebook Composer */}
                   {noteOpen && (
-                    <div className="rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] p-4 space-y-3">
+                    <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] p-4 space-y-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <p className="text-xs font-bold text-[#0B1230]">
+                          <p className="text-xs font-bold text-[var(--foreground)]">
                             Save Lesson Note to {selectedSubject.name} Folder
                           </p>
-                          <p className="text-[11px] text-[#6B6F94]">
+                          <p className="text-[11px] text-[var(--foreground-subtle)]">
                             Stored directly in your Learnova Study Notebook.
                           </p>
                         </div>
@@ -968,12 +1225,12 @@ export default function StudentVideoPortal() {
                               setDraftingNote(false);
                             }
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#DCD7F5] hover:border-[#7C3AED] text-[11px] font-bold text-[#0B1230] disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--surface)] border border-[var(--border-strong)] hover:border-[#7C3AED] text-[11px] font-bold text-[var(--foreground)] disabled:opacity-50"
                         >
                           {draftingNote ? (
                             <Loader2 size={12} className="animate-spin text-[#4F46E5]" />
                           ) : (
-                            <Sparkles size={12} className="text-[#6D28D9]" />
+                            <Sparkles size={12} className="text-[#6D28D9] dark:text-[#C4B5FD]" />
                           )}
                           {draftingNote ? "Drafting..." : "Auto-Draft Notes with Nova AI"}
                         </button>
@@ -983,20 +1240,20 @@ export default function StudentVideoPortal() {
                         value={noteTitle}
                         onChange={(e) => setNoteTitle(e.target.value)}
                         placeholder="Note title..."
-                        className="w-full rounded-xl border border-[#DCD7F5] bg-white px-3 py-2 text-xs font-semibold text-[#0B1230] outline-none focus:border-[#7C3AED]"
+                        className="learnova-input text-xs font-semibold"
                       />
                       <textarea
                         rows={4}
                         value={noteBody}
                         onChange={(e) => setNoteBody(e.target.value)}
                         placeholder="Write your revision summary, formulas, or timestamps..."
-                        className="w-full rounded-xl border border-[#DCD7F5] bg-white p-3 text-xs text-[#0B1230] leading-relaxed outline-none focus:border-[#7C3AED]"
+                        className="learnova-input text-xs leading-relaxed"
                       />
 
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <Link
                           href="/notebook"
-                          className="text-xs font-bold text-[#4F46E5] hover:underline"
+                          className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
                         >
                           Open Study Notebook →
                         </Link>
@@ -1004,7 +1261,7 @@ export default function StudentVideoPortal() {
                           <button
                             type="button"
                             onClick={() => setNoteOpen(false)}
-                            className="px-3 py-1.5 rounded-lg border border-[#DCD7F5] bg-white text-xs font-semibold text-[#43466E]"
+                            className="px-3 py-1.5 rounded-lg border border-[var(--border-strong)] bg-[var(--surface)] text-xs font-semibold text-[var(--foreground-muted)]"
                           >
                             Close
                           </button>

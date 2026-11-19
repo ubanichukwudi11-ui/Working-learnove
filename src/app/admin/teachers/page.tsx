@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { PageHeader, EmptyState, CardSkeleton } from "@/components/ui";
 import Link from "next/link";
 import {
   GraduationCap,
@@ -131,26 +132,18 @@ export default function AdminTeachersPage() {
     <ProtectedRoute roles={["ADMIN", "SUPER_ADMIN"]}>
       <AppLayout>
         <div className="space-y-7">
-          <div className="learnova-banner-dark bg-architectural-grid-dark text-white rounded-3xl p-6 sm:p-8">
-            <p className="text-xs font-bold uppercase tracking-wider text-[#22D3EE]">
-              Educator Vetting &amp; Subject Authorization
-            </p>
-            <h1 className="landing-display text-2xl sm:text-3xl font-extrabold text-white mt-1.5">
-              Teacher Approval Centre
-            </h1>
-            <p className="text-sm text-[#C4B5FD] mt-1 max-w-2xl">
-              Review educator credentials, approve specific subjects for chosen class levels
-              (e.g. Mathematics for JSS1–JSS3 or SS1–SS3), request resubmissions, or revoke
-              approvals. Only approved subject-level pairs can be placed on official timetables.
-            </p>
-          </div>
+          <PageHeader
+            kicker="Educator Vetting & Subject Authorization"
+            title="Teacher Approval Centre"
+            description="Review educator credentials, approve specific subjects for chosen class levels (e.g. Mathematics for JSS1–JSS3 or SS1–SS3), request resubmissions, or revoke approvals. Only approved subject-level pairs can be placed on official timetables."
+          />
 
           {feedback && (
             <div
               className={`rounded-2xl px-4 py-3 text-sm font-medium flex items-center gap-2 border ${
                 feedback.type === "ok"
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-rose-50 text-rose-700 border-rose-200"
+                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
+                  : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
               }`}
             >
               {feedback.type === "ok" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
@@ -171,10 +164,10 @@ export default function AdminTeachersPage() {
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
                   filter === f
-                    ? "bg-[#0B1230] text-white"
-                    : "bg-white border border-[#E4E1F5] text-[#43466E] hover:border-[#4F46E5]"
+                    ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-xs"
+                    : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground-muted)] hover:border-[#4F46E5]"
                 }`}
               >
                 {f.replace(/_/g, " ")}
@@ -183,21 +176,19 @@ export default function AdminTeachersPage() {
           </div>
 
           {loading ? (
-            <div className="learnova-card p-10 text-center text-sm text-[#6B6F94]">
-              Loading teacher applications...
+            <div className="space-y-4">
+              <CardSkeleton lines={4} />
+              <CardSkeleton lines={4} />
             </div>
           ) : (
             <div className="space-y-8">
               {/* Applications Queue */}
               {filteredApps.length === 0 ? (
-                <div className="learnova-card border-dashed p-12 text-center space-y-2">
-                  <GraduationCap size={30} className="mx-auto text-[#6B6F94]" />
-                  <p className="font-bold text-[#0B1230]">No Teacher Applications Found</p>
-                  <p className="text-xs text-[#6B6F94]">
-                    When teachers submit subject teaching applications, they will appear here for
-                    verification and level-by-level approval.
-                  </p>
-                </div>
+                <EmptyState
+                  icon={GraduationCap}
+                  title="No Teacher Applications Found"
+                  description="When teachers submit subject teaching applications, they will appear here for verification and level-by-level approval."
+                />
               ) : (
                 <div className="space-y-4">
                   {filteredApps.map((app) => {
@@ -210,29 +201,29 @@ export default function AdminTeachersPage() {
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h2 className="text-lg font-extrabold text-[#0B1230]">
+                              <h2 className="text-lg font-extrabold text-[var(--foreground)]">
                                 {app.teacherName}
                               </h2>
-                              <span className="text-xs font-semibold text-[#6B6F94]">
+                              <span className="text-xs font-semibold text-[var(--foreground-subtle)]">
                                 ({app.teacherEmail})
                               </span>
-                              <span aria-hidden="true" className="text-[#6B6F94]">·</span>
+                              <span aria-hidden="true" className="text-[var(--foreground-subtle)]">·</span>
                               <span
                                 className={`text-xs font-bold ${
                                   app.status === "APPROVED"
-                                    ? "text-emerald-700"
+                                    ? "text-emerald-700 dark:text-emerald-400"
                                     : app.status === "PENDING_REVIEW"
-                                    ? "text-amber-700"
-                                    : "text-rose-700"
+                                    ? "text-amber-700 dark:text-amber-400"
+                                    : "text-rose-700 dark:text-rose-400"
                                 }`}
                               >
                                 {app.status.replace(/_/g, " ")}
                               </span>
                             </div>
-                            <p className="text-sm font-bold text-[#4F46E5] mt-1">
+                            <p className="text-sm font-bold text-[#4F46E5] dark:text-indigo-400 mt-1">
                               Subject Requested: {app.subjectName}
                             </p>
-                            <p className="text-xs text-[#43466E] mt-1">
+                            <p className="text-xs text-[var(--foreground-muted)] mt-1">
                               Qualification: <strong>{app.qualification}</strong> · Institution:{" "}
                               {app.institution || "—"} · Experience: {app.experience || "—"}
                               {app.licenseNumber ? ` · TRCN: ${app.licenseNumber}` : ""}
@@ -241,7 +232,7 @@ export default function AdminTeachersPage() {
 
                           <Link
                             href={`/admin/teachers/${app.teacherUserId}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#DCD7F5] text-xs font-semibold text-[#0B1230] hover:bg-[#FAF8FF] shrink-0 transition"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground)] hover:bg-[var(--surface-lavender)] shrink-0 transition"
                           >
                             Full Profile &amp; Documents
                             <ExternalLink size={12} />
@@ -249,8 +240,8 @@ export default function AdminTeachersPage() {
                         </div>
 
                         {/* Granular Class Level Approval Selector */}
-                        <div className="bg-[#FAF8FF] border border-[#E4E1F5] rounded-xl p-3.5 space-y-2">
-                          <p className="text-xs font-bold text-[#43466E]">
+                        <div className="bg-[var(--surface-lavender)] border border-[var(--border)] rounded-xl p-3.5 space-y-2">
+                          <p className="text-xs font-bold text-[var(--foreground-muted)]">
                             Select Class Levels Approved to Teach {app.subjectName}:
                           </p>
                           <div className="flex flex-wrap gap-2">
@@ -264,7 +255,7 @@ export default function AdminTeachersPage() {
                                   className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition ${
                                     checked
                                       ? "bg-[#4F46E5] text-white border-[#4F46E5]"
-                                      : "bg-white text-[#43466E] border-[#DCD7F5] hover:border-[#4F46E5]"
+                                      : "bg-[var(--surface)] text-[var(--foreground-muted)] border-[var(--border-strong)] hover:border-[#4F46E5]"
                                   }`}
                                 >
                                   {checked ? "✓ " : ""}
@@ -299,21 +290,21 @@ export default function AdminTeachersPage() {
                             <button
                               disabled={saving}
                               onClick={() => handleReview(app.id, "RESUBMISSION_REQUIRED")}
-                              className="px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold hover:bg-amber-100 transition"
+                              className="px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs font-semibold hover:bg-amber-100 dark:hover:bg-amber-950/70 transition"
                             >
                               Request Info
                             </button>
                             <button
                               disabled={saving}
                               onClick={() => handleReview(app.id, "REJECTED")}
-                              className="px-3 py-2 rounded-xl border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                              className="px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                             >
                               Reject
                             </button>
                             <button
                               disabled={saving}
                               onClick={() => handleReview(app.id, "SUSPENDED")}
-                              className="px-3 py-2 rounded-xl border border-[#DCD7F5] text-[#43466E] text-xs font-semibold hover:bg-[#FAF8FF] transition"
+                              className="px-3 py-2 rounded-xl border border-[var(--border-strong)] text-[var(--foreground-muted)] text-xs font-semibold hover:bg-[var(--surface-lavender)] transition"
                             >
                               Suspend
                             </button>
@@ -327,20 +318,20 @@ export default function AdminTeachersPage() {
 
               {/* Active Authorizations Matrix */}
               <div className="learnova-card overflow-hidden">
-                <div className="px-6 py-4 border-b border-[#E4E1F5] bg-[#FAF8FF]">
-                  <h2 className="text-base font-bold text-[#0B1230]">
+                <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]">
+                  <h2 className="text-base font-bold text-[var(--foreground)]">
                     Approved Subject &amp; Class-Level Authorizations ({approvals.length})
                   </h2>
                 </div>
                 {approvals.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-[#6B6F94]">
+                  <div className="p-8 text-center text-xs text-[var(--foreground-subtle)]">
                     No approved teacher-subject-level authorizations yet. Approve an
                     application above before scheduling that educator on the timetable.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                      <thead className="bg-[#FAF8FF] text-xs text-[#6B6F94] uppercase border-b border-[#E4E1F5]">
+                      <thead className="bg-[var(--surface-lavender)] text-xs text-[var(--foreground-subtle)] uppercase border-b border-[var(--border)]">
                         <tr>
                           <th className="px-5 py-3.5 font-semibold">Educator</th>
                           <th className="px-5 py-3.5 font-semibold">Subject</th>
@@ -349,22 +340,22 @@ export default function AdminTeachersPage() {
                           <th className="px-5 py-3.5 font-semibold text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E4E1F5]">
+                      <tbody className="divide-y divide-[var(--border)]">
                         {approvals.map((ap) => (
-                          <tr key={ap.id} className="hover:bg-[#FAF8FF]/70 transition">
-                            <td className="px-5 py-3.5 font-semibold text-[#0B1230]">
+                          <tr key={ap.id} className="hover:bg-[var(--surface-lavender)] transition">
+                            <td className="px-5 py-3.5 font-semibold text-[var(--foreground)]">
                               {ap.teacherName}
                             </td>
-                            <td className="px-5 py-3.5 text-[#43466E]">{ap.subjectName}</td>
-                            <td className="px-5 py-3.5 font-bold text-[#0B1230]">
+                            <td className="px-5 py-3.5 text-[var(--foreground-muted)]">{ap.subjectName}</td>
+                            <td className="px-5 py-3.5 font-bold text-[var(--foreground)]">
                               {ap.classLevelName}
                             </td>
                             <td className="px-5 py-3.5">
                               <span
                                 className={`text-xs font-bold ${
                                   ap.status === "APPROVED"
-                                    ? "text-emerald-700"
-                                    : "text-rose-700"
+                                    ? "text-emerald-700 dark:text-emerald-400"
+                                    : "text-rose-700 dark:text-rose-400"
                                 }`}
                               >
                                 {ap.status}
@@ -375,7 +366,7 @@ export default function AdminTeachersPage() {
                                 <button
                                   disabled={saving}
                                   onClick={() => handleToggleApproval(ap.id, "REVOKED")}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 text-rose-700 text-xs font-semibold hover:bg-rose-50 transition"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-800/60 text-rose-700 dark:text-rose-400 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
                                 >
                                   <ShieldAlert size={12} />
                                   Revoke

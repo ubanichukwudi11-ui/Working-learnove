@@ -93,7 +93,6 @@ export default function VideoLessonStudyCompanion({
   const [prompt, setPrompt] = useState("");
   const [asking, setAsking] = useState(false);
 
-  // Quick Topic Quiz state
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestionItem[]>([]);
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizGenerating, setQuizGenerating] = useState(false);
@@ -101,7 +100,6 @@ export default function VideoLessonStudyCompanion({
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizSavedScore, setQuizSavedScore] = useState<string | null>(null);
 
-  // Reset inline Nova lesson chat smoothly when switching videos
   useEffect(() => {
     setMessages([
       {
@@ -111,7 +109,6 @@ export default function VideoLessonStudyCompanion({
     ]);
   }, [activeVideo.id, activeVideo.title, subjectName, topic.title]);
 
-  // Load Topic Quiz when switching topic
   useEffect(() => {
     let cancelled = false;
     setQuizAnswers({});
@@ -268,14 +265,14 @@ export default function VideoLessonStudyCompanion({
   return (
     <div className="learnova-card overflow-hidden flex flex-col">
       {/* Companion Mode Switcher */}
-      <div className="p-2 bg-[#FAF8FF] border-b border-[#E4E1F5] grid grid-cols-4 gap-1">
+      <div className="p-2 bg-[var(--surface-lavender)] border-b border-[var(--border)] grid grid-cols-4 gap-1">
         <button
           type="button"
           onClick={() => onChangeTab("playlist")}
           className={`py-2 px-1.5 rounded-xl text-[11px] font-bold transition whitespace-nowrap ${
             activeTab === "playlist"
-              ? "bg-white text-[#0B1230] shadow-2xs border border-[#E4E1F5]"
-              : "text-[#43466E] hover:text-[#0B1230]"
+              ? "bg-[var(--surface)] text-[var(--foreground)] shadow-2xs border border-[var(--border)]"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
           }`}
         >
           Playlist ({topicVideos.length})
@@ -286,12 +283,12 @@ export default function VideoLessonStudyCompanion({
           className={`py-2 px-1.5 rounded-xl text-[11px] font-bold transition inline-flex items-center justify-center gap-1 whitespace-nowrap ${
             activeTab === "nova"
               ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white"
-              : "text-[#43466E] hover:text-[#0B1230]"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
           }`}
         >
           <Sparkles
             size={11}
-            className={activeTab === "nova" ? "text-[#22D3EE]" : "text-[#6D28D9]"}
+            className={activeTab === "nova" ? "text-[#22D3EE]" : "text-[#6D28D9] dark:text-[#C4B5FD]"}
           />
           Nova AI
         </button>
@@ -301,7 +298,7 @@ export default function VideoLessonStudyCompanion({
           className={`py-2 px-1.5 rounded-xl text-[11px] font-bold transition inline-flex items-center justify-center gap-1 whitespace-nowrap ${
             activeTab === "materials"
               ? "bg-[#4F46E5] text-white"
-              : "text-[#43466E] hover:text-[#0B1230]"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
           }`}
         >
           <Download size={11} />
@@ -312,13 +309,13 @@ export default function VideoLessonStudyCompanion({
           onClick={() => onChangeTab("quiz")}
           className={`py-2 px-1.5 rounded-xl text-[11px] font-bold transition inline-flex items-center justify-center gap-1 whitespace-nowrap ${
             activeTab === "quiz"
-              ? "bg-[#0B1230] text-white"
-              : "text-[#43466E] hover:text-[#0B1230]"
+              ? "bg-[#0B1230] dark:bg-[#1E293B] text-white"
+              : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
           }`}
         >
           <ClipboardCheck
             size={11}
-            className={activeTab === "quiz" ? "text-[#22D3EE]" : "text-[#4F46E5]"}
+            className={activeTab === "quiz" ? "text-[#22D3EE]" : "text-[#4F46E5] dark:text-[#A5B4FC]"}
           />
           Quiz
         </button>
@@ -327,10 +324,10 @@ export default function VideoLessonStudyCompanion({
       {activeTab === "playlist" ? (
         <div className="p-5 space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-[#0B1230]">
+            <h3 className="text-sm font-bold text-[var(--foreground)]">
               Lessons in This Topic ({topicVideos.length})
             </h3>
-            <p className="text-xs text-[#6B6F94] mt-0.5">
+            <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
               Switch between teacher recordings and curated explanations.
             </p>
           </div>
@@ -346,15 +343,15 @@ export default function VideoLessonStudyCompanion({
                   onClick={() => onSelectVideo(vid)}
                   className={`w-full text-left rounded-xl p-3.5 border transition flex items-start gap-3 ${
                     isActive
-                      ? "bg-[#F5F3FF] border-[#7C3AED]"
-                      : "bg-[#FAF8FF] border-[#E4E1F5] hover:border-[#C4B5FD]"
+                      ? "bg-[var(--surface-subtle)] border-[#7C3AED]"
+                      : "bg-[var(--surface-lavender)] border-[var(--border)] hover:border-[var(--border-strong)]"
                   }`}
                 >
                   <div
                     className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                       isActive
                         ? "bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white"
-                        : "bg-white border border-[#E4E1F5] text-[#0B1230]"
+                        : "bg-[var(--surface)] border border-[var(--border)] text-[var(--foreground)]"
                     }`}
                   >
                     {vid.sourceType === "YOUTUBE" ? (
@@ -364,10 +361,10 @@ export default function VideoLessonStudyCompanion({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-[#0B1230] line-clamp-2">
+                    <p className="text-xs font-bold text-[var(--foreground)] line-clamp-2">
                       {idx + 1}. {vid.title}
                     </p>
-                    <p className="text-[11px] text-[#6B6F94] mt-1 flex items-center gap-1.5">
+                    <p className="text-[11px] text-[var(--foreground-subtle)] mt-1 flex items-center gap-1.5">
                       <span>
                         {vid.sourceType === "UPLOADED_VIDEO"
                           ? "Teacher Video"
@@ -384,7 +381,9 @@ export default function VideoLessonStudyCompanion({
                       {watched && (
                         <>
                           <span aria-hidden="true">·</span>
-                          <span className="text-[#059669] font-semibold">Watched</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                            Watched
+                          </span>
                         </>
                       )}
                     </p>
@@ -395,12 +394,12 @@ export default function VideoLessonStudyCompanion({
           </div>
 
           {canSwitchTopic && (
-            <div className="pt-3 border-t border-[#E4E1F5] flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-[var(--border)] flex items-center justify-between gap-2">
               <button
                 type="button"
                 disabled={!canPrevTopic}
                 onClick={onPrevTopic}
-                className="px-3 py-2 rounded-lg border border-[#DCD7F5] text-xs font-semibold text-[#43466E] hover:bg-[#FAF8FF] disabled:opacity-40"
+                className="px-3 py-2 rounded-lg border border-[var(--border-strong)] text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] disabled:opacity-40"
               >
                 Previous Topic
               </button>
@@ -408,7 +407,7 @@ export default function VideoLessonStudyCompanion({
                 type="button"
                 disabled={!canNextTopic}
                 onClick={onNextTopic}
-                className="px-3 py-2 rounded-lg bg-[#0B1230] text-white text-xs font-semibold hover:bg-[#151A44] disabled:opacity-40"
+                className="px-3 py-2 rounded-lg bg-[#0B1230] dark:bg-[#1E293B] text-white text-xs font-semibold hover:opacity-90 disabled:opacity-40"
               >
                 Next Topic
               </button>
@@ -417,12 +416,12 @@ export default function VideoLessonStudyCompanion({
         </div>
       ) : activeTab === "nova" ? (
         <div className="flex flex-col h-[520px]">
-          <div className="px-4 py-3 border-b border-[#E4E1F5] flex items-center justify-between gap-2">
+          <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-xs font-bold text-[#0B1230] truncate">
+              <p className="text-xs font-bold text-[var(--foreground)] truncate">
                 Nova Classroom Tutor
               </p>
-              <p className="text-[11px] text-[#6B6F94] truncate">
+              <p className="text-[11px] text-[var(--foreground-subtle)] truncate">
                 Focused on {subjectName} · {topic.title}
               </p>
             </div>
@@ -430,14 +429,14 @@ export default function VideoLessonStudyCompanion({
               href={`/nova?subject=${encodeURIComponent(subjectName)}&topic=${encodeURIComponent(
                 topic.title
               )}`}
-              className="text-[11px] font-bold text-[#4F46E5] hover:text-[#6D28D9] hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
+              className="text-[11px] font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline inline-flex items-center gap-1 shrink-0 whitespace-nowrap"
             >
               Full Workspace <ExternalLink size={11} />
             </Link>
           </div>
 
           {/* Quick Prompt Starters */}
-          <div className="px-3.5 py-2.5 border-b border-[#E4E1F5] flex flex-wrap gap-1.5 bg-[#FAF8FF]">
+          <div className="px-3.5 py-2.5 border-b border-[var(--border)] flex flex-wrap gap-1.5 bg-[var(--surface-lavender)]">
             {[
               "Summarize key points",
               "Give 3 WAEC practice questions",
@@ -448,7 +447,7 @@ export default function VideoLessonStudyCompanion({
                 type="button"
                 disabled={asking}
                 onClick={() => askNova(q)}
-                className="px-2.5 py-1 rounded-lg bg-white border border-[#DCD7F5] hover:border-[#7C3AED] text-[11px] font-semibold text-[#0B1230] transition"
+                className="px-2.5 py-1 rounded-lg bg-[var(--surface)] border border-[var(--border-strong)] hover:border-[#7C3AED] text-[11px] font-semibold text-[var(--foreground)] transition"
               >
                 {q}
               </button>
@@ -463,27 +462,27 @@ export default function VideoLessonStudyCompanion({
                 className={`rounded-xl p-3 text-xs leading-relaxed space-y-2 ${
                   m.role === "user"
                     ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white ml-6"
-                    : "bg-[#FAF8FF] border border-[#E4E1F5] text-[#0B1230] mr-2"
+                    : "bg-[var(--surface-lavender)] border border-[var(--border)] text-[var(--foreground)] mr-2"
                 }`}
               >
                 {m.role === "user" ? (
                   <p className="whitespace-pre-wrap">{m.content}</p>
                 ) : (
-                  <div className="prose prose-xs max-w-none prose-headings:text-[#0B1230] prose-headings:font-bold prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
+                  <div className="prose prose-xs dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-li:my-0.5">
                     <Markdown>{m.content}</Markdown>
                   </div>
                 )}
 
                 {m.role === "assistant" && idx > 0 && (
-                  <div className="pt-1.5 border-t border-[#E4E1F5] flex items-center justify-between">
+                  <div className="pt-1.5 border-t border-[var(--border)] flex items-center justify-between">
                     <button
                       type="button"
                       onClick={() => handleSaveAiReplyToNotebook(idx, m.content)}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#4F46E5] hover:underline"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
                     >
                       {m.savedToNotebook ? (
                         <>
-                          <Check size={12} className="text-[#059669]" /> Saved to Notebook
+                          <Check size={12} className="text-emerald-600 dark:text-emerald-400" /> Saved to Notebook
                         </>
                       ) : (
                         <>
@@ -496,7 +495,7 @@ export default function VideoLessonStudyCompanion({
               </div>
             ))}
             {asking && (
-              <div className="flex items-center gap-2 text-xs text-[#6B6F94] px-1">
+              <div className="flex items-center gap-2 text-xs text-[var(--foreground-subtle)] px-1">
                 <Loader2 size={14} className="animate-spin text-[#4F46E5]" />
                 Nova AI is preparing explanation...
               </div>
@@ -509,14 +508,14 @@ export default function VideoLessonStudyCompanion({
               e.preventDefault();
               askNova(prompt);
             }}
-            className="p-3 border-t border-[#E4E1F5] bg-white flex gap-2"
+            className="p-3 border-t border-[var(--border)] bg-[var(--surface)] flex gap-2"
           >
             <input
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={asking}
               placeholder="Ask Nova about this video..."
-              className="flex-1 rounded-xl border border-[#DCD7F5] bg-[#FAF8FF] px-3 py-2 text-xs text-[#0B1230] outline-none focus:border-[#7C3AED] focus:bg-white"
+              className="learnova-input flex-1 px-3 py-2 text-xs"
             />
             <button
               type="submit"
@@ -532,10 +531,10 @@ export default function VideoLessonStudyCompanion({
         /* MATERIALS TAB */
         <div className="p-5 space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-[#0B1230]">
+            <h3 className="text-sm font-bold text-[var(--foreground)]">
               Downloadable Lesson Materials
             </h3>
-            <p className="text-xs text-[#6B6F94] mt-0.5">
+            <p className="text-xs text-[var(--foreground-subtle)] mt-0.5">
               Study guides, worksheets, and notes for offline revision.
             </p>
           </div>
@@ -544,14 +543,14 @@ export default function VideoLessonStudyCompanion({
             {attachedMaterials.map((mat) => (
               <div
                 key={mat.id}
-                className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3.5 flex items-start justify-between gap-3"
+                className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-3.5 flex items-start justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-[#0B1230] line-clamp-2 flex items-center gap-1.5">
-                    <FileText size={13} className="text-[#4F46E5] shrink-0" />
+                  <p className="text-xs font-bold text-[var(--foreground)] line-clamp-2 flex items-center gap-1.5">
+                    <FileText size={13} className="text-[#4F46E5] dark:text-[#A5B4FC] shrink-0" />
                     <span>{mat.title}</span>
                   </p>
-                  <p className="text-[11px] text-[#6B6F94] mt-1">
+                  <p className="text-[11px] text-[var(--foreground-subtle)] mt-1">
                     {mat.type} · {formatBytes(mat.fileSizeBytes)}
                   </p>
                 </div>
@@ -564,7 +563,7 @@ export default function VideoLessonStudyCompanion({
                         )}&materialId=${encodeURIComponent(mat.id)}`
                   }
                   download={mat.fileName || undefined}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B1230] hover:bg-[#151A44] text-white text-[11px] font-bold shrink-0 whitespace-nowrap"
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0B1230] dark:bg-[#1E293B] text-white text-[11px] font-bold shrink-0 whitespace-nowrap"
                 >
                   <Download size={12} /> Download
                 </a>
@@ -572,13 +571,13 @@ export default function VideoLessonStudyCompanion({
             ))}
 
             {/* Always-available generated topic summary PDF */}
-            <div className="rounded-xl border border-[#E4E1F5] bg-white p-3.5 flex items-start justify-between gap-3">
+            <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-xs font-bold text-[#0B1230] flex items-center gap-1.5">
-                  <BookOpen size={13} className="text-[#6D28D9] shrink-0" />
+                <p className="text-xs font-bold text-[var(--foreground)] flex items-center gap-1.5">
+                  <BookOpen size={13} className="text-[#6D28D9] dark:text-[#C4B5FD] shrink-0" />
                   <span>{topic.title} — Lesson Summary Sheet</span>
                 </p>
-                <p className="text-[11px] text-[#6B6F94] mt-1">
+                <p className="text-[11px] text-[var(--foreground-subtle)] mt-1">
                   Printable PDF · Topic objectives &amp; checklist
                 </p>
               </div>
@@ -592,12 +591,12 @@ export default function VideoLessonStudyCompanion({
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[#E4E1F5] flex items-center justify-between text-[11px] text-[#6B6F94]">
+          <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between text-[11px] text-[var(--foreground-subtle)]">
             <span className="inline-flex items-center gap-1">
-              <CheckCircle2 size={12} className="text-[#059669]" />
+              <CheckCircle2 size={12} className="text-emerald-600 dark:text-emerald-400" />
               Offline-ready study handouts
             </span>
-            <Link href="/notebook" className="font-bold text-[#4F46E5] hover:underline">
+            <Link href="/notebook" className="font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline">
               Open Notebook
             </Link>
           </div>
@@ -607,10 +606,10 @@ export default function VideoLessonStudyCompanion({
         <div className="p-4 sm:p-5 space-y-4 max-h-[540px] overflow-y-auto">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="text-sm font-bold text-[#0B1230]">
+              <h3 className="text-sm font-bold text-[var(--foreground)]">
                 Topic Mastery Check
               </h3>
-              <p className="text-[11px] text-[#6B6F94] mt-0.5">
+              <p className="text-[11px] text-[var(--foreground-subtle)] mt-0.5">
                 Quick WAEC/JAMB objective check on {topic.title}
               </p>
             </div>
@@ -618,19 +617,19 @@ export default function VideoLessonStudyCompanion({
               type="button"
               disabled={quizGenerating}
               onClick={handleGenerateAiQuiz}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#FAF8FF] border border-[#DCD7F5] hover:border-[#7C3AED] text-[11px] font-bold text-[#0B1230] shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[var(--surface-lavender)] border border-[var(--border-strong)] hover:border-[#7C3AED] text-[11px] font-bold text-[var(--foreground)] shrink-0"
             >
               {quizGenerating ? (
                 <Loader2 size={11} className="animate-spin text-[#4F46E5]" />
               ) : (
-                <Sparkles size={11} className="text-[#6D28D9]" />
+                <Sparkles size={11} className="text-[#6D28D9] dark:text-[#C4B5FD]" />
               )}
               {quizGenerating ? "Generating..." : "New AI Quiz"}
             </button>
           </div>
 
           {quizLoading ? (
-            <p className="text-xs text-[#6B6F94] py-6 text-center">
+            <p className="text-xs text-[var(--foreground-subtle)] py-6 text-center">
               Loading topic practice questions...
             </p>
           ) : (
@@ -638,15 +637,19 @@ export default function VideoLessonStudyCompanion({
               {quizQuestions.map((q, idx) => (
                 <div
                   key={q.id}
-                  className="rounded-xl border border-[#E4E1F5] bg-[#FAF8FF] p-3.5 space-y-2.5"
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface-lavender)] p-3.5 space-y-2.5"
                 >
                   <div className="flex items-center justify-between gap-2 text-[11px]">
-                    <span className="font-bold text-[#4F46E5]">Question {idx + 1}</span>
+                    <span className="font-bold text-[#4F46E5] dark:text-[#A5B4FC]">
+                      Question {idx + 1}
+                    </span>
                     {q.examTag && (
-                      <span className="font-semibold text-[#6B6F94]">{q.examTag}</span>
+                      <span className="font-semibold text-[var(--foreground-subtle)]">
+                        {q.examTag}
+                      </span>
                     )}
                   </div>
-                  <p className="text-xs font-bold text-[#0B1230] leading-relaxed">
+                  <p className="text-xs font-bold text-[var(--foreground)] leading-relaxed">
                     {q.prompt}
                   </p>
                   <div className="space-y-1.5">
@@ -664,13 +667,13 @@ export default function VideoLessonStudyCompanion({
                           className={`w-full text-left px-3 py-2 rounded-lg border text-[11px] font-semibold transition ${
                             quizSubmitted
                               ? isRight
-                                ? "bg-emerald-50 border-emerald-500 text-emerald-900"
+                                ? "bg-emerald-500/15 border-emerald-500 text-emerald-800 dark:text-emerald-200"
                                 : chosen
-                                ? "bg-red-50 border-red-400 text-red-700"
-                                : "bg-white border-[#E4E1F5] text-[#6B6F94]"
+                                ? "bg-rose-500/15 border-rose-400 text-rose-700 dark:text-rose-200"
+                                : "bg-[var(--surface)] border-[var(--border)] text-[var(--foreground-subtle)]"
                               : chosen
                               ? "bg-[#4F46E5] border-[#4F46E5] text-white"
-                              : "bg-white border-[#E4E1F5] text-[#0B1230] hover:border-[#7C3AED]"
+                              : "bg-[var(--surface)] border-[var(--border)] text-[var(--foreground)] hover:border-[#7C3AED]"
                           }`}
                         >
                           {opt}
@@ -679,8 +682,8 @@ export default function VideoLessonStudyCompanion({
                     })}
                   </div>
                   {quizSubmitted && (
-                    <p className="text-[11px] text-[#43466E] bg-white rounded-lg p-2 border border-[#E4E1F5]">
-                      <strong className="text-[#0B1230]">Explanation:</strong>{" "}
+                    <p className="text-[11px] text-[var(--foreground-muted)] bg-[var(--surface)] rounded-lg p-2 border border-[var(--border)]">
+                      <strong className="text-[var(--foreground)]">Explanation:</strong>{" "}
                       {q.explanation}
                     </p>
                   )}
@@ -690,9 +693,9 @@ export default function VideoLessonStudyCompanion({
           )}
 
           {quizSubmitted ? (
-            <div className="rounded-xl bg-[#F5F3FF] border border-[#DCD7F5] p-3 space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-[#0B1230]">
-                <span className="inline-flex items-center gap-1.5 text-[#4F46E5]">
+            <div className="rounded-xl bg-[var(--surface-subtle)] border border-[var(--border-strong)] p-3 space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-[var(--foreground)]">
+                <span className="inline-flex items-center gap-1.5 text-[#4F46E5] dark:text-[#A5B4FC]">
                   <Award size={15} />
                   Score: {quizCorrectCount}/{quizQuestions.length} (
                   {Math.round(
@@ -707,13 +710,13 @@ export default function VideoLessonStudyCompanion({
                     setQuizSubmitted(false);
                     setQuizSavedScore(null);
                   }}
-                  className="text-xs font-bold text-[#0B1230] underline"
+                  className="text-xs font-bold text-[var(--foreground)] underline"
                 >
                   Retry Quiz
                 </button>
               </div>
               {quizSavedScore && (
-                <p className="text-[11px] text-[#059669] font-medium">
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
                   {quizSavedScore}
                 </p>
               )}

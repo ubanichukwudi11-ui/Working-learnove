@@ -10,35 +10,37 @@ import {
   ClipboardList,
   NotebookPen,
   Sparkles,
-  User,
+  Award,
+  Bell,
   GraduationCap,
 } from "lucide-react";
 import AppSidebarShell, { type SidebarNavGroup } from "./AppSidebarShell";
 
 const groups: SidebarNavGroup[] = [
   {
-    label: "Overview",
+    label: "Home & Schedule",
     items: [
-      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, exact: true },
+      { name: "Home", href: "/dashboard", icon: LayoutDashboard, exact: true },
+      { name: "Live Classrooms", href: "/live-classes", icon: Video },
       { name: "Timetable", href: "/timetable", icon: CalendarDays },
-      { name: "Live Classes", href: "/live-classes", icon: Video },
     ],
   },
   {
-    label: "Learning",
+    label: "My Learning",
     items: [
       { name: "Subjects", href: "/subjects", icon: BookOpen },
       { name: "Video Lessons", href: "/videos", icon: PlaySquare },
-      { name: "Assignments", href: "/assignments", icon: ClipboardList },
+      { name: "Practice & Exams", href: "/assignments", icon: ClipboardList },
       { name: "Notebook", href: "/notebook", icon: NotebookPen },
     ],
   },
   {
-    label: "Study & Account",
+    label: "Tutor & Progress",
     items: [
       { name: "Nova AI", href: "/nova", icon: Sparkles },
+      { name: "Achievements", href: "/analytics", icon: Award },
+      { name: "Notifications", href: "/notifications", icon: Bell },
       { name: "Subscriptions", href: "/subscriptions", icon: CreditCard },
-      { name: "Profile", href: "/profile", icon: User },
     ],
   },
 ];
@@ -50,6 +52,7 @@ export default function StudentSidebar() {
       workspaceLabel="Student Portal"
       brandIcon={GraduationCap}
       accentTextColor="text-[#22D3EE]"
+      settingsHref="/profile"
       groups={groups}
     />
   );

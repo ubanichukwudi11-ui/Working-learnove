@@ -18,10 +18,14 @@ import "@fontsource/source-serif-4/600.css";
 import "@fontsource/source-serif-4/600-italic.css";
 import "@fontsource/source-serif-4/700.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import "./globals.css";
 
 export const viewport: Viewport = {
-  themeColor: "#070D24",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F5F4FB" },
+    { media: "(prefers-color-scheme: dark)", color: "#070B1A" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
@@ -55,9 +59,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="landing-body bg-[#F5F4FB] text-[#0B1230] antialiased">
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="landing-body bg-[var(--background)] text-[var(--foreground)] antialiased">
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
