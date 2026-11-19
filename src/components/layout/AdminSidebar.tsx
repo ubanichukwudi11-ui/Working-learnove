@@ -55,7 +55,7 @@ export default function AdminSidebar() {
       workspaceLabel="School Admin"
       brandIcon={Shield}
       accentTextColor="text-[#C4B5FD]"
-      settingsHref="/profile"
+      settingsHref="/settings"
       groups={groups}
     />
   );

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@backend/services/serverAuth";
+import { enforceActiveTeacher, requireApiAuth } from "@backend/services/serverAuth";
 import {
   getVideoLessonsOverview,
   handleVideoLessonsMutation,
@@ -10,6 +10,9 @@ export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);
   if (auth.errorResponse) return auth.errorResponse;
 
+  const teacherGate = enforceActiveTeacher(auth.user);
+  if (teacherGate) return teacherGate;
+
   const overview = await getVideoLessonsOverview(auth.user);
   return NextResponse.json(overview);
 }
@@ -17,6 +20,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const auth = await requireApiAuth(req);
   if (auth.errorResponse) return auth.errorResponse;
+
+  const teacherGate = enforceActiveTeacher(auth.user);
+  if (teacherGate) return teacherGate;
 
   try {
     const body = await req.json();

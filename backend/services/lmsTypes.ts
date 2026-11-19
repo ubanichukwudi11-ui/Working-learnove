@@ -5,10 +5,20 @@ export type UserAccountStatus = "ACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
 export type TeacherApplicationStatus =
   | "DRAFT"
   | "PENDING_REVIEW"
+  | "UNDER_REVIEW"
   | "APPROVED"
   | "REJECTED"
   | "RESUBMISSION_REQUIRED"
   | "SUSPENDED";
+
+export interface TeacherApplicationHistoryEntry {
+  status: TeacherApplicationStatus | string;
+  actorName: string;
+  actorRole: string;
+  note?: string;
+  internalNote?: string;
+  at: string;
+}
 
 export type StudentAccessStatus =
   | "REGISTERED"
@@ -93,6 +103,8 @@ export interface TeacherSubjectApplication {
   };
   status: TeacherApplicationStatus;
   adminExplanation?: string;
+  internalNotes?: string;
+  statusHistory?: TeacherApplicationHistoryEntry[];
   reviewedBy?: string;
   reviewedAt?: string;
   createdAt: string;

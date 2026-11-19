@@ -52,7 +52,7 @@ export default function StudentSidebar() {
       workspaceLabel="Student Portal"
       brandIcon={GraduationCap}
       accentTextColor="text-[#22D3EE]"
-      settingsHref="/profile"
+      settingsHref="/settings"
       groups={groups}
     />
   );

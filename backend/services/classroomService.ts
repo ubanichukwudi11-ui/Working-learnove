@@ -333,6 +333,12 @@ export async function handleClassroomMutation(
       }
 
       case "END_LIVE_CLASSROOM": {
+        if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+          throw new ClassroomServiceError(
+            "Your teacher account must be approved before managing live classrooms.",
+            403
+          );
+        }
         const classroomId = String(body.classroomId || "");
         const room = state.classrooms.find((c) => c.id === classroomId);
         if (!room) throw new Error("Classroom not found.");
@@ -383,6 +389,12 @@ export async function handleClassroomMutation(
       }
 
       case "SAVE_ATTENDANCE": {
+        if (user.role === "TEACHER" && user.status !== "ACTIVE") {
+          throw new ClassroomServiceError(
+            "Your teacher account must be approved before recording attendance.",
+            403
+          );
+        }
         const classroomId = String(body.classroomId || "");
         const entries: {
           studentUserId: string;

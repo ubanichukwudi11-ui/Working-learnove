@@ -229,6 +229,35 @@ export async function requireApiAuth(
   return { user, errorResponse: null };
 }
 
+export function isTeacherAccountVerified(user: Pick<AuthenticatedSessionUser, "role" | "status">): boolean {
+  if (user.role !== "TEACHER") return true;
+  return user.status === "ACTIVE";
+}
+
+export function getTeacherUnverifiedMessage(status: AuthenticatedSessionUser["status"]): string {
+  if (status === "SUSPENDED") {
+    return "Your educator account is currently suspended. Teaching and live classroom access remain locked.";
+  }
+  if (status === "REJECTED") {
+    return "Your educator application was not approved. Open Application Status for feedback or contact school administration.";
+  }
+  return "Your educator account is awaiting administrator verification and approval before teaching workspaces unlock.";
+}
+
+export function enforceActiveTeacher(
+  user: AuthenticatedSessionUser
+): NextResponse | null {
+  if (isTeacherAccountVerified(user)) return null;
+  return NextResponse.json(
+    {
+      error: getTeacherUnverifiedMessage(user.status),
+      code: "TEACHER_VERIFICATION_REQUIRED",
+      accountStatus: user.status,
+    },
+    { status: 403 }
+  );
+}
+
 export async function registerLearnovaAccount(
   body: Record<string, unknown>,
   appOrigin?: string
@@ -416,20 +445,44 @@ export async function registerLearnovaAccount(
         });
       });
     } else if (safeRole === "TEACHER") {
-      await supabase.from("teacher_profiles").upsert({
+      const cleanBio = typeof bio === "string" ? bio.trim() : "";
+      const uploadedDocsCount = [
+        profilePhoto,
+        certificate,
+        degreeCertificate,
+        governmentId,
+        cv,
+      ].filter(Boolean).length;
+      const verificationScore = Math.min(100, uploadedDocsCount * 20);
+
+      const teacherProfilePayload = {
         user_id: authUser.id,
         subject: subject || "General",
         qualification: qualification || null,
         institution: institution || null,
         experience: experience || null,
         license_number: licenseNumber || null,
+        bio: cleanBio || null,
         profile_photo: profilePhoto || null,
         teaching_certificate: certificate || null,
         degree_certificate: degreeCertificate || null,
         government_id: governmentId || null,
         cv: cv || null,
-        verification_score: 0,
-      });
+        verification_score: verificationScore,
+      };
+
+      const { error: tpErr } = await supabase
+        .from("teacher_profiles")
+        .upsert(teacherProfilePayload, { onConflict: "user_id" });
+      if (tpErr) {
+        const fallbackPayload = { ...teacherProfilePayload } as Record<string, unknown>;
+        delete fallbackPayload.bio;
+        await supabase
+          .from("teacher_profiles")
+          .upsert(fallbackPayload, { onConflict: "user_id" });
+      }
+
+      const nowIso = new Date().toISOString();
 
       await mutateLmsState((lms) => {
         const appsInput =
@@ -447,10 +500,22 @@ export async function registerLearnovaAccount(
                 },
               ];
 
+        const appliedSubjectNames: string[] = [];
+
         for (const item of appsInput) {
           const subObj =
-            lms.subjects.find((s) => s.id === item.subjectId) ||
-            lms.subjects[0];
+            lms.subjects.find(
+              (s) =>
+                s.id === item.subjectId ||
+                s.name.toLowerCase() === String(item.subjectId || "").trim().toLowerCase()
+            ) || lms.subjects[0];
+          const requestedLevels =
+            Array.isArray(item.classLevelIds) && item.classLevelIds.length > 0
+              ? item.classLevelIds.map(String)
+              : subObj.classLevelIds;
+
+          appliedSubjectNames.push(subObj.name);
+
           lms.teacherApplications.unshift({
             id: `tapp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
             teacherUserId: authUser.id,
@@ -458,15 +523,12 @@ export async function registerLearnovaAccount(
             teacherEmail: authUser.email || normalizedEmail,
             subjectId: subObj.id,
             subjectName: subObj.name,
-            classLevelIds:
-              Array.isArray(item.classLevelIds) && item.classLevelIds.length > 0
-                ? item.classLevelIds
-                : subObj.classLevelIds,
+            classLevelIds: requestedLevels,
             qualification: qualification || "Pending specification",
             institution: institution || "Not provided",
             experience: experience || "Not provided",
             licenseNumber: licenseNumber || "",
-            bio: bio || "",
+            bio: cleanBio,
             documentUrls: {
               profilePhoto: profilePhoto || undefined,
               teachingCertificate: certificate || undefined,
@@ -475,8 +537,17 @@ export async function registerLearnovaAccount(
               cv: cv || undefined,
             },
             status: "PENDING_REVIEW",
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            statusHistory: [
+              {
+                status: "PENDING_REVIEW",
+                actorName: resolvedFullName,
+                actorRole: "TEACHER",
+                note: `Submitted educator application for ${subObj.name}.`,
+                at: nowIso,
+              },
+            ],
+            createdAt: nowIso,
+            updatedAt: nowIso,
           });
         }
 
@@ -485,8 +556,7 @@ export async function registerLearnovaAccount(
           recipientRole: "TEACHER",
           category: "TEACHER_APPLICATION",
           title: "Teacher Application Received",
-          message:
-            "Your subject qualification application has been received and queued for School Admin review.",
+          message: `Your application covering ${appliedSubjectNames.join(", ")} has been received and queued for School Admin verification.`,
           href: "/teacher/applications",
         });
 
@@ -495,7 +565,7 @@ export async function registerLearnovaAccount(
           recipientRole: "ALL_ADMINS",
           category: "TEACHER_APPLICATION",
           title: `New Teacher Application: ${resolvedFullName}`,
-          message: `${resolvedFullName} applied to teach and requires approval in the Teacher Approval Centre.`,
+          message: `${resolvedFullName} applied to teach ${appliedSubjectNames.join(", ")} and awaits review in the Teacher Verification Centre.`,
           href: `/admin/teachers/${authUser.id}`,
         });
 
@@ -506,6 +576,7 @@ export async function registerLearnovaAccount(
           action: "TEACHER_APPLICATION_SUBMITTED",
           entityType: "teacher_application",
           entityId: authUser.id,
+          metadata: { subjects: appliedSubjectNames, verificationScore },
         });
       });
     } else if (safeRole === "PARENT") {
@@ -669,6 +740,9 @@ export async function loginLearnovaAccount(input: {
     institution: teacherData?.institution,
     experience: teacherData?.experience,
     licenseNumber: teacherData?.license_number,
+    bio: teacherData?.bio,
+    verificationScore: teacherData?.verification_score,
+    adminNotes: teacherData?.admin_notes,
     classLevel: completion.classLevel ?? studentData?.class_level,
     age: completion.age ?? studentData?.age,
     schoolName: completion.schoolName,

@@ -35,7 +35,7 @@ export default function ParentSidebar() {
       workspaceLabel="Parent Portal"
       brandIcon={HeartHandshake}
       accentTextColor="text-[#22D3EE]"
-      settingsHref="/profile"
+      settingsHref="/settings"
       groups={groups}
     />
   );

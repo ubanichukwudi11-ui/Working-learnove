@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@backend/services/serverAuth";
+import { enforceActiveTeacher, requireApiAuth } from "@backend/services/serverAuth";
 import {
   getTimetableOverview,
   handleTimetableMutation,
@@ -8,6 +8,9 @@ import {
 export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);
   if (auth.errorResponse) return auth.errorResponse;
+
+  const teacherGate = enforceActiveTeacher(auth.user);
+  if (teacherGate) return teacherGate;
 
   const overview = await getTimetableOverview(auth.user);
   return NextResponse.json(overview);

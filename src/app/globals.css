@@ -223,6 +223,170 @@
     background-color: #0f162d;
     color: #eef1ff;
   }
+
+  /* =========================================================
+     Restrained Liquid Glass Surface System
+     (Selective depth for navigation, overlays, & quick panels)
+     ========================================================= */
+  .learnova-glass-header {
+    background-color: rgba(255, 255, 255, 0.92);
+    border-color: rgba(212, 206, 240, 0.85);
+    box-shadow:
+      0 4px 20px -10px rgba(11, 18, 48, 0.1),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .dark .learnova-glass-header {
+    background-color: rgba(11, 18, 44, 0.88);
+    border-color: rgba(148, 163, 224, 0.18);
+    box-shadow:
+      0 8px 26px -12px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  .learnova-glass-sidebar {
+    background: linear-gradient(
+      180deg,
+      rgba(7, 13, 36, 0.96) 0%,
+      rgba(13, 20, 56, 0.95) 60%,
+      rgba(19, 22, 62, 0.96) 100%
+    );
+    box-shadow:
+      4px 0 28px -14px rgba(7, 13, 36, 0.55),
+      inset -1px 0 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .learnova-glass-dropdown {
+    background-color: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(212, 206, 240, 0.9);
+    box-shadow:
+      0 18px 42px -14px rgba(11, 18, 48, 0.2),
+      0 4px 12px -4px rgba(79, 70, 229, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  }
+
+  .dark .learnova-glass-dropdown {
+    background-color: rgba(15, 22, 45, 0.94);
+    border: 1px solid rgba(167, 139, 250, 0.24);
+    box-shadow:
+      0 22px 48px -12px rgba(0, 0, 0, 0.72),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .learnova-glass-modal {
+    background-color: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(212, 206, 240, 0.92);
+    box-shadow:
+      0 24px 56px -14px rgba(11, 18, 48, 0.26),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
+
+  .dark .learnova-glass-modal {
+    background-color: rgba(15, 22, 45, 0.95);
+    border: 1px solid rgba(167, 139, 250, 0.26);
+    box-shadow:
+      0 28px 64px -16px rgba(0, 0, 0, 0.78),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  }
+
+  .learnova-glass-panel {
+    background: linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.86) 0%,
+      rgba(250, 248, 255, 0.78) 100%
+    );
+    border: 1px solid rgba(212, 206, 240, 0.82);
+    box-shadow:
+      0 10px 30px -14px rgba(79, 70, 229, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    border-radius: 1.25rem;
+  }
+
+  .dark .learnova-glass-panel {
+    background: linear-gradient(
+      145deg,
+      rgba(21, 30, 59, 0.84) 0%,
+      rgba(15, 22, 45, 0.8) 100%
+    );
+    border: 1px solid rgba(167, 139, 250, 0.22);
+    box-shadow:
+      0 14px 34px -16px rgba(0, 0, 0, 0.62),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .learnova-glass-header {
+      background-color: rgba(255, 255, 255, 0.74);
+      -webkit-backdrop-filter: blur(16px) saturate(165%);
+      backdrop-filter: blur(16px) saturate(165%);
+    }
+
+    .dark .learnova-glass-header {
+      background-color: rgba(11, 18, 44, 0.72);
+    }
+
+    .learnova-glass-sidebar {
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      backdrop-filter: blur(16px) saturate(140%);
+    }
+
+    .learnova-glass-dropdown {
+      background-color: rgba(255, 255, 255, 0.84);
+      -webkit-backdrop-filter: blur(20px) saturate(175%);
+      backdrop-filter: blur(20px) saturate(175%);
+    }
+
+    .dark .learnova-glass-dropdown {
+      background-color: rgba(15, 22, 45, 0.84);
+    }
+
+    .learnova-glass-modal {
+      background-color: rgba(255, 255, 255, 0.88);
+      -webkit-backdrop-filter: blur(20px) saturate(170%);
+      backdrop-filter: blur(20px) saturate(170%);
+    }
+
+    .dark .learnova-glass-modal {
+      background-color: rgba(15, 22, 45, 0.86);
+    }
+
+    .learnova-glass-panel {
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      backdrop-filter: blur(14px) saturate(150%);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .learnova-glass-header,
+    .learnova-glass-sidebar,
+    .learnova-glass-panel {
+      -webkit-backdrop-filter: blur(10px) saturate(135%);
+      backdrop-filter: blur(10px) saturate(135%);
+    }
+  }
+}
+
+html.learnova-high-contrast {
+  --border: #b9b1df;
+  --border-strong: #6d63b8;
+  --foreground-muted: #24274b;
+  --foreground-subtle: #3c406b;
+}
+
+html.dark.learnova-high-contrast {
+  --border: rgba(196, 181, 253, 0.36);
+  --border-strong: rgba(196, 181, 253, 0.58);
+  --foreground-muted: #e2e6ff;
+  --foreground-subtle: #c5cbe8;
+}
+
+html.learnova-reduced-motion *,
+html.learnova-reduced-motion *::before,
+html.learnova-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

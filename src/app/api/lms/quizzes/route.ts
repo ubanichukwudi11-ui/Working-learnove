@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireApiAuth } from "@backend/services/serverAuth";
+import { enforceActiveTeacher, requireApiAuth } from "@backend/services/serverAuth";
 import { loadLmsState, mutateLmsState } from "@backend/services/lmsDb";
 import {
   generateTopicQuizWithGemini,
@@ -10,6 +10,9 @@ import {
 export async function GET(req: NextRequest) {
   const { user, errorResponse } = await requireApiAuth(req);
   if (errorResponse || !user) return errorResponse;
+
+  const teacherGate = enforceActiveTeacher(user);
+  if (teacherGate) return teacherGate;
 
   const topicId = req.nextUrl.searchParams.get("topicId")?.trim();
   const subjectId = req.nextUrl.searchParams.get("subjectId")?.trim();
@@ -30,6 +33,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const { user, errorResponse } = await requireApiAuth(req);
   if (errorResponse || !user) return errorResponse;
+
+  const teacherGate = enforceActiveTeacher(user);
+  if (teacherGate) return teacherGate;
 
   const body = await req.json();
   const action = String(body.action || "").trim();

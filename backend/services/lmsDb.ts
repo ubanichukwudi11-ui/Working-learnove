@@ -28,6 +28,10 @@ export interface DirectoryUser {
   experience?: string;
   licenseNumber?: string;
   subject?: string;
+  bio?: string;
+  adminNotes?: string;
+  verificationScore?: number;
+  address?: string;
   profilePhoto?: string;
   teachingCertificate?: string;
   degreeCertificate?: string;
@@ -268,6 +272,11 @@ export async function fetchDirectoryUsers(): Promise<DirectoryUser[]> {
       institution: t?.institution || undefined,
       experience: t?.experience || undefined,
       licenseNumber: t?.license_number || undefined,
+      bio: t?.bio || undefined,
+      adminNotes: t?.admin_notes || undefined,
+      verificationScore:
+        typeof t?.verification_score === "number" ? t.verification_score : undefined,
+      address: p.address || undefined,
       profilePhoto: t?.profile_photo || undefined,
       teachingCertificate: t?.teaching_certificate || undefined,
       degreeCertificate: t?.degree_certificate || undefined,

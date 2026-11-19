@@ -47,7 +47,7 @@ export default function ConfirmDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl space-y-4"
+        className="w-full max-w-md rounded-2xl learnova-glass-modal p-6 space-y-4"
       >
         <div className="flex items-start justify-between gap-3">
           <h3 id="confirm-dialog-title" className="landing-display text-lg font-bold text-[var(--foreground)]">

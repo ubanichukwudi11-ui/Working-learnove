@@ -16,21 +16,36 @@ import {
   ClipboardCheck,
   MoreHorizontal,
   PlaySquare,
+  FileBadge2,
+  Bell,
+  Settings,
 } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 
-export default function MobileBottomNav({ role = "STUDENT" }: { role?: string }) {
+export default function MobileBottomNav({
+  role = "STUDENT",
+  userStatus = "ACTIVE",
+}: {
+  role?: string;
+  userStatus?: string;
+}) {
   const pathname = usePathname();
   const { toggleMobile, mobileOpen } = useSidebar();
 
   const items =
     role === "TEACHER"
-      ? [
-          { name: "Home", href: "/teacher", icon: LayoutDashboard, exact: true },
-          { name: "Classes", href: "/teacher/classes", icon: BookOpen },
-          { name: "Videos", href: "/teacher/videos", icon: PlaySquare },
-          { name: "Students", href: "/teacher/students", icon: Users },
-        ]
+      ? userStatus !== "ACTIVE"
+        ? [
+            { name: "Status", href: "/teacher/applications", icon: FileBadge2, exact: false },
+            { name: "Alerts", href: "/notifications", icon: Bell, exact: false },
+            { name: "Settings", href: "/settings", icon: Settings, exact: false },
+          ]
+        : [
+            { name: "Home", href: "/teacher", icon: LayoutDashboard, exact: true },
+            { name: "Classes", href: "/teacher/classes", icon: BookOpen },
+            { name: "Videos", href: "/teacher/videos", icon: PlaySquare },
+            { name: "Students", href: "/teacher/students", icon: Users },
+          ]
       : role === "SUPER_ADMIN"
       ? [
           { name: "Console", href: "/super-admin", icon: ShieldCheck, exact: true },
@@ -62,7 +77,7 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
   return (
     <nav
       aria-label="Mobile quick navigation"
-      className="fixed bottom-0 left-0 right-0 md:hidden min-h-16 bg-[var(--surface)]/95 backdrop-blur-md border-t border-[var(--border)] z-50 flex items-center justify-around px-1.5 pb-[env(safe-area-inset-bottom)]"
+      className="fixed bottom-0 left-0 right-0 md:hidden min-h-16 learnova-glass-header border-t z-50 flex items-center justify-around px-1.5 pb-[env(safe-area-inset-bottom)]"
     >
       {items.map((item) => {
         const Icon = item.icon;

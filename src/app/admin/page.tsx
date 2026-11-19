@@ -54,7 +54,10 @@ export default function AdminDashboardPage() {
 
       const apps = appJson.applications || [];
       const pendingApps = apps.filter(
-        (a: any) => a.status === "PENDING_REVIEW" || a.status === "RESUBMISSION_REQUIRED"
+        (a: any) =>
+          a.status === "PENDING_REVIEW" ||
+          a.status === "UNDER_REVIEW" ||
+          a.status === "RESUBMISSION_REQUIRED"
       );
       const approvals = (appJson.approvals || []).filter((a: any) => a.status === "APPROVED");
 
