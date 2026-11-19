@@ -163,7 +163,7 @@ function getRoleRoutesForSearch(role: string): SearchCandidate[] {
 export default function AppNavbar({ user, onLogout, mode = "dashboard" }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const { collapsed, toggleMobile } = useSidebar();
+  const { mobileOpen, toggleMobile } = useSidebar();
   const [query, setQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -374,9 +374,7 @@ export default function AppNavbar({ user, onLogout, mode = "dashboard" }: Props)
 
   return (
     <header
-      className={`fixed top-0 right-0 left-0 ${heightClass} z-40 learnova-glass-header flex items-center justify-between gap-2.5 sm:gap-4 px-4 sm:px-6 lg:px-8 transition-[left,height,background-color] duration-200 ease-out ${
-        collapsed ? "md:left-[76px]" : "md:left-64"
-      }`}
+      className={`fixed top-0 right-0 left-0 md:left-[76px] ${heightClass} z-40 learnova-glass-header flex items-center justify-between gap-2.5 sm:gap-4 px-4 sm:px-6 lg:px-8 transition-[height,background-color] duration-200 ease-out`}
     >
       {/* Left: Context-Aware Header Lead */}
       {isDashboard ? (
@@ -387,7 +385,9 @@ export default function AppNavbar({ user, onLogout, mode = "dashboard" }: Props)
               type="button"
               onClick={toggleMobile}
               aria-label="Open navigation menu"
-              className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
+              aria-expanded={mobileOpen}
+              aria-controls="learnova-mobile-drawer"
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
             >
               <Menu size={18} />
             </button>
@@ -484,7 +484,9 @@ export default function AppNavbar({ user, onLogout, mode = "dashboard" }: Props)
             type="button"
             onClick={toggleMobile}
             aria-label="Open navigation menu"
-            className="md:hidden p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)]/80 text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition shrink-0"
+            aria-expanded={mobileOpen}
+            aria-controls="learnova-mobile-drawer"
+            className="md:hidden p-1.5 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface)]/80 text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition shrink-0"
           >
             <Menu size={16} />
           </button>

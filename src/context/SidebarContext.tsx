@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
   ReactNode,
 } from "react";
@@ -25,47 +24,13 @@ type SidebarProviderProps = {
   children: ReactNode;
 };
 
-const STORAGE_KEY = "learnova-sidebar";
-
 export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [collapsed, setCollapsedState] = useState(false);
+  // Desktop sidebar rests collapsed by default and expands on hover/focus
+  const [collapsed, setCollapsed] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    try {
-      const savedState = localStorage.getItem(STORAGE_KEY);
-      if (savedState === "collapsed" || savedState === "true") {
-        setCollapsedState(true);
-      } else if (savedState === "expanded" || savedState === "false") {
-        setCollapsedState(false);
-      } else if (window.innerWidth >= 768 && window.innerWidth < 1024) {
-        // Default to compact icon rail on tablet viewports until user expands
-        setCollapsedState(true);
-      }
-    } catch {
-      // Ignore storage access failures
-    }
-  }, []);
-
-  const setCollapsed = useCallback((value: boolean) => {
-    setCollapsedState(value);
-    try {
-      localStorage.setItem(STORAGE_KEY, value ? "collapsed" : "expanded");
-    } catch {
-      // Ignore storage failures
-    }
-  }, []);
-
   const toggleSidebar = useCallback(() => {
-    setCollapsedState((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(STORAGE_KEY, next ? "collapsed" : "expanded");
-      } catch {
-        // Ignore storage failures
-      }
-      return next;
-    });
+    setCollapsed((prev) => !prev);
   }, []);
 
   const toggleMobile = useCallback(() => {

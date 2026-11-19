@@ -1,15 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  PanelLeftClose,
-  PanelLeftOpen,
-  Settings,
-  X,
-  type LucideIcon,
-} from "lucide-react";
+import { Settings, X, type LucideIcon } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
 
 export type SidebarNavItem = {
@@ -33,33 +27,106 @@ type AppSidebarShellProps = {
   settingsHref?: string;
 };
 
+const COLLAPSE_DELAY_MS = 180;
+
 export default function AppSidebarShell({
   brandHref,
   workspaceLabel,
   brandIcon: BrandIcon,
   groups,
   accentTextColor = "text-[#22D3EE]",
-  settingsHref = "/profile",
+  settingsHref = "/settings",
 }: AppSidebarShellProps) {
   const pathname = usePathname();
-  const { collapsed, toggleSidebar, mobileOpen, closeMobile } = useSidebar();
+  const { mobileOpen, closeMobile } = useSidebar();
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocusWithin, setIsFocusWithin] = useState(false);
+  const [dismissedByEscape, setDismissedByEscape] = useState(false);
   const [hoveredTip, setHoveredTip] = useState<{
     label: string;
     top: number;
   } | null>(null);
 
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mobileCloseBtnRef = useRef<HTMLButtonElement>(null);
+
+  const isExpanded = !dismissedByEscape && (isHovered || isFocusWithin);
+
+  const clearCollapseTimer = () => {
+    if (collapseTimerRef.current) {
+      clearTimeout(collapseTimerRef.current);
+      collapseTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      clearCollapseTimer();
+    };
+  }, []);
+
   useEffect(() => {
     closeMobile();
+    setHoveredTip(null);
   }, [pathname, closeMobile]);
 
   useEffect(() => {
     if (!mobileOpen) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    mobileCloseBtnRef.current?.focus();
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeMobile();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [mobileOpen, closeMobile]);
+
+  const handleDesktopMouseEnter = () => {
+    clearCollapseTimer();
+    setDismissedByEscape(false);
+    setIsHovered(true);
+    setHoveredTip(null);
+  };
+
+  const handleDesktopMouseLeave = () => {
+    clearCollapseTimer();
+    setHoveredTip(null);
+    collapseTimerRef.current = setTimeout(() => {
+      setIsHovered(false);
+      setDismissedByEscape(false);
+    }, COLLAPSE_DELAY_MS);
+  };
+
+  const handleDesktopFocus = () => {
+    clearCollapseTimer();
+    setDismissedByEscape(false);
+    setIsFocusWithin(true);
+  };
+
+  const handleDesktopBlur = (e: React.FocusEvent<HTMLElement>) => {
+    if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+    clearCollapseTimer();
+    collapseTimerRef.current = setTimeout(() => {
+      setIsFocusWithin(false);
+      setDismissedByEscape(false);
+    }, 120);
+  };
+
+  const handleDesktopKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Escape" && isExpanded) {
+      e.stopPropagation();
+      setDismissedByEscape(true);
+      setHoveredTip(null);
+    }
+  };
 
   const isRouteActive = (item: SidebarNavItem) =>
     item.exact
@@ -69,82 +136,87 @@ export default function AppSidebarShell({
   const isSettingsActive =
     pathname === settingsHref || pathname.startsWith(settingsHref + "/");
 
+  const showCollapsedTip = (label: string, el: HTMLElement) => {
+    if (isExpanded) return;
+    const rect = el.getBoundingClientRect();
+    setHoveredTip({
+      label,
+      top: rect.top + rect.height / 2,
+    });
+  };
+
   return (
     <>
-      {/* Desktop & Tablet Collapsible Sidebar */}
+      {/* Desktop Supabase-Style Hover-Expanding Liquid Glass Sidebar */}
       <aside
         aria-label={`${workspaceLabel} Navigation`}
-        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 learnova-glass-sidebar text-white flex-col transition-[width] duration-200 ease-out ${
-          collapsed ? "w-[76px]" : "w-64"
+        onMouseEnter={handleDesktopMouseEnter}
+        onMouseLeave={handleDesktopMouseLeave}
+        onFocus={handleDesktopFocus}
+        onBlur={handleDesktopBlur}
+        onKeyDown={handleDesktopKeyDown}
+        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 text-white flex-col overflow-hidden transition-[width,box-shadow,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] learnova-glass-sidebar ${
+          isExpanded ? "w-64 learnova-glass-sidebar-expanded" : "w-[76px]"
         }`}
       >
-        {/* Brand + Collapse Header */}
-        <div
-          className={`h-16 flex items-center border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/15 to-transparent ${
-            collapsed ? "justify-center px-2" : "justify-between px-4"
-          }`}
-        >
+        {/* Brand Header (Fixed 52px icon anchor keeps logo rock-steady) */}
+        <div className="h-16 shrink-0 flex items-center px-3 border-b border-white/10 bg-gradient-to-r from-[#4F46E5]/18 via-[#7C3AED]/8 to-transparent">
           <Link
             href={brandHref}
-            className="flex items-center gap-3 min-w-0"
-            title={collapsed ? `Learnova · ${workspaceLabel}` : undefined}
+            aria-label={`Learnova · ${workspaceLabel}`}
+            title={!isExpanded ? `Learnova · ${workspaceLabel}` : undefined}
+            className="flex items-center w-full h-11 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/20 flex items-center justify-center text-white shadow-md shadow-[#4F46E5]/25 shrink-0">
-              <BrandIcon size={19} />
-            </div>
-            {!collapsed && (
-              <div className="leading-tight min-w-0">
-                <span className="landing-display font-extrabold text-base tracking-tight text-white block truncate">
-                  Learnova
-                </span>
-                <span className={`block text-[11px] font-semibold truncate ${accentTextColor}`}>
-                  {workspaceLabel}
-                </span>
-              </div>
-            )}
-          </Link>
-
-          {!collapsed && (
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label="Collapse sidebar"
-              title="Collapse sidebar"
-              className="p-1.5 rounded-lg text-indigo-200/75 hover:text-white hover:bg-white/10 transition shrink-0"
+            <span className="w-[52px] h-11 shrink-0 flex items-center justify-center">
+              <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/25 flex items-center justify-center text-white shadow-md shadow-[#4F46E5]/30">
+                <BrandIcon size={19} />
+              </span>
+            </span>
+            <span
+              aria-hidden={!isExpanded}
+              className={`leading-tight min-w-0 pr-2 transition-all duration-150 ${
+                isExpanded
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-1 pointer-events-none"
+              }`}
             >
-              <PanelLeftClose size={17} />
-            </button>
-          )}
+              <span className="landing-display font-extrabold text-base tracking-tight text-white block whitespace-nowrap truncate">
+                Learnova
+              </span>
+              <span
+                className={`block text-[11px] font-semibold whitespace-nowrap truncate ${accentTextColor}`}
+              >
+                {workspaceLabel}
+              </span>
+            </span>
+          </Link>
         </div>
 
-        {/* Expand control when collapsed */}
-        {collapsed && (
-          <div className="px-2 pt-3 pb-1 flex justify-center shrink-0">
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              aria-label="Expand sidebar"
-              title="Expand sidebar"
-              className="w-10 h-9 rounded-xl flex items-center justify-center text-indigo-200/80 hover:text-white hover:bg-white/10 border border-white/10 transition"
-            >
-              <PanelLeftOpen size={17} />
-            </button>
-          </div>
-        )}
-
-        {/* Grouped Navigation Links */}
-        <nav className="flex-1 py-4 px-3 space-y-5 overflow-y-auto sidebar-scroll">
+        {/* Grouped Navigation Links (Fixed group slot heights prevent vertical shift) */}
+        <nav
+          aria-label={`${workspaceLabel} links`}
+          className="flex-1 py-3 px-3 space-y-2.5 overflow-y-auto overflow-x-hidden sidebar-scroll"
+        >
           {groups.map((group, groupIdx) => (
             <div key={group.label} className="space-y-1">
-              {!collapsed ? (
-                <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-indigo-300/55">
+              <div className="relative h-6 flex items-center">
+                {groupIdx > 0 && (
+                  <div
+                    aria-hidden="true"
+                    className={`ml-[12px] h-px w-7 bg-white/14 transition-opacity duration-150 ${
+                      isExpanded ? "opacity-0" : "opacity-100"
+                    }`}
+                  />
+                )}
+                <p
+                  aria-hidden={!isExpanded}
+                  className={`absolute inset-x-3 text-[11px] font-semibold tracking-wide text-indigo-200/60 whitespace-nowrap truncate transition-opacity duration-150 ${
+                    isExpanded ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+                >
                   {group.label}
                 </p>
-              ) : (
-                groupIdx > 0 && (
-                  <div className="mx-3 my-2 h-px bg-white/10" aria-hidden="true" />
-                )
-              )}
+              </div>
 
               <div className="space-y-1">
                 {group.items.map((item) => {
@@ -156,38 +228,36 @@ export default function AppSidebarShell({
                       key={item.href}
                       href={item.href}
                       aria-label={item.name}
-                      onMouseEnter={(e) => {
-                        if (!collapsed) return;
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        setHoveredTip({
-                          label: item.name,
-                          top: rect.top + rect.height / 2,
-                        });
-                      }}
+                      aria-current={active ? "page" : undefined}
+                      title={!isExpanded ? item.name : undefined}
+                      onMouseEnter={(e) => showCollapsedTip(item.name, e.currentTarget)}
                       onMouseLeave={() => setHoveredTip(null)}
-                      className={`relative group flex items-center gap-3 rounded-xl text-sm font-medium transition ${
-                        collapsed
-                          ? "justify-center px-2 py-2.5"
-                          : "justify-start px-3 py-2.5"
-                      } ${
+                      className={`group flex items-center h-10 w-full rounded-xl text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85 ${
                         active
-                          ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-md shadow-[#4F46E5]/25"
-                          : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
+                          ? "bg-gradient-to-r from-[#4F46E5]/90 to-[#7C3AED]/85 text-white ring-1 ring-inset ring-white/25 shadow-md shadow-[#4F46E5]/30"
+                          : "text-indigo-100/80 hover:bg-white/[0.09] hover:text-white"
                       }`}
                     >
-                      {active && (
-                        <span
-                          aria-hidden="true"
-                          className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#22D3EE]"
+                      <span className="w-[52px] h-10 shrink-0 flex items-center justify-center">
+                        <Icon
+                          size={18}
+                          className={`transition-colors duration-150 ${
+                            active
+                              ? "text-white"
+                              : "text-indigo-200/85 group-hover:text-white"
+                          }`}
                         />
-                      )}
-                      <Icon
-                        size={18}
-                        className={`shrink-0 ${
-                          active ? "text-white" : "text-indigo-200/80 group-hover:text-white"
+                      </span>
+                      <span
+                        aria-hidden={!isExpanded}
+                        className={`pr-3 whitespace-nowrap truncate transition-all duration-150 ${
+                          isExpanded
+                            ? "opacity-100 translate-x-0"
+                            : "opacity-0 -translate-x-1 pointer-events-none"
                         }`}
-                      />
-                      {!collapsed && <span className="truncate">{item.name}</span>}
+                      >
+                        {item.name}
+                      </span>
                     </Link>
                   );
                 })}
@@ -196,47 +266,62 @@ export default function AppSidebarShell({
           ))}
         </nav>
 
-        {/* Bottom Profile & Settings Quick Anchor (no permanent Sign Out in sidebar) */}
+        {/* Bottom Settings Quick Anchor */}
         <div className="border-t border-white/10 p-3 shrink-0">
           <Link
             href={settingsHref}
             aria-label="Settings"
-            onMouseEnter={(e) => {
-              if (!collapsed) return;
-              const rect = e.currentTarget.getBoundingClientRect();
-              setHoveredTip({
-                label: "Settings",
-                top: rect.top + rect.height / 2,
-              });
-            }}
+            aria-current={isSettingsActive ? "page" : undefined}
+            title={!isExpanded ? "Settings" : undefined}
+            onMouseEnter={(e) => showCollapsedTip("Settings", e.currentTarget)}
             onMouseLeave={() => setHoveredTip(null)}
-            className={`w-full flex items-center gap-3 rounded-xl text-sm font-medium transition ${
-              collapsed ? "justify-center px-2 py-2.5" : "justify-start px-3 py-2.5"
-            } ${
+            className={`group flex items-center h-10 w-full rounded-xl text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85 ${
               isSettingsActive
-                ? "bg-white/15 text-white"
-                : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
+                ? "bg-gradient-to-r from-[#4F46E5]/90 to-[#7C3AED]/85 text-white ring-1 ring-inset ring-white/25 shadow-md shadow-[#4F46E5]/30"
+                : "text-indigo-100/80 hover:bg-white/[0.09] hover:text-white"
             }`}
           >
-            <Settings size={18} className="shrink-0 text-indigo-200/80" />
-            {!collapsed && <span className="truncate">Settings</span>}
+            <span className="w-[52px] h-10 shrink-0 flex items-center justify-center">
+              <Settings
+                size={18}
+                className={`transition-colors duration-150 ${
+                  isSettingsActive
+                    ? "text-white"
+                    : "text-indigo-200/85 group-hover:text-white"
+                }`}
+              />
+            </span>
+            <span
+              aria-hidden={!isExpanded}
+              className={`pr-3 whitespace-nowrap truncate transition-all duration-150 ${
+                isExpanded
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-1 pointer-events-none"
+              }`}
+            >
+              Settings
+            </span>
           </Link>
         </div>
       </aside>
 
-      {/* Floating Tooltip for Collapsed Mode */}
-      {collapsed && hoveredTip && (
+      {/* Floating Liquid Glass Tooltip when Collapsed */}
+      {!isExpanded && hoveredTip && (
         <div
           role="tooltip"
           style={{ top: hoveredTip.top }}
-          className="hidden md:flex fixed left-[84px] -translate-y-1/2 z-[60] pointer-events-none items-center rounded-lg bg-[#0B1230] border border-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-xl whitespace-nowrap"
+          className="hidden md:flex fixed left-[84px] -translate-y-1/2 z-[60] pointer-events-none items-center rounded-lg learnova-glass-tooltip px-3 py-1.5 text-xs font-semibold text-white whitespace-nowrap"
         >
           {hoveredTip.label}
         </div>
       )}
 
-      {/* Mobile Slide-Out Drawer (also opened via Bottom Nav "More" button) */}
+      {/* Mobile Tap-Controlled Liquid Glass Navigation Drawer */}
       <div
+        id="learnova-mobile-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${workspaceLabel} Navigation`}
         className={`md:hidden fixed inset-0 z-[70] transition-opacity duration-200 ${
           mobileOpen
             ? "opacity-100 pointer-events-auto"
@@ -246,48 +331,55 @@ export default function AppSidebarShell({
       >
         <div
           onClick={closeMobile}
+          aria-hidden="true"
           className="absolute inset-0 bg-[#070D24]/70 backdrop-blur-xs"
         />
 
         <aside
           aria-label={`${workspaceLabel} Mobile Navigation`}
-          className={`relative w-72 max-w-[85vw] h-full learnova-glass-sidebar text-white flex flex-col shadow-2xl transition-transform duration-200 ease-out ${
+          className={`relative w-72 max-w-[85vw] h-full learnova-glass-sidebar learnova-glass-sidebar-expanded text-white flex flex-col transition-transform duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/15 to-transparent">
+          <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/18 via-[#7C3AED]/8 to-transparent">
             <Link
               href={brandHref}
               onClick={closeMobile}
-              className="flex items-center gap-3 min-w-0"
+              className="flex items-center gap-3 min-w-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85"
             >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/20 flex items-center justify-center text-white shadow-md shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/25 flex items-center justify-center text-white shadow-md shrink-0">
                 <BrandIcon size={19} />
               </div>
               <div className="leading-tight min-w-0">
-                <span className="landing-display font-extrabold text-base tracking-tight text-white block">
+                <span className="landing-display font-extrabold text-base tracking-tight text-white block truncate">
                   Learnova
                 </span>
-                <span className={`block text-[11px] font-semibold ${accentTextColor}`}>
+                <span
+                  className={`block text-[11px] font-semibold truncate ${accentTextColor}`}
+                >
                   {workspaceLabel}
                 </span>
               </div>
             </Link>
 
             <button
+              ref={mobileCloseBtnRef}
               type="button"
               onClick={closeMobile}
               aria-label="Close navigation menu"
-              className="p-2 rounded-xl text-indigo-200/80 hover:text-white hover:bg-white/10 transition"
+              className="w-11 h-11 rounded-xl flex items-center justify-center text-indigo-100/85 hover:text-white hover:bg-white/10 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85 shrink-0"
             >
-              <X size={18} />
+              <X size={20} />
             </button>
           </div>
 
-          <nav className="flex-1 py-4 px-3 space-y-5 overflow-y-auto sidebar-scroll">
+          <nav
+            aria-label={`${workspaceLabel} mobile links`}
+            className="flex-1 py-4 px-3 space-y-4 overflow-y-auto sidebar-scroll"
+          >
             {groups.map((group) => (
               <div key={group.label} className="space-y-1">
-                <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-indigo-300/55">
+                <p className="px-3 pb-1 text-[11px] font-semibold tracking-wide text-indigo-200/60">
                   {group.label}
                 </p>
                 <div className="space-y-1">
@@ -299,18 +391,13 @@ export default function AppSidebarShell({
                         key={item.href}
                         href={item.href}
                         onClick={closeMobile}
-                        className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+                        aria-current={active ? "page" : undefined}
+                        className={`flex items-center gap-3 px-3 min-h-[44px] py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85 ${
                           active
-                            ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-md shadow-[#4F46E5]/25"
-                            : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
+                            ? "bg-gradient-to-r from-[#4F46E5]/90 to-[#7C3AED]/85 text-white ring-1 ring-inset ring-white/25 shadow-md shadow-[#4F46E5]/30"
+                            : "text-indigo-100/80 hover:bg-white/[0.09] hover:text-white"
                         }`}
                       >
-                        {active && (
-                          <span
-                            aria-hidden="true"
-                            className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#22D3EE]"
-                          />
-                        )}
                         <Icon size={18} className="shrink-0" />
                         <span className="truncate">{item.name}</span>
                       </Link>
@@ -325,10 +412,11 @@ export default function AppSidebarShell({
             <Link
               href={settingsHref}
               onClick={closeMobile}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
+              aria-current={isSettingsActive ? "page" : undefined}
+              className={`w-full flex items-center gap-3 px-3 min-h-[44px] py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#22D3EE]/85 ${
                 isSettingsActive
-                  ? "bg-white/15 text-white"
-                  : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
+                  ? "bg-gradient-to-r from-[#4F46E5]/90 to-[#7C3AED]/85 text-white ring-1 ring-inset ring-white/25 shadow-md shadow-[#4F46E5]/30"
+                  : "text-indigo-100/80 hover:bg-white/[0.09] hover:text-white"
               }`}
             >
               <Settings size={18} className="shrink-0" />

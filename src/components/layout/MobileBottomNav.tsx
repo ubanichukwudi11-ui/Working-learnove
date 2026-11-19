@@ -16,21 +16,39 @@ import {
   ClipboardCheck,
   MoreHorizontal,
   PlaySquare,
+  FileBadge2,
+  Bell,
+  Settings,
 } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
+import { useAuth } from "@/context/AuthContext";
 
-export default function MobileBottomNav({ role = "STUDENT" }: { role?: string }) {
+export default function MobileBottomNav({
+  role = "STUDENT",
+  status,
+}: {
+  role?: string;
+  status?: string;
+}) {
   const pathname = usePathname();
   const { toggleMobile, mobileOpen } = useSidebar();
+  const { user } = useAuth();
+  const effectiveStatus = status ?? user?.status;
 
   const items =
     role === "TEACHER"
-      ? [
-          { name: "Home", href: "/teacher", icon: LayoutDashboard, exact: true },
-          { name: "Classes", href: "/teacher/classes", icon: BookOpen },
-          { name: "Videos", href: "/teacher/videos", icon: PlaySquare },
-          { name: "Students", href: "/teacher/students", icon: Users },
-        ]
+      ? effectiveStatus === "ACTIVE"
+        ? [
+            { name: "Home", href: "/teacher", icon: LayoutDashboard, exact: true },
+            { name: "Classes", href: "/teacher/classes", icon: BookOpen },
+            { name: "Videos", href: "/teacher/videos", icon: PlaySquare },
+            { name: "Students", href: "/teacher/students", icon: Users },
+          ]
+        : [
+            { name: "Status", href: "/teacher/applications", icon: FileBadge2 },
+            { name: "Alerts", href: "/notifications", icon: Bell },
+            { name: "Settings", href: "/settings", icon: Settings },
+          ]
       : role === "SUPER_ADMIN"
       ? [
           { name: "Console", href: "/super-admin", icon: ShieldCheck, exact: true },
@@ -74,6 +92,7 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
           <Link
             key={item.href}
             href={item.href}
+            aria-current={active ? "page" : undefined}
             className={`relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-2 rounded-xl text-[11px] font-semibold transition min-w-[56px] min-h-[44px] ${
               active
                 ? "text-[#4F46E5] dark:text-[#A5B4FC] bg-[var(--surface-subtle)]"
@@ -91,6 +110,7 @@ export default function MobileBottomNav({ role = "STUDENT" }: { role?: string })
         onClick={toggleMobile}
         aria-label="More navigation destinations"
         aria-expanded={mobileOpen}
+        aria-controls="learnova-mobile-drawer"
         className={`flex flex-col items-center justify-center gap-0.5 px-2.5 py-2 rounded-xl text-[11px] font-semibold transition min-w-[56px] min-h-[44px] ${
           mobileOpen
             ? "text-[#4F46E5] dark:text-[#A5B4FC] bg-[var(--surface-subtle)]"

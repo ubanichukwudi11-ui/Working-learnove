@@ -3,7 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
+import { SidebarProvider } from "@/context/SidebarContext";
 import RoleSidebar from "./RoleSidebar";
 import AppNavbar, { type HeaderMode } from "./AppNavbar";
 import MobileBottomNav from "./MobileBottomNav";
@@ -45,7 +45,6 @@ function AppLayoutInner({
   const router = useRouter();
   const pathname = usePathname();
   const { user, loading, logout } = useAuth();
-  const { collapsed } = useSidebar();
 
   const resolvedMode = useMemo(
     () => resolveHeaderMode(pathname, headerMode),
@@ -101,15 +100,11 @@ function AppLayoutInner({
       : "pt-16";
 
   return (
-    <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
+    <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)] overflow-x-clip">
       <ServiceWorkerRegistrar />
-      <RoleSidebar role={user.role} />
+      <RoleSidebar role={user.role} status={user.status} />
 
-      <div
-        className={`transition-[padding] duration-200 ease-out min-h-screen flex flex-col min-w-0 ${
-          collapsed ? "md:pl-[76px]" : "md:pl-64"
-        }`}
-      >
+      <div className="md:pl-[76px] min-h-screen flex flex-col min-w-0">
         <AppNavbar user={user} onLogout={handleLogout} mode={resolvedMode} />
 
         <main
@@ -120,7 +115,7 @@ function AppLayoutInner({
       </div>
 
       <OfflineIndicator />
-      <MobileBottomNav role={user.role} />
+      <MobileBottomNav role={user.role} status={user.status} />
     </div>
   );
 }
