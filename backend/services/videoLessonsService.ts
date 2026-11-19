@@ -893,13 +893,6 @@ export async function handleVideoLessonsMutation(
     );
   }
 
-  if (isTeacher && user.status !== "ACTIVE") {
-    throw new VideoServiceError(
-      "Your teacher account must be approved by a School Administrator before creating or editing video lessons.",
-      403
-    );
-  }
-
   const result = await mutateLmsState(async (state) => {
     if (!Array.isArray(state.curriculumTopics)) state.curriculumTopics = [];
     if (!Array.isArray(state.videoLessons)) state.videoLessons = [];

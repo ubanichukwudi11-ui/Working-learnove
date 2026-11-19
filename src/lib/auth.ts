@@ -43,7 +43,6 @@ export interface User {
   institution?: string;
   experience?: string;
   licenseNumber?: string;
-  bio?: string;
   profilePhoto?: string;
   certificate?: string;
   degreeCertificate?: string;
@@ -304,15 +303,10 @@ export async function registerTeacher(data: {
   address?: string;
   dob?: string;
   subject?: string;
-  subjectApplications?: Array<{
-    subjectId: string;
-    classLevelIds: string[];
-  }>;
   qualification?: string;
   institution?: string;
   experience?: string;
   licenseNumber?: string;
-  bio?: string;
   profilePhoto?: string;
   certificate?: string;
   degreeCertificate?: string;

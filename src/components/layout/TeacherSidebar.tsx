@@ -12,11 +12,10 @@ import {
   Bell,
   GraduationCap,
   PlaySquare,
-  User as UserIcon,
 } from "lucide-react";
 import AppSidebarShell, { type SidebarNavGroup } from "./AppSidebarShell";
 
-const approvedGroups: SidebarNavGroup[] = [
+const groups: SidebarNavGroup[] = [
   {
     label: "Workspace",
     items: [
@@ -44,27 +43,15 @@ const approvedGroups: SidebarNavGroup[] = [
   },
 ];
 
-const pendingGroups: SidebarNavGroup[] = [
-  {
-    label: "Verification",
-    items: [
-      { name: "Application Status", href: "/teacher/applications", icon: FileBadge2 },
-      { name: "Notifications", href: "/notifications", icon: Bell },
-      { name: "Educator Profile", href: "/teacher/profile", icon: UserIcon },
-    ],
-  },
-];
-
-export default function TeacherSidebar({ userStatus = "ACTIVE" }: { userStatus?: string }) {
-  const isApproved = userStatus === "ACTIVE";
+export default function TeacherSidebar() {
   return (
     <AppSidebarShell
-      brandHref={isApproved ? "/teacher" : "/teacher/applications"}
-      workspaceLabel={isApproved ? "Educator Workspace" : "Verification Desk"}
+      brandHref="/teacher"
+      workspaceLabel="Educator Workspace"
       brandIcon={GraduationCap}
       accentTextColor="text-[#22D3EE]"
-      settingsHref="/settings"
-      groups={isApproved ? approvedGroups : pendingGroups}
+      settingsHref="/teacher/profile"
+      groups={groups}
     />
   );
 }

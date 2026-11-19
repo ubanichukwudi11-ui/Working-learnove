@@ -1,54 +1,21 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 import RoleSidebar from "./RoleSidebar";
-import AppNavbar, { type LayoutChromeMode } from "./AppNavbar";
+import AppNavbar from "./AppNavbar";
 import MobileBottomNav from "./MobileBottomNav";
 import {
   OfflineIndicator,
   ServiceWorkerRegistrar,
 } from "@frontend/components/pwa/PwaSupport";
 
-const DASHBOARD_EXACT_ROUTES = new Set([
-  "/dashboard",
-  "/teacher",
-  "/parent",
-  "/admin",
-  "/super-admin",
-]);
-
-const IMMERSIVE_PREFIXES = [
-  "/nova",
-  "/videos",
-  "/live-classes",
-  "/teacher/videos",
-  "/admin/videos",
-];
-
-function resolveChromeMode(pathname: string): LayoutChromeMode {
-  if (DASHBOARD_EXACT_ROUTES.has(pathname)) {
-    return "dashboard";
-  }
-  if (
-    IMMERSIVE_PREFIXES.some(
-      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/")
-    )
-  ) {
-    return "immersive";
-  }
-  return "compact";
-}
-
 function AppLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { user, loading, logout } = useAuth();
   const { collapsed } = useSidebar();
-
-  const chromeMode = useMemo(() => resolveChromeMode(pathname), [pathname]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -78,34 +45,25 @@ function AppLayoutInner({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   };
 
-  const mainTopPadding =
-    chromeMode === "dashboard"
-      ? "pt-22"
-      : chromeMode === "compact"
-      ? "pt-16"
-      : "pt-14";
-
   return (
     <div className="min-h-screen bg-[var(--background)] bg-learnova-dots-lavender text-[var(--foreground)]">
       <ServiceWorkerRegistrar />
-      <RoleSidebar role={user.role} userStatus={user.status} />
+      <RoleSidebar role={user.role} />
 
       <div
         className={`transition-[padding] duration-200 ease-out min-h-screen flex flex-col min-w-0 ${
           collapsed ? "md:pl-[76px]" : "md:pl-64"
         }`}
       >
-        <AppNavbar user={user} mode={chromeMode} onLogout={handleLogout} />
+        <AppNavbar user={user} onLogout={handleLogout} />
 
-        <main
-          className={`flex-1 ${mainTopPadding} pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 max-w-[1440px] w-full mx-auto min-w-0`}
-        >
+        <main className="flex-1 pt-24 pb-24 md:pb-12 px-4 sm:px-6 lg:px-8 max-w-[1440px] w-full mx-auto min-w-0">
           {children}
         </main>
       </div>
 
       <OfflineIndicator />
-      <MobileBottomNav role={user.role} userStatus={user.status} />
+      <MobileBottomNav role={user.role} />
     </div>
   );
 }

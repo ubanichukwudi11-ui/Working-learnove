@@ -39,7 +39,7 @@ export default function AppSidebarShell({
   brandIcon: BrandIcon,
   groups,
   accentTextColor = "text-[#22D3EE]",
-  settingsHref = "/settings",
+  settingsHref = "/profile",
 }: AppSidebarShellProps) {
   const pathname = usePathname();
   const { collapsed, toggleSidebar, mobileOpen, closeMobile } = useSidebar();
@@ -71,16 +71,16 @@ export default function AppSidebarShell({
 
   return (
     <>
-      {/* Desktop & Tablet Collapsible Liquid Glass Sidebar */}
+      {/* Desktop & Tablet Collapsible Sidebar */}
       <aside
         aria-label={`${workspaceLabel} Navigation`}
-        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 learnova-glass-sidebar text-white flex-col border-r border-white/12 transition-[width] duration-200 ease-out ${
+        className={`hidden md:flex fixed left-0 top-0 h-screen z-50 bg-[#070D24] dark:bg-[#050918] text-white flex-col border-r border-white/10 transition-[width] duration-200 ease-out ${
           collapsed ? "w-[76px]" : "w-64"
         }`}
       >
         {/* Brand + Collapse Header */}
         <div
-          className={`h-16 flex items-center border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/18 to-transparent ${
+          className={`h-16 flex items-center border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/15 to-transparent ${
             collapsed ? "justify-center px-2" : "justify-between px-4"
           }`}
         >
@@ -89,7 +89,7 @@ export default function AppSidebarShell({
             className="flex items-center gap-3 min-w-0"
             title={collapsed ? `Learnova · ${workspaceLabel}` : undefined}
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/25 flex items-center justify-center text-white shadow-md shadow-[#4F46E5]/25 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/20 flex items-center justify-center text-white shadow-md shadow-[#4F46E5]/25 shrink-0">
               <BrandIcon size={19} />
             </div>
             {!collapsed && (
@@ -125,7 +125,7 @@ export default function AppSidebarShell({
               onClick={toggleSidebar}
               aria-label="Expand sidebar"
               title="Expand sidebar"
-              className="w-10 h-9 rounded-xl flex items-center justify-center text-indigo-200/80 hover:text-white hover:bg-white/10 border border-white/12 transition"
+              className="w-10 h-9 rounded-xl flex items-center justify-center text-indigo-200/80 hover:text-white hover:bg-white/10 border border-white/10 transition"
             >
               <PanelLeftOpen size={17} />
             </button>
@@ -171,8 +171,8 @@ export default function AppSidebarShell({
                           : "justify-start px-3 py-2.5"
                       } ${
                         active
-                          ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-md shadow-[#4F46E5]/30 ring-1 ring-white/15"
-                          : "text-indigo-100/75 hover:bg-white/10 hover:text-white"
+                          ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-md shadow-[#4F46E5]/25"
+                          : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
                       }`}
                     >
                       {active && (
@@ -196,16 +196,16 @@ export default function AppSidebarShell({
           ))}
         </nav>
 
-        {/* Bottom Settings Anchor */}
+        {/* Bottom Profile & Settings Quick Anchor (no permanent Sign Out in sidebar) */}
         <div className="border-t border-white/10 p-3 shrink-0">
           <Link
             href={settingsHref}
-            aria-label="Settings"
+            aria-label="Profile & Settings"
             onMouseEnter={(e) => {
               if (!collapsed) return;
               const rect = e.currentTarget.getBoundingClientRect();
               setHoveredTip({
-                label: "Settings & Appearance",
+                label: "Profile & Settings",
                 top: rect.top + rect.height / 2,
               });
             }}
@@ -214,12 +214,12 @@ export default function AppSidebarShell({
               collapsed ? "justify-center px-2 py-2.5" : "justify-start px-3 py-2.5"
             } ${
               isSettingsActive
-                ? "bg-white/16 text-white ring-1 ring-white/15"
-                : "text-indigo-100/75 hover:bg-white/10 hover:text-white"
+                ? "bg-white/15 text-white"
+                : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
             }`}
           >
             <Settings size={18} className="shrink-0 text-indigo-200/80" />
-            {!collapsed && <span className="truncate">Settings</span>}
+            {!collapsed && <span className="truncate">Profile &amp; Settings</span>}
           </Link>
         </div>
       </aside>
@@ -229,13 +229,13 @@ export default function AppSidebarShell({
         <div
           role="tooltip"
           style={{ top: hoveredTip.top }}
-          className="hidden md:flex fixed left-[84px] -translate-y-1/2 z-[60] pointer-events-none items-center rounded-lg bg-[#0B1230]/95 backdrop-blur-md border border-white/18 px-3 py-1.5 text-xs font-semibold text-white shadow-xl whitespace-nowrap"
+          className="hidden md:flex fixed left-[84px] -translate-y-1/2 z-[60] pointer-events-none items-center rounded-lg bg-[#0B1230] border border-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-xl whitespace-nowrap"
         >
           {hoveredTip.label}
         </div>
       )}
 
-      {/* Mobile Slide-Out Drawer */}
+      {/* Mobile Slide-Out Drawer (also opened via Bottom Nav "More" button) */}
       <div
         className={`md:hidden fixed inset-0 z-[70] transition-opacity duration-200 ${
           mobileOpen
@@ -251,17 +251,17 @@ export default function AppSidebarShell({
 
         <aside
           aria-label={`${workspaceLabel} Mobile Navigation`}
-          className={`relative w-72 max-w-[85vw] h-full learnova-glass-sidebar text-white flex flex-col border-r border-white/12 shadow-2xl transition-transform duration-200 ease-out ${
+          className={`relative w-72 max-w-[85vw] h-full bg-[#070D24] dark:bg-[#050918] text-white flex flex-col border-r border-white/10 shadow-2xl transition-transform duration-200 ease-out ${
             mobileOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/18 to-transparent">
+          <div className="h-16 flex items-center justify-between px-4 border-b border-white/10 shrink-0 bg-gradient-to-r from-[#4F46E5]/15 to-transparent">
             <Link
               href={brandHref}
               onClick={closeMobile}
               className="flex items-center gap-3 min-w-0"
             >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/25 flex items-center justify-center text-white shadow-md shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] border border-white/20 flex items-center justify-center text-white shadow-md shrink-0">
                 <BrandIcon size={19} />
               </div>
               <div className="leading-tight min-w-0">
@@ -302,7 +302,7 @@ export default function AppSidebarShell({
                         className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                           active
                             ? "bg-gradient-to-r from-[#4F46E5] to-[#7C3AED] text-white shadow-md shadow-[#4F46E5]/25"
-                            : "text-indigo-100/75 hover:bg-white/10 hover:text-white"
+                            : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
                         }`}
                       >
                         {active && (
@@ -328,11 +328,11 @@ export default function AppSidebarShell({
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                 isSettingsActive
                   ? "bg-white/15 text-white"
-                  : "text-indigo-100/75 hover:bg-white/10 hover:text-white"
+                  : "text-indigo-100/75 hover:bg-white/8 hover:text-white"
               }`}
             >
               <Settings size={18} className="shrink-0" />
-              <span>Settings</span>
+              <span>Profile &amp; Settings</span>
             </Link>
           </div>
         </aside>

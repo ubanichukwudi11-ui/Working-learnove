@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { enforceActiveTeacher, requireApiAuth } from "@backend/services/serverAuth";
+import { requireApiAuth } from "@backend/services/serverAuth";
 import { listLiveClassesForUser } from "@backend/services/classroomService";
 
 export async function GET(req: NextRequest) {
   const auth = await requireApiAuth(req);
   if (auth.errorResponse) return auth.errorResponse;
-
-  const teacherGate = enforceActiveTeacher(auth.user);
-  if (teacherGate) return teacherGate;
 
   const payload = await listLiveClassesForUser(auth.user);
   return NextResponse.json(payload);

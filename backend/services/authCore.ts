@@ -25,14 +25,6 @@ export interface AuthenticatedSessionUser {
   state?: string;
   address?: string;
   dob?: string;
-  subject?: string;
-  qualification?: string;
-  institution?: string;
-  experience?: string;
-  licenseNumber?: string;
-  bio?: string;
-  verificationScore?: number;
-  adminNotes?: string;
   classLevel?: string;
   age?: number | null;
   schoolName?: string;
@@ -190,7 +182,6 @@ export async function authenticateAccessToken(
   const authProvider = extractAuthProvider(authUser);
 
   let studentProfile: Record<string, unknown> | null = null;
-  let teacherProfile: Record<string, unknown> | null = null;
   if (role === "STUDENT") {
     const { data: sp } = await sb
       .from("student_profiles")
@@ -198,13 +189,6 @@ export async function authenticateAccessToken(
       .eq("user_id", authUser.id)
       .maybeSingle();
     studentProfile = sp;
-  } else if (role === "TEACHER") {
-    const { data: tp } = await sb
-      .from("teacher_profiles")
-      .select("*")
-      .eq("user_id", authUser.id)
-      .maybeSingle();
-    teacherProfile = tp;
   }
 
   const completion = computeStudentProfileCompletion({
@@ -233,32 +217,6 @@ export async function authenticateAccessToken(
     state: profile?.state || undefined,
     address: profile?.address || undefined,
     dob: profile?.dob || (authUser.user_metadata?.dob as string | undefined) || undefined,
-    subject: typeof teacherProfile?.subject === "string" ? teacherProfile.subject : undefined,
-    qualification:
-      typeof teacherProfile?.qualification === "string"
-        ? teacherProfile.qualification
-        : undefined,
-    institution:
-      typeof teacherProfile?.institution === "string"
-        ? teacherProfile.institution
-        : undefined,
-    experience:
-      typeof teacherProfile?.experience === "string"
-        ? teacherProfile.experience
-        : undefined,
-    licenseNumber:
-      typeof teacherProfile?.license_number === "string"
-        ? teacherProfile.license_number
-        : undefined,
-    bio: typeof teacherProfile?.bio === "string" ? teacherProfile.bio : undefined,
-    verificationScore:
-      typeof teacherProfile?.verification_score === "number"
-        ? teacherProfile.verification_score
-        : undefined,
-    adminNotes:
-      typeof teacherProfile?.admin_notes === "string"
-        ? teacherProfile.admin_notes
-        : undefined,
     classLevel: completion.classLevel,
     age: completion.age,
     schoolName: completion.schoolName,
@@ -306,7 +264,6 @@ export async function getSessionUserById(
   }
 
   let studentProfile: Record<string, unknown> | null = null;
-  let teacherProfile: Record<string, unknown> | null = null;
   if (role === "STUDENT") {
     const { data: sp } = await sb
       .from("student_profiles")
@@ -314,13 +271,6 @@ export async function getSessionUserById(
       .eq("user_id", profile.id)
       .maybeSingle();
     studentProfile = sp;
-  } else if (role === "TEACHER") {
-    const { data: tp } = await sb
-      .from("teacher_profiles")
-      .select("*")
-      .eq("user_id", profile.id)
-      .maybeSingle();
-    teacherProfile = tp;
   }
 
   const completion = computeStudentProfileCompletion({
@@ -337,32 +287,6 @@ export async function getSessionUserById(
     status: (profile.status || "ACTIVE") as AuthenticatedSessionUser["status"],
     avatarUrl: profile.avatar_url || undefined,
     dob: profile.dob || undefined,
-    subject: typeof teacherProfile?.subject === "string" ? teacherProfile.subject : undefined,
-    qualification:
-      typeof teacherProfile?.qualification === "string"
-        ? teacherProfile.qualification
-        : undefined,
-    institution:
-      typeof teacherProfile?.institution === "string"
-        ? teacherProfile.institution
-        : undefined,
-    experience:
-      typeof teacherProfile?.experience === "string"
-        ? teacherProfile.experience
-        : undefined,
-    licenseNumber:
-      typeof teacherProfile?.license_number === "string"
-        ? teacherProfile.license_number
-        : undefined,
-    bio: typeof teacherProfile?.bio === "string" ? teacherProfile.bio : undefined,
-    verificationScore:
-      typeof teacherProfile?.verification_score === "number"
-        ? teacherProfile.verification_score
-        : undefined,
-    adminNotes:
-      typeof teacherProfile?.admin_notes === "string"
-        ? teacherProfile.admin_notes
-        : undefined,
     classLevel: completion.classLevel,
     age: completion.age,
     schoolName: completion.schoolName,

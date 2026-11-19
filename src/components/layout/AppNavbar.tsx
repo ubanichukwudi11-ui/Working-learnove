@@ -17,14 +17,12 @@ import {
   Settings,
   Shield,
   CreditCard,
-  ArrowLeft,
+  SlidersHorizontal,
 } from "lucide-react";
 import { formatLagosTime, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
 import { PWAInstallButton } from "@frontend/components/pwa/PwaSupport";
 import { useSidebar } from "@/context/SidebarContext";
-import { getDashboardRoute } from "@/lib/getDashboardRoute";
-
-export type LayoutChromeMode = "dashboard" | "compact" | "immersive";
+import ThemeSwitcher from "./ThemeSwitcher";
 
 type User = {
   id: string;
@@ -52,7 +50,6 @@ type SearchCandidate = {
 
 type Props = {
   user: User;
-  mode?: LayoutChromeMode;
   onLogout: () => void;
 };
 
@@ -68,10 +65,9 @@ const ROUTE_LABELS: Record<string, string> = {
   analytics: "Achievements",
   subscriptions: "Subscriptions & Billing",
   notifications: "Notifications",
-  profile: "Profile",
-  settings: "Settings & Appearance",
+  profile: "Profile & Settings",
   teacher: "Educator Home",
-  applications: "Application Status",
+  applications: "Applications",
   classes: "Classes & Timetable",
   notes: "Lesson Studio",
   attendance: "Attendance",
@@ -86,7 +82,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "super-admin": "Platform Console",
 };
 
-function getRoleRoutesForSearch(role: string, status?: string): SearchCandidate[] {
+function getRoleRoutesForSearch(role: string): SearchCandidate[] {
   if (role === "SUPER_ADMIN") {
     return [
       { label: "Platform Governance Console", category: "Page", href: "/super-admin" },
@@ -98,8 +94,7 @@ function getRoleRoutesForSearch(role: string, status?: string): SearchCandidate[
       { label: "Students Directory", category: "Page", href: "/admin/students" },
       { label: "Payments & Access", category: "Page", href: "/admin/payments" },
       { label: "Admin AI Copilot", category: "Page", href: "/admin/ai-assistant" },
-      { label: "Settings & Theme", category: "Settings", href: "/settings" },
-      { label: "My Profile", category: "Account", href: "/profile" },
+      { label: "Profile & Settings", category: "Account", href: "/profile" },
     ];
   }
   if (role === "ADMIN") {
@@ -113,19 +108,10 @@ function getRoleRoutesForSearch(role: string, status?: string): SearchCandidate[
       { label: "Students Directory", category: "Page", href: "/admin/students" },
       { label: "Payments & Access", category: "Page", href: "/admin/payments" },
       { label: "Admin AI Copilot", category: "Page", href: "/admin/ai-assistant" },
-      { label: "Settings & Theme", category: "Settings", href: "/settings" },
-      { label: "My Profile", category: "Account", href: "/profile" },
+      { label: "Profile & Settings", category: "Account", href: "/profile" },
     ];
   }
   if (role === "TEACHER") {
-    if (status && status !== "ACTIVE") {
-      return [
-        { label: "Application Status & Resubmission", category: "Status", href: "/teacher/applications" },
-        { label: "Notifications", category: "Alerts", href: "/notifications" },
-        { label: "Settings & Theme", category: "Settings", href: "/settings" },
-        { label: "Educator Profile", category: "Account", href: "/teacher/profile" },
-      ];
-    }
     return [
       { label: "Educator Home", category: "Page", href: "/teacher" },
       { label: "My Classes & Timetable", category: "Page", href: "/teacher/classes" },
@@ -135,7 +121,6 @@ function getRoleRoutesForSearch(role: string, status?: string): SearchCandidate[
       { label: "Attendance Logs", category: "Page", href: "/teacher/attendance" },
       { label: "Students Roster", category: "Page", href: "/teacher/students" },
       { label: "Subject Applications", category: "Page", href: "/teacher/applications" },
-      { label: "Settings & Theme", category: "Settings", href: "/settings" },
       { label: "Educator Profile", category: "Account", href: "/teacher/profile" },
     ];
   }
@@ -146,8 +131,7 @@ function getRoleRoutesForSearch(role: string, status?: string): SearchCandidate[
       { label: "Live Classrooms", category: "Page", href: "/live-classes" },
       { label: "Subscriptions & Billing", category: "Page", href: "/subscriptions" },
       { label: "Notifications", category: "Page", href: "/notifications" },
-      { label: "Settings & Theme", category: "Settings", href: "/settings" },
-      { label: "My Profile", category: "Account", href: "/profile" },
+      { label: "Profile & Settings", category: "Account", href: "/profile" },
     ];
   }
   return [
@@ -161,12 +145,11 @@ function getRoleRoutesForSearch(role: string, status?: string): SearchCandidate[
     { label: "Nova AI Tutor", category: "Page", href: "/nova" },
     { label: "Achievements & Progress", category: "Page", href: "/analytics" },
     { label: "Subscriptions & Billing", category: "Account", href: "/subscriptions" },
-    { label: "Settings & Theme", category: "Settings", href: "/settings" },
-    { label: "My Profile", category: "Account", href: "/profile" },
+    { label: "Profile & Settings", category: "Account", href: "/profile" },
   ];
 }
 
-export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props) {
+export default function AppNavbar({ user, onLogout }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const { collapsed, toggleMobile } = useSidebar();
@@ -191,17 +174,10 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
       const href = "/" + segments.slice(0, i + 1).join("/");
       const label =
         ROUTE_LABELS[seg] ||
-        (seg.length > 18
-          ? "Details"
-          : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
+        (seg.length > 18 ? "Details" : seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
       return { label, href };
     });
   }, [pathname]);
-
-  const dashboardHref =
-    user.role === "TEACHER" && user.status !== "ACTIVE"
-      ? "/teacher/applications"
-      : getDashboardRoute(user.role);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -216,19 +192,12 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
   }, []);
 
   const fetchSearchCandidates = useCallback(async () => {
-    const baseItems = getRoleRoutesForSearch(user.role, user.status);
-    if (mode !== "dashboard") {
-      setSearchIndex(baseItems);
-      return;
-    }
+    const baseItems = getRoleRoutesForSearch(user.role);
     try {
       const items: SearchCandidate[] = [...baseItems];
-      const skipClassrooms = user.role === "TEACHER" && user.status !== "ACTIVE";
       const [acadRes, roomsRes] = await Promise.all([
         fetch("/api/lms/academics", { cache: "no-store" }),
-        skipClassrooms
-          ? Promise.resolve(null)
-          : fetch("/api/lms/classrooms", { cache: "no-store" }),
+        fetch("/api/lms/classrooms", { cache: "no-store" }),
       ]);
       if (acadRes.ok) {
         const acad = await acadRes.json();
@@ -245,7 +214,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
           });
         }
       }
-      if (roomsRes && roomsRes.ok) {
+      if (roomsRes.ok) {
         const rm = await roomsRes.json();
         for (const c of rm.classrooms || []) {
           items.push({
@@ -264,7 +233,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
     } catch {
       setSearchIndex(baseItems);
     }
-  }, [mode, user.role, user.status]);
+  }, [user.role]);
 
   useEffect(() => {
     fetchNotifications();
@@ -274,12 +243,11 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
   }, [fetchNotifications, fetchSearchCandidates]);
 
   useEffect(() => {
-    if (mode !== "dashboard") return;
     const interval = setInterval(() => {
       setLagosTime(formatLagosTime());
     }, 30000);
     return () => clearInterval(interval);
-  }, [mode]);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -294,7 +262,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
       }
     }
     function handleShortcut(e: KeyboardEvent) {
-      if (mode === "dashboard" && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         searchInputRef.current?.focus();
         setShowSearch(true);
@@ -311,7 +279,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
       document.removeEventListener("mousedown", handleClickOutside);
       window.removeEventListener("keydown", handleShortcut);
     };
-  }, [mode]);
+  }, []);
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -362,7 +330,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
       case "ADMIN":
         return "School Admin";
       case "TEACHER":
-        return user.status !== "ACTIVE" ? "Pending Educator" : "Educator";
+        return "Educator";
       case "PARENT":
         return "Parent";
       default:
@@ -371,156 +339,121 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
   };
 
   const profileHref = user.role === "TEACHER" ? "/teacher/profile" : "/profile";
-  const currentTitle = breadcrumbs[breadcrumbs.length - 1]?.label || "Workspace";
-
-  const heightClass =
-    mode === "dashboard" ? "h-16" : mode === "compact" ? "h-12" : "h-11";
 
   return (
     <header
-      className={`fixed top-0 right-0 left-0 ${heightClass} z-40 learnova-glass-header border-b flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8 transition-[left,height,background-color] duration-200 ease-out ${
+      className={`fixed top-0 right-0 left-0 h-16 z-40 bg-[var(--surface)]/92 backdrop-blur-md border-b border-[var(--border)] flex items-center justify-between gap-3 sm:gap-4 px-4 sm:px-6 lg:px-8 transition-[left,background-color] duration-200 ease-out ${
         collapsed ? "md:left-[76px]" : "md:left-64"
       }`}
     >
-      {/* Left Region: Context-aware based on workspace chrome mode */}
-      {mode === "dashboard" ? (
-        <>
-          <div className="flex items-center gap-2.5 md:hidden shrink-0">
-            <button
-              type="button"
-              onClick={toggleMobile}
-              aria-label="Open navigation menu"
-              className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
-            >
-              <Menu size={18} />
-            </button>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-white shadow-sm shadow-[#4F46E5]/25">
-              <GraduationCap size={17} />
-            </div>
-            <span className="landing-display font-extrabold text-[var(--foreground)] text-base tracking-tight">
-              Learnova
-            </span>
-          </div>
+      {/* Mobile Drawer Toggle + Brand */}
+      <div className="flex items-center gap-2.5 md:hidden shrink-0">
+        <button
+          type="button"
+          onClick={toggleMobile}
+          aria-label="Open navigation menu"
+          className="p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition"
+        >
+          <Menu size={18} />
+        </button>
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4F46E5] via-[#7C3AED] to-[#06B6D4] flex items-center justify-center text-white shadow-sm shadow-[#4F46E5]/25">
+          <GraduationCap size={17} />
+        </div>
+        <span className="landing-display font-extrabold text-[var(--foreground)] text-base tracking-tight">
+          Learnova
+        </span>
+      </div>
 
-          <nav
-            aria-label="Workspace breadcrumb"
-            className="hidden lg:flex items-center gap-1.5 text-xs text-[var(--foreground-subtle)] shrink-0 max-w-[260px] truncate"
-          >
-            {breadcrumbs.map((bc, idx) => (
-              <span key={bc.href} className="inline-flex items-center gap-1.5 min-w-0">
-                {idx > 0 && <ChevronRight size={13} className="shrink-0 opacity-60" />}
-                {idx === breadcrumbs.length - 1 ? (
-                  <span className="font-bold text-[var(--foreground)] truncate">
-                    {bc.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={bc.href}
-                    className="font-medium hover:text-[var(--foreground)] truncate transition"
-                  >
-                    {bc.label}
-                  </Link>
-                )}
+      {/* Desktop Breadcrumb Context */}
+      <nav
+        aria-label="Workspace breadcrumb"
+        className="hidden lg:flex items-center gap-1.5 text-xs text-[var(--foreground-subtle)] shrink-0 max-w-[260px] truncate"
+      >
+        {breadcrumbs.map((bc, idx) => (
+          <span key={bc.href} className="inline-flex items-center gap-1.5 min-w-0">
+            {idx > 0 && <ChevronRight size={13} className="shrink-0 opacity-60" />}
+            {idx === breadcrumbs.length - 1 ? (
+              <span className="font-bold text-[var(--foreground)] truncate">
+                {bc.label}
               </span>
-            ))}
-          </nav>
+            ) : (
+              <Link
+                href={bc.href}
+                className="font-medium hover:text-[var(--foreground)] truncate transition"
+              >
+                {bc.label}
+              </Link>
+            )}
+          </span>
+        ))}
+      </nav>
 
-          {/* Global Search Bar (Dashboard Only) */}
-          <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block min-w-0">
-            <div className="flex items-center gap-2.5 bg-[var(--surface-lavender)]/90 border border-[var(--border)] focus-within:border-[#7C3AED] focus-within:bg-[var(--surface)] focus-within:ring-2 focus-within:ring-[#7C3AED]/15 rounded-xl px-3.5 py-2 transition">
-              <Search size={16} className="text-[var(--foreground-subtle)] shrink-0" />
-              <input
-                ref={searchInputRef}
-                value={query}
-                onFocus={() => setShowSearch(true)}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setShowSearch(true);
-                }}
-                placeholder="Search pages, subjects, or classrooms..."
-                className="bg-transparent outline-none text-sm text-[var(--foreground)] w-full placeholder:text-[var(--foreground-subtle)]"
-              />
-              <kbd className="hidden lg:inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--foreground-subtle)] shrink-0">
-                Ctrl K
-              </kbd>
-            </div>
+      {/* Global Search Bar */}
+      <div ref={searchRef} className="relative flex-1 max-w-md hidden sm:block min-w-0">
+        <div className="flex items-center gap-2.5 bg-[var(--surface-lavender)] border border-[var(--border)] focus-within:border-[#7C3AED] focus-within:bg-[var(--surface)] focus-within:ring-2 focus-within:ring-[#7C3AED]/15 rounded-xl px-3.5 py-2 transition">
+          <Search size={16} className="text-[var(--foreground-subtle)] shrink-0" />
+          <input
+            ref={searchInputRef}
+            value={query}
+            onFocus={() => setShowSearch(true)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setShowSearch(true);
+            }}
+            placeholder="Search pages, subjects, or classrooms..."
+            className="bg-transparent outline-none text-sm text-[var(--foreground)] w-full placeholder:text-[var(--foreground-subtle)]"
+          />
+          <kbd className="hidden lg:inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-[10px] font-mono text-[var(--foreground-subtle)] shrink-0">
+            Ctrl K
+          </kbd>
+        </div>
 
-            {showSearch && (
-              <div className="absolute top-full left-0 right-0 mt-2 learnova-glass-dropdown rounded-2xl py-2 z-50">
-                <p className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--foreground-subtle)]">
-                  {query.trim() ? "Matching Results" : "Quick Navigation"}
-                </p>
-                {searchResults.length > 0 ? (
-                  searchResults.map((res, i) => (
-                    <button
-                      key={`${res.href}-${i}`}
-                      type="button"
-                      onClick={() => {
-                        setShowSearch(false);
-                        setQuery("");
-                        router.push(res.href);
-                      }}
-                      className="w-full px-4 py-2.5 text-left hover:bg-[var(--surface-lavender)] flex items-center justify-between gap-2 transition"
-                    >
-                      <span className="text-sm font-medium text-[var(--foreground)] truncate">
-                        {res.label}
-                      </span>
-                      <span className="text-xs text-[#6D28D9] dark:text-[#C4B5FD] font-semibold shrink-0">
-                        {res.category}
-                      </span>
-                    </button>
-                  ))
-                ) : (
-                  <p className="px-4 py-3 text-xs text-[var(--foreground-subtle)]">
-                    No matches found for &ldquo;{query}&rdquo;.
-                  </p>
-                )}
-              </div>
+        {showSearch && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-xl py-2 z-50">
+            <p className="px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--foreground-subtle)]">
+              {query.trim() ? "Matching Results" : "Quick Navigation"}
+            </p>
+            {searchResults.length > 0 ? (
+              searchResults.map((res, i) => (
+                <button
+                  key={`${res.href}-${i}`}
+                  type="button"
+                  onClick={() => {
+                    setShowSearch(false);
+                    setQuery("");
+                    router.push(res.href);
+                  }}
+                  className="w-full px-4 py-2.5 text-left hover:bg-[var(--surface-lavender)] flex items-center justify-between gap-2 transition"
+                >
+                  <span className="text-sm font-medium text-[var(--foreground)] truncate">
+                    {res.label}
+                  </span>
+                  <span className="text-xs text-[#6D28D9] dark:text-[#C4B5FD] font-semibold shrink-0">
+                    {res.category}
+                  </span>
+                </button>
+              ))
+            ) : (
+              <p className="px-4 py-3 text-xs text-[var(--foreground-subtle)]">
+                No matches found for &ldquo;{query}&rdquo;.
+              </p>
             )}
           </div>
-        </>
-      ) : (
-        /* Compact & Immersive Workspaces: Clean contextual navigation without bulky global header */
-        <div className="flex items-center gap-2.5 min-w-0">
-          <button
-            type="button"
-            onClick={toggleMobile}
-            aria-label="Open navigation menu"
-            className="md:hidden p-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)]/80 text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition shrink-0"
-          >
-            <Menu size={16} />
-          </button>
-
-          <Link
-            href={dashboardHref}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-lavender)] transition shrink-0"
-          >
-            <ArrowLeft size={14} />
-            <span className="hidden sm:inline">Workspace</span>
-          </Link>
-
-          <span className="text-[var(--foreground-subtle)] opacity-45 shrink-0">/</span>
-
-          <span className="text-xs font-bold text-[var(--foreground)] truncate">
-            {currentTitle}
-          </span>
-        </div>
-      )}
-
-      {/* Right Utility Cluster (No theme switcher in header) */}
-      <div className="flex items-center gap-2 sm:gap-2.5 ml-auto shrink-0">
-        {mode === "dashboard" && (
-          <>
-            <div className="hidden xl:flex items-center gap-1.5 text-xs text-[var(--foreground-muted)] font-medium tabular-nums bg-[var(--surface-lavender)]/80 border border-[var(--border)] rounded-lg px-2.5 py-1.5">
-              <Clock size={14} className="text-[#0891B2] dark:text-[#22D3EE]" />
-              <span>{lagosTime}</span>
-              <span>·</span>
-              <span>{TIMEZONE_LABEL}</span>
-            </div>
-
-            <PWAInstallButton />
-          </>
         )}
+      </div>
+
+      {/* Right Info & Actions */}
+      <div className="flex items-center gap-2 sm:gap-3 ml-auto shrink-0">
+        <div className="hidden xl:flex items-center gap-1.5 text-xs text-[var(--foreground-muted)] font-medium tabular-nums bg-[var(--surface-lavender)] border border-[var(--border)] rounded-lg px-2.5 py-1.5">
+          <Clock size={14} className="text-[#0891B2] dark:text-[#22D3EE]" />
+          <span>{lagosTime}</span>
+          <span>·</span>
+          <span>{TIMEZONE_LABEL}</span>
+        </div>
+
+        <PWAInstallButton />
+
+        <ThemeSwitcher variant="compact" />
 
         {/* Notification Center */}
         <div ref={notifRef} className="relative">
@@ -533,11 +466,9 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
             }}
             aria-label="Notifications"
             aria-expanded={showNotifications}
-            className={`relative ${
-              mode === "dashboard" ? "p-2 rounded-xl" : "p-1.5 rounded-lg"
-            } border border-[var(--border)] bg-[var(--surface)]/85 text-[var(--foreground-muted)] hover:text-[#4F46E5] dark:hover:text-[#A5B4FC] hover:border-[var(--border-strong)] hover:bg-[var(--surface-lavender)] transition`}
+            className="relative p-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground-muted)] hover:text-[#4F46E5] dark:hover:text-[#A5B4FC] hover:border-[var(--border-strong)] hover:bg-[var(--surface-lavender)] transition"
           >
-            <Bell size={mode === "dashboard" ? 18 : 16} />
+            <Bell size={18} />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-gradient-to-r from-[#7C3AED] to-[#4F46E5] text-white text-[10px] font-bold flex items-center justify-center tabular-nums">
                 {unreadCount > 99 ? "99+" : unreadCount}
@@ -546,8 +477,8 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 learnova-glass-dropdown rounded-2xl overflow-hidden z-50">
-              <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--surface-lavender)]/75 flex items-center justify-between">
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-50">
+              <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--surface-lavender)] flex items-center justify-between">
                 <span className="text-sm font-bold text-[var(--foreground)]">
                   Notifications
                 </span>
@@ -582,7 +513,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
                         setShowNotifications(false);
                       }}
                       className={`block px-4 py-3 hover:bg-[var(--surface-lavender)] transition ${
-                        !n.isRead ? "bg-[#4F46E5]/6 dark:bg-[#4F46E5]/15" : ""
+                        !n.isRead ? "bg-[#4F46E5]/5 dark:bg-[#4F46E5]/12" : ""
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -596,7 +527,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
                       <p className="text-xs text-[var(--foreground-muted)] mt-0.5 leading-relaxed">
                         {n.message}
                       </p>
-                      <span className="text-[11px] text-[var(--foreground-subtle)] mt-1 block tabular-nums">
+                      <span className="text-[11px] text-[var(--foreground-subtle)] mt-1 block">
                         {new Date(n.createdAt).toLocaleString("en-NG", {
                           timeZone: "Africa/Lagos",
                           month: "short",
@@ -609,7 +540,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
                   ))
                 )}
               </div>
-              <div className="px-4 py-2.5 border-t border-[var(--border)] bg-[var(--surface-lavender)]/75 text-center">
+              <div className="px-4 py-2.5 border-t border-[var(--border)] bg-[var(--surface-lavender)] text-center">
                 <Link
                   href="/notifications"
                   onClick={() => setShowNotifications(false)}
@@ -622,7 +553,7 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
           )}
         </div>
 
-        {/* Account & Profile Dropdown Menu (Theme toggle removed — links directly to Settings) */}
+        {/* Account & Profile Dropdown Menu */}
         <div ref={accountRef} className="relative">
           <button
             type="button"
@@ -632,37 +563,29 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
             }}
             aria-label="Open account menu"
             aria-expanded={showAccountMenu}
-            className={`flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)]/85 hover:bg-[var(--surface-lavender)] hover:border-[var(--border-strong)] ${
-              mode === "dashboard" ? "p-1 sm:pr-2.5" : "p-0.5 sm:pr-2"
-            } transition`}
+            className="flex items-center gap-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-lavender)] hover:border-[var(--border-strong)] p-1 sm:pr-2.5 transition"
           >
-            <div
-              className={`${
-                mode === "dashboard" ? "w-8 h-8" : "w-7 h-7"
-              } rounded-lg bg-gradient-to-br from-[#0B1230] via-[#151A44] to-[#4F46E5] text-white flex items-center justify-center text-xs font-bold shrink-0 ring-2 ring-[#EDE9FE] dark:ring-white/15`}
-            >
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0B1230] via-[#151A44] to-[#4F46E5] text-white flex items-center justify-center text-xs font-bold shrink-0 ring-2 ring-[#EDE9FE] dark:ring-white/15">
               {initials || "LN"}
             </div>
-            {mode === "dashboard" && (
-              <div className="hidden md:block text-left leading-tight">
-                <p className="text-xs font-bold text-[var(--foreground)] truncate max-w-[130px]">
-                  {user.fullName}
-                </p>
-                <p className="text-[11px] font-semibold text-[#6D28D9] dark:text-[#C4B5FD]">
-                  {roleBadgeLabel()}
-                </p>
-              </div>
-            )}
+            <div className="hidden md:block text-left leading-tight">
+              <p className="text-xs font-bold text-[var(--foreground)] truncate max-w-[130px]">
+                {user.fullName}
+              </p>
+              <p className="text-[11px] font-semibold text-[#6D28D9] dark:text-[#C4B5FD]">
+                {roleBadgeLabel()}
+              </p>
+            </div>
             <ChevronDown size={14} className="hidden sm:block text-[var(--foreground-subtle)]" />
           </button>
 
           {showAccountMenu && (
             <div
               role="menu"
-              className="absolute right-0 mt-2 w-72 learnova-glass-dropdown rounded-2xl overflow-hidden z-50"
+              className="absolute right-0 mt-2 w-72 bg-[var(--surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden z-50"
             >
               {/* User Identity Header */}
-              <div className="p-4 border-b border-[var(--border)] bg-[var(--surface-lavender)]/75 flex items-center gap-3">
+              <div className="p-4 border-b border-[var(--border)] bg-[var(--surface-lavender)] flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center text-sm font-bold shrink-0">
                   {initials || "LN"}
                 </div>
@@ -690,23 +613,23 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
                   View &amp; Edit Profile
                 </Link>
                 <Link
-                  href="/settings"
+                  href="/profile?tab=preferences"
                   onClick={() => setShowAccountMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
                 >
-                  <Settings size={15} className="text-[#7C3AED] dark:text-[#C4B5FD]" />
-                  Settings &amp; Appearance
+                  <SlidersHorizontal size={15} className="text-[#7C3AED] dark:text-[#C4B5FD]" />
+                  Account &amp; Learning Settings
                 </Link>
                 <Link
-                  href="/settings?tab=security"
+                  href="/profile?tab=security"
                   onClick={() => setShowAccountMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
                 >
                   <Shield size={15} className="text-[#0891B2] dark:text-[#22D3EE]" />
-                  Account &amp; Password Security
+                  Security &amp; Password
                 </Link>
                 <Link
-                  href="/settings?tab=notifications"
+                  href="/profile?tab=notifications"
                   onClick={() => setShowAccountMenu(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[var(--foreground-muted)] hover:bg-[var(--surface-lavender)] hover:text-[var(--foreground)] transition"
                 >
@@ -723,6 +646,17 @@ export default function AppNavbar({ user, mode = "dashboard", onLogout }: Props)
                     Subscription &amp; Billing
                   </Link>
                 )}
+              </div>
+
+              {/* Theme Picker Inline */}
+              <div className="px-3 py-2.5 border-t border-[var(--border)] space-y-1.5">
+                <div className="flex items-center justify-between text-[11px] font-bold text-[var(--foreground-subtle)]">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Settings size={12} />
+                    Theme Preference
+                  </span>
+                </div>
+                <ThemeSwitcher variant="inline" />
               </div>
 
               {/* Sign Out Action */}

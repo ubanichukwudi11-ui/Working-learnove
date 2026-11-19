@@ -15,10 +15,9 @@ export type UserRole =
 
 type Props = {
   role: UserRole;
-  userStatus?: string;
 };
 
-export default function RoleSidebar({ role, userStatus }: Props) {
+export default function RoleSidebar({ role }: Props) {
   switch (role) {
     case "SUPER_ADMIN":
       return <SuperAdminSidebar />;
@@ -27,7 +26,7 @@ export default function RoleSidebar({ role, userStatus }: Props) {
       return <AdminSidebar />;
 
     case "TEACHER":
-      return <TeacherSidebar userStatus={userStatus} />;
+      return <TeacherSidebar />;
 
     case "PARENT":
       return <ParentSidebar />;

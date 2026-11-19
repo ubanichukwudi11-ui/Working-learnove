@@ -5,16 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import ThemeSwitcher from "@/components/layout/ThemeSwitcher";
 import { CardSkeleton, EmptyState, PageHeader } from "@/components/ui";
 import { useAuth } from "@/context/AuthContext";
 import { CURRENT_ACADEMIC_TERM, TIMEZONE_LABEL } from "@/lib/nigerianCurriculum";
 import {
   Award,
   BookOpen,
-  FileBadge2,
   GraduationCap,
   LogOut,
-  Settings,
   Shield,
   Video,
 } from "lucide-react";
@@ -26,25 +25,20 @@ export default function TeacherProfilePage() {
   const [classrooms, setClassrooms] = useState<any[]>([]);
   const [approvals, setApprovals] = useState<any[]>([]);
 
-  const isVerified = user?.status === "ACTIVE";
-
   const loadTeacherDetails = useCallback(async () => {
     try {
-      const appPromise = fetch("/api/lms/teacher-applications", { cache: "no-store" });
-      const roomPromise =
-        user?.role === "TEACHER" && user?.status !== "ACTIVE"
-          ? Promise.resolve(null)
-          : fetch("/api/lms/classrooms", { cache: "no-store" });
-
-      const [roomRes, appRes] = await Promise.all([roomPromise, appPromise]);
-      const rmJson = roomRes && roomRes.ok ? await roomRes.json() : {};
+      const [roomRes, appRes] = await Promise.all([
+        fetch("/api/lms/classrooms", { cache: "no-store" }),
+        fetch("/api/lms/teacher-applications", { cache: "no-store" }),
+      ]);
+      const rmJson = roomRes.ok ? await roomRes.json() : {};
       const appJson = appRes.ok ? await appRes.json() : {};
       setClassrooms(rmJson.classrooms || []);
       setApprovals((appJson.approvals || []).filter((a: any) => a.status === "APPROVED"));
     } finally {
       setLoading(false);
     }
-  }, [user?.role, user?.status]);
+  }, []);
 
   useEffect(() => {
     loadTeacherDetails();
@@ -62,28 +56,19 @@ export default function TeacherProfilePage() {
           <PageHeader
             kicker={CURRENT_ACADEMIC_TERM}
             title="Educator Profile & Teaching Allocation"
-            description="Review your verification status, academic qualifications, approved subjects, and allocated cohorts."
+            description="Review your approved subjects, allocated cohorts, appearance preferences, and account security."
             breadcrumbs={[
-              ...(isVerified
-                ? [{ label: "Educator Home", href: "/teacher" }]
-                : [{ label: "Application Portal", href: "/teacher/applications" }]),
+              { label: "Educator Home", href: "/teacher" },
               { label: "Profile" },
             ]}
             actions={
               <div className="flex flex-wrap gap-2">
                 <Link
-                  href="/settings"
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition"
-                >
-                  <Settings size={14} />
-                  Settings &amp; Appearance
-                </Link>
-                <Link
-                  href="/profile"
+                  href="/profile?tab=security"
                   className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/12 hover:bg-white/20 border border-white/20 text-white text-xs font-bold transition"
                 >
                   <Shield size={14} />
-                  Edit Contact Info
+                  Security &amp; Edit
                 </Link>
                 <button
                   type="button"
@@ -97,64 +82,28 @@ export default function TeacherProfilePage() {
             }
           />
 
-          <div className="learnova-card p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <GraduationCap size={26} />
-                </div>
-                <div className="min-w-0">
-                  <h2 className="text-lg font-bold text-[var(--foreground)] truncate">
-                    {user?.fullName || "Educator"}
-                  </h2>
-                  <p className="text-sm text-[var(--foreground-muted)] truncate">{user?.email}</p>
-                  <p className="text-xs font-semibold text-[#4F46E5] dark:text-[#A5B4FC] mt-0.5">
-                    {isVerified
-                      ? `Verified Educator · ${TIMEZONE_LABEL}`
-                      : `Verification Status: ${user?.status || "PENDING"} · ${TIMEZONE_LABEL}`}
-                  </p>
-                </div>
+          <div className="learnova-card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#4F46E5] to-[#7C3AED] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <GraduationCap size={26} />
               </div>
-
-              <Link
-                href="/teacher/applications"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border-strong)] bg-[var(--surface-lavender)] text-xs font-bold text-[var(--foreground)] hover:border-[#4F46E5] transition shrink-0"
-              >
-                <FileBadge2 size={14} />
-                Application &amp; Credentials
-              </Link>
+              <div className="min-w-0">
+                <h2 className="text-lg font-bold text-[var(--foreground)] truncate">
+                  {user?.fullName || "Educator"}
+                </h2>
+                <p className="text-sm text-[var(--foreground-muted)] truncate">{user?.email}</p>
+                <p className="text-xs font-semibold text-[#4F46E5] dark:text-[#A5B4FC] mt-0.5">
+                  Verified Educator · {TIMEZONE_LABEL}
+                </p>
+              </div>
             </div>
 
-            {(user?.qualification || user?.institution || user?.bio) && (
-              <div className="grid sm:grid-cols-3 gap-3 pt-3 border-t border-[var(--border)] text-xs">
-                <div>
-                  <p className="text-[var(--foreground-subtle)] font-semibold">Qualification</p>
-                  <p className="font-bold text-[var(--foreground)] mt-0.5">
-                    {user.qualification || "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[var(--foreground-subtle)] font-semibold">Institution</p>
-                  <p className="font-bold text-[var(--foreground)] mt-0.5">
-                    {user.institution || "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[var(--foreground-subtle)] font-semibold">TRCN / Experience</p>
-                  <p className="font-bold text-[var(--foreground)] mt-0.5">
-                    {[user.experience, user.licenseNumber].filter(Boolean).join(" · ") || "—"}
-                  </p>
-                </div>
-                {user.bio && (
-                  <div className="sm:col-span-3 pt-1">
-                    <p className="text-[var(--foreground-subtle)] font-semibold">Teaching Bio</p>
-                    <p className="text-[var(--foreground-muted)] mt-0.5 leading-relaxed">
-                      {user.bio}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="w-full sm:w-64 space-y-1.5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--foreground-subtle)]">
+                Theme Preference
+              </p>
+              <ThemeSwitcher variant="segmented" />
+            </div>
           </div>
 
           {loading ? (
@@ -171,7 +120,7 @@ export default function TeacherProfilePage() {
                     href="/teacher/applications"
                     className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
                   >
-                    Manage →
+                    Apply →
                   </Link>
                 </div>
 
@@ -180,7 +129,7 @@ export default function TeacherProfilePage() {
                     compact
                     icon={Award}
                     title="No Subject Authorizations Yet"
-                    description="Submit or monitor your subject application for School Admin approval."
+                    description="Submit a subject application to be approved by School Admin."
                   />
                 ) : (
                   <div className="space-y-2.5">
@@ -207,26 +156,20 @@ export default function TeacherProfilePage() {
                     <BookOpen size={17} className="text-[#7C3AED] dark:text-[#C4B5FD]" />
                     Allocated Cohorts ({classrooms.length})
                   </h3>
-                  {isVerified && (
-                    <Link
-                      href="/teacher/classes"
-                      className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
-                    >
-                      Manage →
-                    </Link>
-                  )}
+                  <Link
+                    href="/teacher/classes"
+                    className="text-xs font-bold text-[#4F46E5] dark:text-[#A5B4FC] hover:underline"
+                  >
+                    Manage →
+                  </Link>
                 </div>
 
                 {classrooms.length === 0 ? (
                   <EmptyState
                     compact
                     icon={Video}
-                    title={isVerified ? "No Classrooms Assigned Yet" : "Awaiting Educator Approval"}
-                    description={
-                      isVerified
-                        ? "Once School Admin assigns timetable groups, your cohorts appear here."
-                        : "Classroom allocations become accessible once your educator account is approved."
-                    }
+                    title="No Classrooms Assigned Yet"
+                    description="Once School Admin assigns timetable groups, your cohorts appear here."
                   />
                 ) : (
                   <div className="space-y-2.5">

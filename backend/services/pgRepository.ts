@@ -477,8 +477,6 @@ export async function loadLmsStateFromPg(
       documentUrls: r.document_urls || {},
       status: r.status,
       adminExplanation: r.admin_explanation || undefined,
-      internalNotes: r.internal_notes || undefined,
-      statusHistory: Array.isArray(r.status_history) ? r.status_history : undefined,
       reviewedBy: r.reviewed_by || undefined,
       reviewedAt: r.reviewed_at || undefined,
       createdAt: r.created_at,
@@ -1014,46 +1012,31 @@ export async function saveLmsStateToPg(
   // 2. Teacher Applications & Approvals
   const validApps = state.teacherApplications.filter((a) => isRealUuid(a.teacherUserId));
   if (validApps.length > 0) {
-    const appPayloads = validApps.map((a) => ({
-      id: toPgUuid(a.id),
-      external_id: a.id,
-      teacher_user_id: a.teacherUserId,
-      teacher_name: a.teacherName,
-      teacher_email: a.teacherEmail,
-      subject_id: toPgUuid(a.subjectId),
-      subject_name: a.subjectName,
-      class_level_ids: a.classLevelIds,
-      qualification: a.qualification,
-      institution: a.institution,
-      experience_years: a.experience,
-      license_number: a.licenseNumber,
-      bio: a.bio,
-      document_urls: a.documentUrls,
-      status: a.status,
-      admin_explanation: a.adminExplanation || null,
-      internal_notes: a.internalNotes || null,
-      status_history: Array.isArray(a.statusHistory) ? a.statusHistory : [],
-      reviewed_by: isRealUuid(a.reviewedBy) ? a.reviewedBy : null,
-      reviewed_at: a.reviewedAt || null,
-      created_at: a.createdAt,
-      updated_at: a.updatedAt,
-    }));
-
-    const { error: appUpsertErr } = await sb
-      .from("teacher_subject_applications")
-      .upsert(appPayloads, { onConflict: "id" });
-
-    if (appUpsertErr) {
-      const fallbackPayloads = appPayloads.map((row) => {
-        const copy = { ...row } as Record<string, unknown>;
-        delete copy.internal_notes;
-        delete copy.status_history;
-        return copy;
-      });
-      await sb
-        .from("teacher_subject_applications")
-        .upsert(fallbackPayloads, { onConflict: "id" });
-    }
+    await sb.from("teacher_subject_applications").upsert(
+      validApps.map((a) => ({
+        id: toPgUuid(a.id),
+        external_id: a.id,
+        teacher_user_id: a.teacherUserId,
+        teacher_name: a.teacherName,
+        teacher_email: a.teacherEmail,
+        subject_id: toPgUuid(a.subjectId),
+        subject_name: a.subjectName,
+        class_level_ids: a.classLevelIds,
+        qualification: a.qualification,
+        institution: a.institution,
+        experience_years: a.experience,
+        license_number: a.licenseNumber,
+        bio: a.bio,
+        document_urls: a.documentUrls,
+        status: a.status,
+        admin_explanation: a.adminExplanation || null,
+        reviewed_by: isRealUuid(a.reviewedBy) ? a.reviewedBy : null,
+        reviewed_at: a.reviewedAt || null,
+        created_at: a.createdAt,
+        updated_at: a.updatedAt,
+      })),
+      { onConflict: "id" }
+    );
   }
 
   const validApprovals = state.teacherApprovals.filter((a) => isRealUuid(a.teacherUserId));

@@ -176,16 +176,6 @@ export async function verifyLiveRoomAccess(
   }
 
   if (user.role === "TEACHER") {
-    if (user.status !== "ACTIVE") {
-      return {
-        allowed: false,
-        httpStatus: 403,
-        code: "TEACHER_VERIFICATION_REQUIRED",
-        error:
-          "Your educator account must be approved by a School Administrator before entering live classrooms.",
-        classroom: room,
-      };
-    }
     if (room.teacherUserId !== user.id) {
       return {
         allowed: false,
